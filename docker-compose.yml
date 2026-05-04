@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  task_board_frontend:
+    build: .  # ← ¡Usa el Dockerfile!
+    ports:
+      - "5173:5173"
+    environment:
+      - HOST=0.0.0.0
+      - CHOKIDAR_USEPOLLING=true  # Necesario para hot reload en Docker detecta cambios de archivos
+    volumes:
+      - .:/code                    # Monta el código para desarrollo
+      - /code/node_modules         # Volumen anónimo para node_modules
