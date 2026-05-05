@@ -51,7 +51,7 @@ const Navbar = ({ sidebarOpen, sidebarCollapsed, onToggleSidebar }) => {
         
         {dropdownOpen && (
           <div className="app-dropdown">
-            <div className="app-dropdown__header">Zio Zukey</div>
+            <div className="app-dropdown__header">user</div>
             <div className="app-dropdown__divider" />
             <button className="app-dropdown__item" onClick={() => { setDropdownOpen(false); navigate("/profile"); }}>
               <User size={18} />

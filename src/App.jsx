@@ -56,14 +56,14 @@ function App() {
               <Configuration />
             </Layout>}/>
           
-          <Route path= "/proyecto/:id"  element={
+          <Route path= "/proyectos"  element={
             <Layout>
               <Proyect />
             </Layout>
           }/>
 
           <Route
-          path="/proyecto/:id/sprint/:sprintId"
+          path="/sprint"
           element={
             <Layout>
          <Sprint />

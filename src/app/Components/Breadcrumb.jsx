@@ -3,19 +3,13 @@ import { useBreadcrumbStore } from './BreadcrumbStore';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-export const useBreadcrumbSegment = (label, path) => {
-  const pushSegment = useBreadcrumbStore((state) => state.pushSegment);
-  const popSegment = useBreadcrumbStore((state) => state.popSegment);
-
-  const segment = {
-    label,
-    path: path ?? window.location.pathname,
-  };
+export const useBreadcrumb = (segments) => {
+  const setSegments = useBreadcrumbStore((state) => state.setSegments);
 
   useEffect(() => {
-    pushSegment(segment);
-    return () => popSegment();
-  }, []);
+    setSegments(segments);
+    return () => setSegments([]);
+  }, [segments, setSegments]);
 };
 
 const DefaultSeparator = () => <ChevronRight size={14} className="text-slate-400" />;

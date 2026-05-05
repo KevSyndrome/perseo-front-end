@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 
 const menuItems = [
   { icon: Home, label: 'Dashboard', path: '/dashboard' },
-  { icon: BarChart2, label: 'Estadísticas', path: '/estadisticas' },
+  { icon: BarChart2, label: 'Proyectos', path: '/proyectos' },
   { icon: Users, label: 'Usuarios', path: '/usuarios' },
   { icon: Settings, label: 'Configuración', path: '/configuration' },
 ];

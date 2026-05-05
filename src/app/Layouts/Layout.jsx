@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import Navbar from "../Components/Navbar";
 import Sidebar from "../Components/Sidebar";
-import Breadcrumb from "../Components/Breadcrumb";
 
 const Layout = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -24,7 +23,6 @@ const Layout = ({ children }) => {
       />
 
       <main className={`app-main ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-        <Breadcrumb />
         {children}
       </main>
     </div>
