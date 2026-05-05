@@ -1,11 +1,11 @@
 import React from 'react';
-import { Home, BarChart2, Users, Settings, LogOut } from 'lucide-react';
+import { Home, BarChart2, Users, Settings, LogOut, MessageCircleMoreIcon, FolderKanban } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const menuItems = [
   { icon: Home, label: 'Dashboard', path: '/dashboard' },
-  { icon: BarChart2, label: 'Proyectos', path: '/proyectos' },
-  { icon: Users, label: 'Usuarios', path: '/usuarios' },
+  { icon: FolderKanban, label: 'Proyectos', path: '/proyectos' },
+  { icon: MessageCircleMoreIcon, label: 'Mensajes', path: '/mensajes' },
   { icon: Settings, label: 'Configuración', path: '/configuration' },
 ];
 

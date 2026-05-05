@@ -7,4 +7,10 @@
   --color-secondary-hover: #10b981;
   --color-tertiary: #475569;
   --color-tertiary-hover: #334155;
+  
+  /* AÑADE ESTOS para disabled */
+  --color-primary-disabled: #7dd3fc;      /* Azul más claro */
+  --color-primary-disabled-bg: #e0f2fe;   /* Fondo azul muy claro */
+  --color-tertiary-disabled: #94a3b8;     /* Gris más claro */
+  --color-tertiary-disabled-bg: #f1f5f9;  /* Fondo gris muy claro */
 }

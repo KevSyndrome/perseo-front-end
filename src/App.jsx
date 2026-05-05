@@ -9,6 +9,7 @@ import Calendar from "./app/Pages/Calendar";
 import Profile from "./app/Pages/Profile";
 import Configuration from "./app/Pages/Configuration";
 import Task from "./app/Pages/Task";
+import Mensajes from "./app/Pages/Mensajes";
 
 function App() {
   return (
@@ -71,6 +72,15 @@ function App() {
             }     
           />
 
+          <Route
+            path="/mensajes"
+            element={
+              <Layout>
+                <Mensajes/>
+              </Layout>
+            }
+            />
+            
         {/* Redirección */}
         <Route path="" element={<Navigate to="/login" />} />
       </Routes>
