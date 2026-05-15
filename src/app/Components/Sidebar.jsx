@@ -5,7 +5,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 const menuItems = [
   { icon: Home, label: 'Dashboard', path: '/dashboard' },
   { icon: FolderKanban, label: 'Proyectos', path: '/proyectos' },
-  { icon: MessageCircleMoreIcon, label: 'Mensajes', path: '/mensajes' },
+  { icon: MessageCircleMoreIcon, label: 'Chat', path: '/mensajes' },
+  { icon: Settings, label: 'Calendario', path: '/configuration' },
   { icon: Settings, label: 'Configuración', path: '/configuration' },
 ];
 
@@ -15,7 +16,7 @@ const Sidebar = ({ isCollapsed }) => {
 
   return (
     <aside className={`app-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
-      <div className="app-sidebar__header">
+      <div className="app-sidebar__header">   
         <div className="app-sidebar__logo-icon">
           <BarChart2 size={24} strokeWidth={2.5} />
         </div>
