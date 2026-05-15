@@ -1,26 +1,25 @@
 import React from 'react';
-import { Home, BarChart2, Users, Settings, LogOut, MessageCircleMoreIcon, FolderKanban } from 'lucide-react';
+import { Home, BarChart2, Users, Settings, LogOut, MessageCircleMoreIcon, FolderKanban, Calendar } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import "../../App.css"
 
 const menuItems = [
   { icon: Home, label: 'Dashboard', path: '/dashboard' },
   { icon: FolderKanban, label: 'Proyectos', path: '/proyectos' },
   { icon: MessageCircleMoreIcon, label: 'Chat', path: '/mensajes' },
-  { icon: Settings, label: 'Calendario', path: '/configuration' },
+  { icon: Calendar, label: 'Calendario', path: '/calendario' },
   { icon: Settings, label: 'Configuración', path: '/configuration' },
 ];
+
 
 const Sidebar = ({ isCollapsed }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
   return (
-    <aside className={`app-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+    <aside style={{backgroundColor: "var(--color-primary"}}
+           className={`app-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="app-sidebar__header">   
-        <div className="app-sidebar__logo-icon">
-          <BarChart2 size={24} strokeWidth={2.5} />
-        </div>
-        <span className="app-sidebar__logo-text" onClick={ '/'}>SOLUTIONS</span>
       </div>
 
       <nav className="app-sidebar__nav">
@@ -33,6 +32,7 @@ const Sidebar = ({ isCollapsed }) => {
               key={index}
               className={`app-sidebar__item ${isActive ? 'active' : ''}`}
               onClick={() => navigate(item.path)}
+              style={{color: "var(--color-blanco"}}
             >
               <span className="app-sidebar__item-icon">
                 <Icon size={22} />
@@ -49,7 +49,7 @@ const Sidebar = ({ isCollapsed }) => {
           <span className="app-sidebar__item-icon">
             <LogOut size={22} />
           </span>
-          <span className="app-sidebar__logout-text">Salir</span>
+          <span className="app-sidebar__logout-text">Cerrar sesion</span>
         </button>
       </div>
     </aside>
