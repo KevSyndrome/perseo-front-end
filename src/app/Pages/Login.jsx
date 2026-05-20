@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Card, CardContent, TextField, Button, Typography, Divider } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { FcAcceptDatabase } from "react-icons/fc";
-import "../../App.css" 
+import "../../styles/branding.css" 
 
 
 const LoginModal = () => {

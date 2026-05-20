@@ -1,9 +1,11 @@
 :root {
-  --primary: #3b82f6;
-  --primary-light: #60a5fa;
-  --primary-dark: #2563eb;
-  --secondary: #64748b;
-  --secondary-light: #94a3b8;
+  --color-primary: #131C26;
+  --color-secondary: #13171C;
+  --color-terciario: #8DBFC4;
+  --color-selection: #15878E;
+  --color-blanco: #FFFFFF;
+  --color-negro: #000000;
+
   --accent: #f59e0b;
   --success: #22c55e;
   --warning: #eab308;
@@ -48,7 +50,7 @@
 
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: var(--bg-main);
+  background-color: var(--color-blanco);
   color: var(--text-primary);
   min-height: 100vh;
 }
@@ -64,14 +66,13 @@ body {
   left: 0;
   right: 0;
   height: var(--navbar-height);
-  background-color: var(--bg-navbar);
+  background-color: var(--color-blanco);
   display: flex;
   align-items: center;
   padding: 0 1.5rem;
   z-index: 100;
   transition: left var(--transition-slow);
   border-bottom: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
 }
 
 .app-navbar.sidebar-open {
@@ -93,7 +94,7 @@ body {
   align-items: center;
   justify-content: center;
   transition: background-color var(--transition-fast);
-  margin-right: 0.75rem;
+  margin-right: 0.15rem;
 }
 
 .app-navbar__toggle-btn:hover {
@@ -124,14 +125,6 @@ body {
   flex: 1;
 }
 
-.app-navbar__search {
-  display: flex;
-  align-items: center;
-  background-color: var(--bg-main);
-  border-radius: var(--radius-md);
-  padding: 0.5rem 1rem;
-  transition: background-color var(--transition-fast);
-}
 
 .app-navbar__search:hover {
   background-color: var(--border-color);
@@ -193,7 +186,7 @@ body {
   display: flex;
   flex-direction: column;
   padding: 1.5rem 1rem;
-  z-index: 90;
+  z-index: 110;
   transition: width var(--transition-slow), transform var(--transition-slow);
   overflow: hidden;
   box-shadow: var(--shadow-lg);
@@ -201,7 +194,7 @@ body {
 }
 
 .app-sidebar.collapsed {
-  width: var(--sidebar-collapsed);
+  width: 85px;
 }
 
 .app-sidebar__header {
@@ -209,8 +202,9 @@ body {
   align-items: center;
   gap: 1rem;
   padding: 0.5rem;
-  padding-top: 4rem;
-  margin-bottom: 2rem;
+  padding-top: 1rem;  
+  margin-bottom: 1.5rem;
+  height: var(--navbar-height);
 }
 
 .app-sidebar__logo-icon {
@@ -278,7 +272,7 @@ body {
   border-radius: var(--radius-lg);
   color: var(--text-secondary);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 1000;
   font-size: 0.9375rem;
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -296,6 +290,8 @@ body {
 }
 
 .app-sidebar__item.active {
+  font-weight: 900px;
+  font-size: 0.9375rem;
   background-color: rgba(59, 130, 246, 0.12);
   color: var(--primary);
 }
@@ -444,4 +440,26 @@ body {
   font-weight: 600;
   color: var(--text-primary);
   font-size: 0.875rem;
+}
+
+
+.app-sidebar__hamburger {
+  position: fixed;
+  top: 1rem;
+  left: 270px;
+  z-index: 120;
+  color: var(--color-negro);
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem 0.4rem;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: left var(--transition-slow), background-color var(--transition-fast);
+  box-shadow: var(--shadow-md);
+}
+
+.app-sidebar__hamburger.collapsed {
+  left: 90px;
 }

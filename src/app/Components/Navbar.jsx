@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Search, Bell, Settings, User, HelpCircle, LogOut, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import "../../App.css"
+import "../../styles/branding.css"
 
 const Navbar = ({ sidebarOpen, sidebarCollapsed, onToggleSidebar }) => {
   const navigate = useNavigate();
@@ -18,16 +18,14 @@ const Navbar = ({ sidebarOpen, sidebarCollapsed, onToggleSidebar }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = () => {  
     setDropdownOpen(false);
     navigate("/login");
   };
 
   return (
-    <nav className={`app-navbar ${sidebarOpen ? 'sidebar-open' : ''} ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-      <button className="app-navbar__toggle-btn" onClick={onToggleSidebar}>
-        <Menu size={30} />
-      </button>
+    <nav elevation={0} style={{backgroundColor: "var(--color-blanco)"}} className={`app-navbar ${sidebarOpen ? 'sidebar-open' : ''} ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+      
 
 
 
@@ -35,7 +33,7 @@ const Navbar = ({ sidebarOpen, sidebarCollapsed, onToggleSidebar }) => {
 
      
 
-      <button className="app-navbar__icon-btn">
+      <button style={{Color: "var(--color-negro)"}}className="app-navbar__icon-btn">
         <Bell size={30} />
       </button>
 

@@ -1,7 +1,7 @@
 import React from 'react';
-import { Home, BarChart2, Users, Settings, LogOut, MessageCircleMoreIcon, FolderKanban, Calendar } from 'lucide-react';
+import { Home, Settings, LogOut, MessageCircleMoreIcon, FolderKanban, Calendar, Menu } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import "../../App.css"
+import "../../styles/branding.css"
 
 const menuItems = [
   { icon: Home, label: 'Dashboard', path: '/dashboard' },
@@ -11,48 +11,56 @@ const menuItems = [
   { icon: Settings, label: 'Configuración', path: '/configuration' },
 ];
 
-
-const Sidebar = ({ isCollapsed }) => {
+const Sidebar = ({ isCollapsed, onToggleSidebar }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
   return (
-    <aside style={{backgroundColor: "var(--color-primary"}}
-           className={`app-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
-      <div className="app-sidebar__header">   
-      </div>
+    <>
+      <aside
+        style={{ backgroundColor: "var(--color-primary)" }}
+        className={`app-sidebar ${isCollapsed ? 'collapsed' : ''}`}
+      >
+        <div className="app-sidebar__header" />
 
-      <nav className="app-sidebar__nav">
-        {menuItems.map((item, index) => {
-          const Icon = item.icon;
-          const isActive = location.pathname === item.path;
+        <nav className="app-sidebar__nav">
+          {menuItems.map((item, index) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.path;
+            return (
+              <button
+                key={index}
+                className={`app-sidebar__item ${isActive ? 'active' : ''}`}
+                onClick={() => navigate(item.path)}
+                style={{ color: "var(--color-blanco)" }}
+              >
+                <span className="app-sidebar__item-icon">
+                  <Icon size={22} />
+                </span>
+                <span className="app-sidebar__item-text">{item.label}</span>
+                <span className="app-sidebar__item-tooltip">{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
 
-          return (
-            <button
-              key={index}
-              className={`app-sidebar__item ${isActive ? 'active' : ''}`}
-              onClick={() => navigate(item.path)}
-              style={{color: "var(--color-blanco"}}
-            >
-              <span className="app-sidebar__item-icon">
-                <Icon size={22} />
-              </span>
-              <span className="app-sidebar__item-text">{item.label}</span>
-              <span className="app-sidebar__item-tooltip">{item.label}</span>
-            </button>
-          );
-        })}
-      </nav>
+        <div className="app-sidebar__footer">
+          <button className="app-sidebar__logout" onClick={() => navigate('/login')}>
+            <span className="app-sidebar__item-icon">
+              <LogOut size={22} />
+            </span>
+            <span className="app-sidebar__logout-text">Cerrar sesion</span>
+          </button>
+        </div>
+      </aside>
 
-      <div className="app-sidebar__footer">
-        <button className="app-sidebar__logout" onClick={() => navigate('/login')}>
-          <span className="app-sidebar__item-icon">
-            <LogOut size={22} />
-          </span>
-          <span className="app-sidebar__logout-text">Cerrar sesion</span>
-        </button>
-      </div>
-    </aside>
+      <button
+        className={`app-sidebar__hamburger ${isCollapsed ? 'collapsed' : ''}`}
+        onClick={onToggleSidebar}
+      >
+        <Menu size={22} />
+      </button>
+    </>
   );
 };
 
