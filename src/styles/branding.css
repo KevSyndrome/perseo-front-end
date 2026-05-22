@@ -147,7 +147,7 @@ body {
 .app-navbar__icon-btn {
   background: transparent;
   border: none;
-  color: var(--primary);
+  color: var(--color-negro);
   padding: 0.5rem;
   cursor: pointer;
   border-radius: var(--radius-md);
@@ -400,9 +400,6 @@ body {
   top: 100%;
   right: 0;
   margin-top: 0.5rem;
-  background-color: var(--bg-card);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xl);
   min-width: 200px;
   padding: 0.5rem;
   z-index: 200;

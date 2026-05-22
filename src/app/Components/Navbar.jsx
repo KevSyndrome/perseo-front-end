@@ -25,14 +25,7 @@ const Navbar = ({ sidebarOpen, sidebarCollapsed, onToggleSidebar }) => {
 
   return (
     <nav elevation={0} style={{backgroundColor: "var(--color-blanco)"}} className={`app-navbar ${sidebarOpen ? 'sidebar-open' : ''} ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-      
-
-
-
       <div className="app-navbar__spacer" />
-
-     
-
       <button style={{Color: "var(--color-negro)"}}className="app-navbar__icon-btn">
         <Bell size={30} />
       </button>
@@ -46,27 +39,8 @@ const Navbar = ({ sidebarOpen, sidebarCollapsed, onToggleSidebar }) => {
         />
         
         {dropdownOpen && (
-          <div className="app-dropdown">
-            <div className="app-dropdown__header">user</div>
-            <div className="app-dropdown__divider" />
-            <button className="app-dropdown__item" onClick={() => { setDropdownOpen(false); navigate("/profile"); }}>
-              <User size={25} />
-              Perfil
-            </button>
-            <button className="app-dropdown__item" onClick={() => { setDropdownOpen(false); navigate("/configuration"); }}>
-              <Settings size={25} />
-              Configuración
-            </button>
-            <button className="app-dropdown__item" onClick={() => setDropdownOpen(false)}>
-              <HelpCircle size={25} />
-              Ayuda
-            </button>
-            <div className="app-dropdown__divider" />
-            <button className="app-dropdown__item" onClick={handleLogout}>
-              <LogOut size={25} />
-              Cerrar sesión
-            </button>
-          </div>
+          <button className="app-dropdown">
+          </button>
         )}
       </div>
     </nav>
