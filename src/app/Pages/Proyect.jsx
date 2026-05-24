@@ -49,7 +49,8 @@ const Proyect = () => {
 
         <button
           onClick={() => setFilterOpen(true)}
-          className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:border-slate-300 cursor-pointer"
+          className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm 
+          font-medium text-slate-600 transition hover:bg-slate-50 hover:border-slate-300 cursor-pointer"
         >
           <Filter size={16} />
           Filtros
@@ -57,7 +58,8 @@ const Proyect = () => {
 
         <button
           onClick={() => {}}
-          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white transition hover:bg-primary-hover cursor-pointer"
+          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white
+          transition hover:bg-primary-hover cursor-pointer"
         >
           <Plus size={16} />
           <span className="hidden sm:inline">Crear proyecto</span>

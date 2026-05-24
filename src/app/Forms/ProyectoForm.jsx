@@ -1,195 +1,80 @@
-import React, { useState } from "react";
-import {
-  Box,
-  TextField,
-  Button,
-  Typography,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Select,
-  Grid,
-  Avatar,
-} from "@mui/material";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState } from 'react';
+import Modal from '../Modals/CreateProyectoModal';
+import FormField from '../Components/UI/FormField';
+import InputText from '../Components/UI/InputText';
+import InputDate from '../Components/UI/InputDate';
+import TextArea from '../Components/UI/TextArea';
+import ToggleGroup from '../Components/UI/ToggleGroup';
+import ImageUpload from '../Components/UI/ImageUpload';
+import FormActions from '../Components/UI/FormActions';
 
-const ProyectoForm = ({ tipo: tipoInicial = "", onCancel }) => {
-  const [nombre, setNombre] = useState("");
-  const [descripcion, setDescripcion] = useState("");
-  const [fechaInicio, setFechaInicio] = useState("");
-  const [fechaFin, setFechaFin] = useState("");
-  const [tipo, setTipo] = useState(tipoInicial);
+const tipoOptions = [
+  { value: 'Propio', label: 'Propio', icon: '👤' },
+  { value: 'Colaborativo', label: 'Colaborativo', icon: '👥' },
+];
 
-  // LOGO
-  const [logo, setLogo] = useState(null);
+export default function ProyectoForm({ isOpen, onClose }) {
+  const [nombre, setNombre] = useState('');
+  const [descripcion, setDescripcion] = useState('');
+  const [fechaFin, setFechaFin] = useState('');
+  const [tipo, setTipo] = useState('Propio');
   const [logoPreview, setLogoPreview] = useState(null);
 
-  const handleLogoChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return
-    setLogo(file);
+  const handleFile = (file) => {
+    if (!file) return;
     setLogoPreview(URL.createObjectURL(file));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    const formData = new FormData();
-    formData.append("nombre", nombre);
-    formData.append("descripcion", descripcion);
-    formData.append("fechaInicio", fechaInicio);
-    formData.append("fechaFin", fechaFin);
-    formData.append("tipo", tipo);
-    if (logo) formData.append("logo", logo);
-
-    console.log("Proyecto listo para enviar", formData);
+    console.log({ nombre, descripcion, fechaFin, tipo });
   };
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0, y: -30, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 30, scale: 0.98 }}
-        transition={{ duration: 0.35 }}
-      >
-        <Box
-          component="form"
-          onSubmit={handleSubmit}
-          sx={{
-            width: "100%",
-            maxWidth: 720,
-            mx: "auto",
-            p: 6,
-            bgcolor: "#f5f5f5",
-            borderRadius: 3,
-            boxShadow: 4,
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
-          }}
-        >
-          {/* TÍTULO */}
-          <Typography variant="h5" fontWeight="bold" textAlign="center" color="black">
-            Crear Proyecto
-          </Typography>
+    <Modal isOpen={isOpen} onClose={onClose} title="Crear Nuevo Proyecto" width="w-[580px]" height="h-auto">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
-          {/* NOMBRE */}
-          <TextField
-            size="small"
-            label="Nombre del proyecto"
-            fullWidth
+        <FormField label="Nombre" required>
+          <InputText
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
+            placeholder="Eje. Easy Way"
             required
           />
+        </FormField>
 
-          {/* DESCRIPCIÓN */}
-          <TextField
-            size="small"
-            label="Descripción"
-            fullWidth
-            multiline
-            rows={3}
-            value={descripcion}
-            onChange={(e) => setDescripcion(e.target.value)}
-            required
-          />
+        <FormField label="Tipo de proyecto" required>
+          <ToggleGroup options={tipoOptions} value={tipo} onChange={setTipo} />
+        </FormField>
 
-          {/* LOGO */}
-          <Box
-            sx={{
-              flexDirection: "column",
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-            }}
-          >
-            <Avatar
-              src={logoPreview}
-              sx={{
-                width: 72,
-                height: 72,
-                bgcolor: "#e0e0e0",
-                fontSize: 12,
-              }}
-            >
-              {!logoPreview && "LOGO"}
-            </Avatar>
+        <div className="grid grid-cols-2 gap-4 items-stretch">
+          <FormField label="Descripción" required stretch>
+            <TextArea
+              value={descripcion}
+              onChange={(e) => setDescripcion(e.target.value)}
+              placeholder="Añada una breve descripción del proyecto..."
+              required
+            />
+          </FormField>
 
-            <Button variant="outlined" component="label" size="small">
-              Subir logo
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={handleLogoChange}
-              />
-            </Button>
-          </Box>
+          <FormField label="Foto" stretch>
+            <ImageUpload
+              onFile={handleFile}
+              preview={logoPreview}
+              className="h-full min-h-[130px]"
+            />
+          </FormField>
+        </div>
 
-          {/* FECHAS */}
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <TextField
-                size="small"
-                type="date"
-                label="Fecha inicial"
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-                value={fechaInicio}
-                onChange={(e) => setFechaInicio(e.target.value)}
-                required
-              />
-            </Grid>
+        <FormField label="Fecha Final">
+          <div className="w-1/2">
+            <InputDate value={fechaFin} onChange={(e) => setFechaFin(e.target.value)} />
+          </div>
+        </FormField>
 
-            <Grid item xs={12} md={6}>
-              <TextField
-                size="small"
-                type="date"
-                label="Fecha final"
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-                value={fechaFin}
-                onChange={(e) => setFechaFin(e.target.value)}
-                required
-              />
-            </Grid>
-          </Grid>
+        <FormActions onCancel={onClose} submitLabel="Crear Proyecto" />
 
-          {/* TIPO */}
-          <FormControl size="small" fullWidth required>
-            <InputLabel>Tipo de proyecto</InputLabel>
-            <Select
-              value={tipo}
-              label="Tipo de proyecto"
-              onChange={(e) => setTipo(e.target.value)}
-            >
-              <MenuItem value="Colaborativo">Colaborativo</MenuItem>
-              <MenuItem value="Propio">Propio</MenuItem>
-            </Select>
-          </FormControl>
-
-          {/* BOTONES */}
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: 2,
-              mt: 2,
-            }}
-          >
-            <Button size="small" variant="outlined" onClick={onCancel}>
-              Cancelar
-            </Button>
-            <Button size="small" variant="contained" type="submit">
-              Crear proyecto
-            </Button>
-          </Box>
-        </Box>
-      </motion.div>
-    </AnimatePresence>
+      </form>
+    </Modal>
   );
-};
-
-export default ProyectoForm;
+}

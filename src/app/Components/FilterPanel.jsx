@@ -19,7 +19,8 @@ export default function FilterPanel({ isOpen, onClose, children, onFilter }) {
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: -20, opacity: 0, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 shadow-2xl"
+            className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 
+            shadow-2xl"
           >
             <div className="mb-5 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-slate-800">Filtros</h3>
@@ -37,7 +38,8 @@ export default function FilterPanel({ isOpen, onClose, children, onFilter }) {
 
             <button
               onClick={onFilter}
-              className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-2.5 text-sm font-semibold text-white transition hover:bg-primary-hover cursor-pointer"
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-2.5 text-sm font-semibold
+               text-white transition hover:bg-primary-hover cursor-pointer"
             >
               <Search size={16} />
               Aplicar filtros
