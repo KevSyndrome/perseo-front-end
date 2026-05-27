@@ -3,7 +3,8 @@ import React from 'react';
 
 export default function FormActions({ onCancel, submitLabel = "Guardar" }) {
   return (
-    <div className="mt-1 flex justify-end gap-3">
+    <div 
+      className="mt-1 flex justify-end gap-3">
       <button
         type="button"
         onClick={onCancel}
