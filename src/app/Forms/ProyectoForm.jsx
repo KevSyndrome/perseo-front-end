@@ -31,7 +31,7 @@ export default function ProyectoForm({ isOpen, onClose }) {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Crear Nuevo Proyecto" width="w-[580px]" height="h-auto">
+    <Modal isOpen={isOpen} onClose={onClose} title="Crear Nuevo Proyecto" width="w-[680px]" height="h-[490px]">
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
         <FormField label="Nombre" required>

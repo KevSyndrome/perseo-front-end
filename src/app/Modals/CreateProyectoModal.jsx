@@ -12,10 +12,11 @@ export default function CreateProyectoModal({ isOpen, onClose, title, children, 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
+            className="fixed inset-0 z|-40 bg-black/20 backdrop-blur-sm"
           />
 
           <motion.div
+          style={{padding: "20px"}}
             initial={{ y: -20, opacity: 0, scale: 0.95 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: -20, opacity: 0, scale: 0.95 }}
