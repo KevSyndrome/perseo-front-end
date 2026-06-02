@@ -1,116 +1,148 @@
-import React from "react";
-import { Box, Card, CardContent, TextField, Button, Typography, Divider } from "@mui/material";
+import React, { useState } from "react";
+import {
+  Box, Card, CardContent, TextField, Button,
+  Typography, Divider, Alert, CircularProgress
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { FcAcceptDatabase } from "react-icons/fc";
-import "../../styles/branding.css" 
-
+import { loginUsuario } from "../../services/authService";
+import "../../styles/branding.css";
 
 const LoginModal = () => {
   const navigate = useNavigate();
+  const [correo, setCorreo] = useState("");
+  const [contraseña, setContraseña] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    localStorage.setItem('token', 'loggedin'); // ← fix: guarda la sesión
-    navigate("/dashboard");
+  const handleLogin = async () => {
+    setError("");
+    setLoading(true);
+
+    try {
+      const data = await loginUsuario(correo, contraseña);
+
+      // Guarda el token y los datos del usuario
+      localStorage.setItem("token", data.token || data.access_token || "loggedin");
+      localStorage.setItem("usuario", JSON.stringify(data.usuario || data));
+
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err.message || "Credenciales incorrectas");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleRecuperarpass = () => {
-    navigate("/recuperarpass");
+  // Permite hacer login con Enter
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") handleLogin();
   };
 
   return (
     <Box
       sx={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100vh",
-        display: "flex",
-        alignItems: "center",
+        position: "fixed", top: 0, left: 0,
+        width: "100%", height: "100vh",
+        display: "flex", alignItems: "center",
         justifyContent: "center",
-        overflow: "hidden",
         backgroundColor: "var(--color-secondary)",
         flexDirection: "column",
       }}
     >
       <Card
         sx={{
-          width: 450,
-          height: 480,
-          maxWidth: "90%",
-          borderRadius: 3,
-          boxShadow: 8,
-          zIndex: 2,
+          width: 450, maxWidth: "90%",
+          borderRadius: 3, boxShadow: 8,
           backdropFilter: "blur(8px)",
           backgroundColor: "var(--color-primary)",
         }}
       >
         <CardContent sx={{ p: 6 }}>
           <Typography variant="h4" textAlign="center" fontWeight="bold" gutterBottom color="white">
-            INICIO DE SESION
+            INICIO DE SESIÓN
           </Typography>
 
           <Typography variant="body2" textAlign="center" color="var(--color-blanco)" mb={3}>
             Accede a tus proyectos
           </Typography>
 
-          <Divider sx={{ backgroundColor:"var(--color-blanco)", my: 3 }}/>
+          <Divider sx={{ backgroundColor: "var(--color-blanco)", my: 3 }} />
 
-          <Typography variant="body2" textAlign="light" color="var(--color-terciario)" mb={1}>
-            CORREO ELECTRONICO
+          {/* Mensaje de error */}
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+
+          <Typography variant="body2" color="var(--color-terciario)" mb={1}>
+            CORREO ELECTRÓNICO
           </Typography>
 
-          <Box component="form" sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             <TextField
               label="usuario@empresa.com"
               type="email"
               fullWidth
+              value={correo}
+              onChange={(e) => setCorreo(e.target.value)}
+              onKeyDown={handleKeyDown}
               InputLabelProps={{ style: { color: "white" } }}
               sx={{
                 "& .MuiInputBase-input": { color: "white" },
                 "& .MuiOutlinedInput-root": {
                   backgroundColor: "var(--color-secondary)",
                   boxShadow: 8,
-                  "& fieldset": { borderColor: "rgba(255,255,255,0.5)" }
-                }
+                  "& fieldset": { borderColor: "rgba(255,255,255,0.5)" },
+                },
               }}
             />
 
-            <Typography variant="body2" textAlign="light" color="var(--color-terciario)">
+            <Typography variant="body2" color="var(--color-terciario)">
               CONTRASEÑA
             </Typography>
 
             <TextField
               label="* * * * * * * * * * * *"
-              type="password" 
+              type="password"
               fullWidth
+              value={contraseña}
+              onChange={(e) => setContraseña(e.target.value)}
+              onKeyDown={handleKeyDown}
               InputLabelProps={{ style: { color: "white" } }}
               sx={{
                 "& .MuiInputBase-input": { color: "white" },
                 "& .MuiOutlinedInput-root": {
                   backgroundColor: "var(--color-secondary)",
                   boxShadow: 8,
-                  "& fieldset": { borderColor: "rgba(255,255,255,0.5)" }
-                }
+                  "& fieldset": { borderColor: "rgba(255,255,255,0.5)" },
+                },
               }}
             />
 
             <Button
               variant="contained"
               size="large"
-              sx={{ mt: 2, backgroundColor: "var(--color-selection)", "&:hover": { backgroundColor: "#00ACC1" } }}
+              disabled={loading || !correo || !contraseña}
               onClick={handleLogin}
+              sx={{
+                mt: 2,
+                backgroundColor: "var(--color-selection)",
+                
+              }}
             >
-              Iniciar sesion
-            </Button> 
+              {loading ? <CircularProgress size={24} color="inherit" /> : "Iniciar sesión"}
+            </Button>
           </Box>
 
           <Box sx={{ textAlign: "center", mt: 1 }}>
-            <Typography variant="body2" color="rgba(255,255,255,0.7)">
-              <Button variant="text" onClick={handleRecuperarpass} sx={{ color: "var(--color-blanco)" }}>
-                ¿Olvidaste tu contraseña?
-              </Button>
-            </Typography>
+            <Button
+              variant="text"
+              onClick={() => navigate("/recuperarpass")}
+              sx={{ color: "var(--color-blanco)" }}
+            >
+              ¿Olvidaste tu contraseña?
+            </Button>
           </Box>
         </CardContent>
       </Card>

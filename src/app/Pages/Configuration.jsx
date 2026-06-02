@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Pencil, Trash2, Plus, Loader2 } from 'lucide-react';
 import DataTable from '../Components/DataTable';
 import { useBreadcrumb } from '../Components/Breadcrumb';
-import { getData } from '../../api';
+import { getData } from '../../services/api';
 
 export default function Configuration() {
   const [data, setData] = useState([]);
