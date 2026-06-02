@@ -6,18 +6,18 @@ import "../../styles/branding.css"
 
 
 const LoginModal = () => {
-  const navigate = useNavigate(); // Hook para navegación
+  const navigate = useNavigate();
+
   const handleLogin = () => {
-  // Aquí podrías validar usuario/contraseña
-  navigate("/dashboard"); // ruta del Dashboard
-};
+    localStorage.setItem('token', 'loggedin'); // ← fix: guarda la sesión
+    navigate("/dashboard");
+  };
 
   const handleRecuperarpass = () => {
-    navigate("/recuperarpass"); // Redirige al screen de registro
+    navigate("/recuperarpass");
   };
 
   return (
-    
     <Box
       sx={{
         position: "fixed",
@@ -33,8 +33,6 @@ const LoginModal = () => {
         flexDirection: "column",
       }}
     >
-  
-      {/* Card centrado */}
       <Card
         sx={{
           width: 450,
@@ -48,21 +46,6 @@ const LoginModal = () => {
         }}
       >
         <CardContent sx={{ p: 6 }}>
-
-
-       
-        {/*  
-          <Box sx={{ display: "flex", justifyContent: "center"}}>
-            <img
-              src={TaskboardIsotipoOscuro}
-              alt="logo"
-              style={{width: "200px", height: "auto"}}
-            />
-          </Box>
-          */}
-
-
-          
           <Typography variant="h4" textAlign="center" fontWeight="bold" gutterBottom color="white">
             INICIO DE SESION
           </Typography>
@@ -84,22 +67,18 @@ const LoginModal = () => {
               fullWidth
               InputLabelProps={{ style: { color: "white" } }}
               sx={{
-              "& .MuiInputBase-input": {
-                color: "white"
-              },
-              "& .MuiOutlinedInput-root": {
-                backgroundColor: "var(--color-secondary)",
-                boxShadow: 8,
-                "& fieldset": {
-                  borderColor: "rgba(255,255,255,0.5)"
-      }
-    }
-  }}
-/>
+                "& .MuiInputBase-input": { color: "white" },
+                "& .MuiOutlinedInput-root": {
+                  backgroundColor: "var(--color-secondary)",
+                  boxShadow: 8,
+                  "& fieldset": { borderColor: "rgba(255,255,255,0.5)" }
+                }
+              }}
+            />
 
             <Typography variant="body2" textAlign="light" color="var(--color-terciario)">
-            CONTRASEÑA
-          </Typography>
+              CONTRASEÑA
+            </Typography>
 
             <TextField
               label="* * * * * * * * * * * *"
@@ -107,18 +86,14 @@ const LoginModal = () => {
               fullWidth
               InputLabelProps={{ style: { color: "white" } }}
               sx={{
-              "& .MuiInputBase-input": {
-                color: "white"
-              },
-              "& .MuiOutlinedInput-root": {
-                backgroundColor: "var(--color-secondary)",
-                boxShadow: 8,
-                "& fieldset": {
-                  borderColor: "rgba(255,255,255,0.5)"
-      }
-    }
-  }}
-/>
+                "& .MuiInputBase-input": { color: "white" },
+                "& .MuiOutlinedInput-root": {
+                  backgroundColor: "var(--color-secondary)",
+                  boxShadow: 8,
+                  "& fieldset": { borderColor: "rgba(255,255,255,0.5)" }
+                }
+              }}
+            />
 
             <Button
               variant="contained"
@@ -130,7 +105,6 @@ const LoginModal = () => {
             </Button> 
           </Box>
 
-          {/* Mensaje de recuperacion de contraseña */}
           <Box sx={{ textAlign: "center", mt: 1 }}>
             <Typography variant="body2" color="rgba(255,255,255,0.7)">
               <Button variant="text" onClick={handleRecuperarpass} sx={{ color: "var(--color-blanco)" }}>

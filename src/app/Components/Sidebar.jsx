@@ -2,6 +2,8 @@ import React from 'react';
 import { Home, Settings, LogOut, MessageCircleMoreIcon, FolderKanban, Calendar, Menu } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import "../../styles/branding.css"
+import { useState } from 'react';
+import LogoutModal from '../Modals/LogoutModal';
 
 const menuItems = [
   { icon: Home, label: 'Dashboard', path: '/dashboard' },
@@ -14,6 +16,7 @@ const menuItems = [
 const Sidebar = ({ isCollapsed, onToggleSidebar }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [logoutOpen, setLogoutOpen] = useState(false);
 
   return (
     <>
@@ -44,8 +47,12 @@ const Sidebar = ({ isCollapsed, onToggleSidebar }) => {
           })}
         </nav>
 
+        {/* ← Cambiado: ya no navega directo, abre el modal */}
         <div className="app-sidebar__footer">
-          <button className="app-sidebar__logout" onClick={() => navigate('/login')}>
+          <button
+            className="app-sidebar__logout"
+            onClick={() => setLogoutOpen(true)}
+          >
             <span className="app-sidebar__item-icon">
               <LogOut size={22} />
             </span>
@@ -60,6 +67,12 @@ const Sidebar = ({ isCollapsed, onToggleSidebar }) => {
       >
         <Menu size={22} />
       </button>
+
+      {/* ← Agregado: modal fuera del aside para que el overlay cubra toda la pantalla */}
+      <LogoutModal
+        isOpen={logoutOpen}
+        onClose={() => setLogoutOpen(false)}
+      />
     </>
   );
 };

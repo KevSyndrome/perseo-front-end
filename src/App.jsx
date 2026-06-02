@@ -11,6 +11,12 @@ import Configuration from "./app/Pages/Configuration";
 import Task from "./app/Pages/Task";
 import Mensajes from "./app/Pages/Mensajes";
 
+// ← Agregado: guarda la ruta, si no hay sesión manda al login
+const PrivateRoute = ({ children }) => {
+  const isLoggedIn = localStorage.getItem('token');
+  return isLoggedIn ? children : <Navigate to="/login" replace />;
+};
+
 function App() {
   return (
     <BrowserRouter>
@@ -18,69 +24,80 @@ function App() {
         {/* Login SIN layout */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+
         {/* Rutas protegidas CON layout */}
         <Route
           path="/dashboard"
           element={
-            <Layout>
-              <Dashboard />
-            </Layout>}/>
-          
-          <Route
+            <PrivateRoute>
+              <Layout><Dashboard /></Layout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
           path="/calendar"
           element={
-            <Layout>
-              <Calendar />
-            </Layout>}/>
-          
-          <Route
+            <PrivateRoute>
+              <Layout><Calendar /></Layout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
           path="/profile"
           element={
-            <Layout>
-              <Profile />
-            </Layout>}/>
+            <PrivateRoute>
+              <Layout><Profile /></Layout>
+            </PrivateRoute>
+          }
+        />
 
+        <Route
+          path="task/:taskId"
+          element={
+            <PrivateRoute>
+              <Layout><Task /></Layout>
+            </PrivateRoute>
+          }
+        />
 
-            <Route 
-            path="task/:taskId" 
-            element={<Layout><Task />
-            </Layout>} />
-
-          
-          
-
-
-          <Route
+        <Route
           path="/configuration"
           element={
-            <Layout>
-              <Configuration />
-            </Layout>}/>
-          
-          <Route path= "/proyectos"  element={
-            <Layout>
-              <Proyect />
-            </Layout>
-          }/>
+            <PrivateRoute>
+              <Layout><Configuration /></Layout>
+            </PrivateRoute>
+          }
+        />
 
-          <Route
+        <Route
+          path="/proyectos"
+          element={
+            <PrivateRoute>
+              <Layout><Proyect /></Layout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
           path="/sprint"
           element={
-            <Layout>
-         <Sprint />
-          </Layout>
-            }     
-          />
+            <PrivateRoute>
+              <Layout><Sprint /></Layout>
+            </PrivateRoute>
+          }
+        />
 
-          <Route
-            path="/mensajes"
-            element={
-              <Layout>
-                <Mensajes/>
-              </Layout>
-            }
-            />
-            
+        <Route
+          path="/mensajes"
+          element={
+            <PrivateRoute>
+              <Layout><Mensajes /></Layout>
+            </PrivateRoute>
+          }
+        />
+
         {/* Redirección */}
         <Route path="" element={<Navigate to="/login" />} />
       </Routes>
