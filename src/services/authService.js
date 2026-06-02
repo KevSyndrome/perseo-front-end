@@ -1,4 +1,4 @@
-const BASE_URL = "https://backend-tasks-production-1f22.up.railway.app";
+import { BASE_URL } from "./api";
 
 export const loginUsuario = async (correo, contraseña) => {
   const response = await fetch(`${BASE_URL}/usuarios/login`, {
@@ -6,16 +6,14 @@ export const loginUsuario = async (correo, contraseña) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ correo, contraseña }),
   });
-
   const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.detail || "Error al iniciar sesión");
-  }
-
-  // Guardamos token y datos del usuario en localStorage
+  if (!response.ok) throw new Error(data.detail || "Error al iniciar sesión");
   localStorage.setItem("token", data.data.access_token);
   localStorage.setItem("usuario", JSON.stringify(data.data.usuario));
-
   return data.data.usuario;
+};
+
+export const logoutUsuario = () => {
+  localStorage.clear();
+  sessionStorage.clear();
 };

@@ -20,7 +20,7 @@ const Dashboard = () => {
       <Breadcrumb />
 
       <h1 style={{ color: "var(--color-primary)" }} className="text-2xl font-bold text-slate-800">
-        Bienvenido, {usuario.nombre} {usuario.apellido_paterno}
+        Bienvenido, {usuario.nombre} {usuario.apellido_paterno} {usuario.apellido_materno}
       </h1>
       <br />
 

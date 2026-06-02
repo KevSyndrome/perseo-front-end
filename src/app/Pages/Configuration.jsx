@@ -1,109 +1,68 @@
-import { useState, useMemo, useEffect } from 'react';
-import { Pencil, Trash2, Plus, Loader2 } from 'lucide-react';
-import DataTable from '../Components/DataTable';
+import { useState } from 'react';
 import { useBreadcrumb } from '../Components/Breadcrumb';
-import { getData } from '../../services/api';
+import Breadcrumb from '../Components/Breadcrumb';
+import UsuariosTab from '../Tabs/UsuariosTab';
+import CargosTab from '../Tabs/CargosTab';
+import PermisosTab from '../Tabs/PermisosTab';
+import PermisoCargoTab from '../Tabs/PermisoCargoTab';
+
+const ADMIN_PERMISO_CARGO_ID = "c7a1e832-1633-4b99-9265-2e2b0837823e";
+
+const tabs = ["Usuarios", "Cargos", "Permisos", "Asignar Permisos (Matriz)"];
 
 export default function Configuration() {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState("Usuarios");
+
+  const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
+  const esAdmin = usuario.permiso_cargo_id === ADMIN_PERMISO_CARGO_ID;
 
   useBreadcrumb([
     { label: 'Dashboard', path: '/dashboard' },
     { label: 'Configuración' },
   ]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const result = await getData();
-        setData(Array.isArray(result.data) ? result.data : []);
-      } catch (err) {
-        setError('Error al cargar los cargos');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  const columns = useMemo(
-    () => [
-      {
-        accessorKey: 'nombre',
-        header: 'Nombre',
-        cell: (info) => (
-          <span className="font-medium text-slate-800">{info.getValue()}</span>
-        ),
-      },
-      {
-        id: 'acciones',
-        header: 'Acciones',
-        cell: ({ row }) => (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => alert(`Editar: ${row.original.nombre}`)}
-              className="rounded-lg p-1.5 text-slate-400 transition hover:bg-blue-50 hover:text-blue-500 cursor-pointer"
-            >
-              <Pencil size={16} />
-            </button>
-            <button
-              onClick={() => setData((prev) => prev.filter((d) => d.id !== row.original.id))}
-              className="rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-500 cursor-pointer"
-            >
-              <Trash2 size={16} />
-            </button>
-          </div>
-        ),
-      },
-    ],
-    []
-  );
-
-  if (loading) {
+  if (!esAdmin) {
     return (
       <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-slate-500">
-        <Loader2 size={32} className="animate-spin text-primary" />
-        <p className="text-sm font-medium">Cargando cargos...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-red-500">
-        <p className="text-lg font-semibold">{error}</p>
-        <button
-          onClick={() => window.location.reload()}
-          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition hover:bg-primary-hover cursor-pointer"
-        >
-          Reintentar
-        </button>
+        <p className="text-lg font-semibold">No tienes permisos para acceder a esta sección.</p>
       </div>
     );
   }
 
   return (
     <div className="flex h-full w-full flex-col gap-5">
+      <Breadcrumb />
+
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Cargos</h1>
-          <p className="text-sm text-slate-500">Gestiona los roles del sistema</p>
+          <h1 className="text-2xl font-bold text-slate-800">Configuración de Sistema: Gestión de Usuarios</h1>
+          <p className="text-sm text-slate-500">Configura usuarios, roles y permisos de acceso</p>
         </div>
-        <button
-          onClick={() => alert('Crear cargo')}
-          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white transition hover:bg-primary-hover cursor-pointer"
-        >
-          <Plus size={16} />
-          Nuevo cargo
-        </button>
       </div>
 
-      <DataTable data={data} columns={columns} pageSize={5} />
+      {/* Tabs */}
+      <div className="flex border-b border-slate-200 gap-6">
+        {tabs.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`pb-2 text-sm font-medium transition border-b-2 cursor-pointer ${
+              activeTab === tab
+                ? "border-slate-800 text-slate-800"
+                : "border-transparent text-slate-400 hover:text-slate-600"
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* Contenido del tab activo */}
+      {activeTab === "Usuarios" && <UsuariosTab />}
+      {activeTab === "Cargos" && <CargosTab />}
+      {activeTab === "Permisos" && <PermisosTab />}
+      {activeTab === "Asignar Permisos (Matriz)" && <PermisoCargoTab />}
     </div>
   );
 }
