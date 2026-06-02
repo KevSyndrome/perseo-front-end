@@ -32,7 +32,7 @@ const LogoutForm = ({ onConfirm, onCancel }) => {
           <button
             onClick={onConfirm}
             className="w-64 h-24 rounded-xl text-white text-2xl font-semibold transition"
-            style={{ backgroundColor: "var(--color-error)" }}
+            style={{ backgroundColor: "var(--error)" }}
           >
             Cerrar
           </button>
