@@ -15,16 +15,14 @@ const LoginModal = () => {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
+    if (!correo || !contraseña) return;
     setError("");
     setLoading(true);
 
     try {
       const data = await loginUsuario(correo, contraseña);
-
-      // Guarda el token y los datos del usuario
       localStorage.setItem("token", data.token || data.access_token || "loggedin");
       localStorage.setItem("usuario", JSON.stringify(data.usuario || data));
-
       navigate("/dashboard");
     } catch (err) {
       setError(err.message || "Credenciales incorrectas");
@@ -33,7 +31,6 @@ const LoginModal = () => {
     }
   };
 
-  // Permite hacer login con Enter
   const handleKeyDown = (e) => {
     if (e.key === "Enter") handleLogin();
   };
@@ -68,7 +65,6 @@ const LoginModal = () => {
 
           <Divider sx={{ backgroundColor: "var(--color-blanco)", my: 3 }} />
 
-          {/* Mensaje de error */}
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {error}
@@ -123,15 +119,17 @@ const LoginModal = () => {
             <Button
               variant="contained"
               size="large"
-              disabled={loading || !correo || !contraseña}
               onClick={handleLogin}
               sx={{
                 mt: 2,
                 backgroundColor: "var(--color-selection)",
-                
+                "&:hover": { backgroundColor: "#00ACC1" },
               }}
             >
-              {loading ? <CircularProgress size={24} color="inherit" /> : "Iniciar sesión"}
+              {loading
+                ? <CircularProgress size={24} sx={{ color: "white" }} />
+                : "Iniciar sesión"
+              }
             </Button>
           </Box>
 
