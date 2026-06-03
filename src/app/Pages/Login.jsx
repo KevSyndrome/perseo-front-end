@@ -55,6 +55,16 @@ const LoginModal = () => {
         }}
       >
         <CardContent sx={{ p: 6 }}>
+
+          {/* Logo */}
+          <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+            <img
+              src="/IsotipoPrometeoColoresOscuros.png"
+              alt="Logo Prometeo"
+              style={{ width: 80, height: 80, objectFit: "contain" }}
+            />
+          </Box>
+
           <Typography variant="h4" textAlign="center" fontWeight="bold" gutterBottom color="white">
             INICIO DE SESIÓN
           </Typography>

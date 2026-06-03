@@ -4,7 +4,6 @@ import Dashboard from "./app/Pages/Dashboard";
 import Login from "./app/Pages/Login";
 import Proyect from "./app/Pages/Proyect";
 import Sprint from "./app/Pages/Sprint";
-import Register from "./app/Pages/Register";
 import Calendar from "./app/Pages/Calendar";
 import Profile from "./app/Pages/Profile";
 import Configuration from "./app/Pages/Configuration";
@@ -23,7 +22,6 @@ function App() {
       <Routes>
         {/* Login SIN layout */}
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
 
         {/* Rutas protegidas CON layout */}
         <Route
@@ -36,7 +34,7 @@ function App() {
         />
 
         <Route
-          path="/calendar"
+          path="/calendario"
           element={
             <PrivateRoute>
               <Layout><Calendar /></Layout>

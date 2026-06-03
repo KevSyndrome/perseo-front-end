@@ -13,6 +13,8 @@ const menuItems = [
   { icon: Settings, label: 'Configuración', path: '/configuration' },
 ];
 
+
+
 const Sidebar = ({ isCollapsed, onToggleSidebar }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -24,7 +26,18 @@ const Sidebar = ({ isCollapsed, onToggleSidebar }) => {
         style={{ backgroundColor: "var(--color-primary)" }}
         className={`app-sidebar ${isCollapsed ? 'collapsed' : ''}`}
       >
-        <div className="app-sidebar__header" />
+        <div className="app-sidebar__header" style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 12px" }}>
+            <img
+            src="/IsotipoPrometeoColoresOscuros.png"
+            alt="Logo Prometeo"
+            style={{ width: 45, height: 45, objectFit: "contain", flexShrink: 0 }}
+          />
+          {!isCollapsed && (
+            <span style={{ color: "var(--color-blanco)", fontWeight: "bold", fontSize: 25, whiteSpace: "nowrap" }}>
+              Prometeo
+            </span>
+          )}
+        </div>
 
         <nav className="app-sidebar__nav">
           {menuItems.map((item, index) => {
