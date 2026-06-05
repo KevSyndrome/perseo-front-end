@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Trash2, Plus, Loader2 } from 'lucide-react';
 import { getCargos } from '../../services/cargosService';
-import { getPermisos } from '../../services/permisosService';
 import { getPermisosCargos, crearPermisoCargo, eliminarPermisoCargo } from '../../services/permisoCargoService';
 
 export default function PermisoCargoTab() {

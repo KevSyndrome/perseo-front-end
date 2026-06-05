@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Trash2, Plus, Loader2 } from 'lucide-react';
 import DataTable from '../Components/DataTable';
-import { getPermisos, crearPermiso, eliminarPermiso } from '../../services/permisosService';
 
 export default function PermisosTab() {
   const [data, setData] = useState([]);
