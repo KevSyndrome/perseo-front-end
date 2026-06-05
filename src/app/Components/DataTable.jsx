@@ -37,7 +37,7 @@ export default function DataTable({ data, columns, pageSize = 5 }) {
                   >
                     {header.isPlaceholder ? null : (
                       <button
-                        className={`flex items-center gap-1 cursor-pointer select-none ${header.column.getCanSort() ? 'hover:text-primary' : ''}`}
+                        className={`flex items-center gap-1 cursor-pointer select-none px-2 py-1 rounded-md transition hover:bg-slate-100 ${header.column.getCanSort() ? 'hover:text-primary' : ''}`}
                         onClick={header.column.getToggleSortingHandler()}
                         disabled={!header.column.getCanSort()}
                       >

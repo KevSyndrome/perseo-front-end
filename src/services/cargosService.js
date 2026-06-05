@@ -1,19 +1,23 @@
-import { BASE_URL } from "./api";
+import { BASE_URL, getHeaders } from "./api";
 
-export const getCargos = async () => {
-  const response = await fetch(`${BASE_URL}/cargos/`);
+export const getCargos = async (page = 1, limit = 10) => {
+  const response = await fetch(`${BASE_URL}/cargos/?page=${page}&limit=${limit}`, {
+    headers: getHeaders(),
+  });
   return await response.json();
 };
 
 export const getCargoPorId = async (id) => {
-  const response = await fetch(`${BASE_URL}/cargos/${id}`);
+  const response = await fetch(`${BASE_URL}/cargos/${id}`, {
+    headers: getHeaders(),
+  });
   return await response.json();
 };
 
 export const crearCargo = async (nombre) => {
   const response = await fetch(`${BASE_URL}/cargos/`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getHeaders(),
     body: JSON.stringify({ nombre }),
   });
   return await response.json();
@@ -22,13 +26,16 @@ export const crearCargo = async (nombre) => {
 export const actualizarCargo = async (id, nombre) => {
   const response = await fetch(`${BASE_URL}/cargos/${id}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: getHeaders(),
     body: JSON.stringify({ nombre }),
   });
   return await response.json();
 };
 
 export const eliminarCargo = async (id) => {
-  const response = await fetch(`${BASE_URL}/cargos/${id}`, { method: "DELETE" });
+  const response = await fetch(`${BASE_URL}/cargos/${id}`, {
+    method: "DELETE",
+    headers: getHeaders(),
+  });
   return response.ok;
 };

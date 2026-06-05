@@ -20,9 +20,10 @@ const LoginModal = () => {
     setLoading(true);
 
     try {
-      const data = await loginUsuario(correo, contraseña);
-      localStorage.setItem("token", data.token || data.access_token || "loggedin");
-      localStorage.setItem("usuario", JSON.stringify(data.usuario || data));
+      const payload = await loginUsuario(correo, contraseña);
+      if (!payload.access_token) {
+        throw new Error("No se recibió token de autenticación");
+      }
       navigate("/dashboard");
     } catch (err) {
       setError(err.message || "Credenciales incorrectas");

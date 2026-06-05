@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Home, Settings, LogOut, MessageCircleMoreIcon, FolderKanban, Calendar, Menu } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import "../../styles/branding.css"
-import { useState } from 'react';
 import LogoutModal from '../Modals/LogoutModal';
 
 const menuItems = [
@@ -19,6 +18,31 @@ const Sidebar = ({ isCollapsed, onToggleSidebar }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Escuchar cambios en mensajes no leídos
+  useEffect(() => {
+    const updateUnread = () => {
+      const count = parseInt(localStorage.getItem('unread_messages') || '0');
+      setUnreadCount(count);
+    };
+    updateUnread();
+    window.addEventListener('storage', updateUnread);
+    // También actualizar cada 5 segundos como fallback
+    const interval = setInterval(updateUnread, 5000);
+    return () => {
+      window.removeEventListener('storage', updateUnread);
+      clearInterval(interval);
+    };
+  }, []);
+
+  // Resetear contador al entrar a mensajes
+  useEffect(() => {
+    if (location.pathname === '/mensajes') {
+      localStorage.setItem('unread_messages', '0');
+      setUnreadCount(0);
+    }
+  }, [location.pathname]);
 
   return (
     <>
@@ -52,6 +76,11 @@ const Sidebar = ({ isCollapsed, onToggleSidebar }) => {
               >
                 <span className="app-sidebar__item-icon">
                   <Icon size={22} />
+                  {item.label === 'Chat' && unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
                 </span>
                 <span className="app-sidebar__item-text">{item.label}</span>
                 <span className="app-sidebar__item-tooltip">{item.label}</span>

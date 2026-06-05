@@ -8,9 +8,10 @@ export const loginUsuario = async (correo, contraseña) => {
   });
   const data = await response.json();
   if (!response.ok) throw new Error(data.detail || "Error al iniciar sesión");
-  localStorage.setItem("token", data.data.access_token);
-  localStorage.setItem("usuario", JSON.stringify(data.data.usuario));
-  return data.data.usuario;
+  const payload = data.data;
+  localStorage.setItem("token", payload.access_token);
+  localStorage.setItem("usuario", JSON.stringify(payload.usuario));
+  return payload;
 };
 
 export const logoutUsuario = () => {
