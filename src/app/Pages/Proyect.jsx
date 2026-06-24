@@ -7,18 +7,22 @@ import FilterPanel from "../Components/FilterPanel";
 import Input from "../Components/Input";
 import ViewToggle from "../Components/ViewToggle";
 import ProjectCard from "../Components/ProjectCard";
+import ProyectoForm from "../Forms/ProyectoForm";
+import UnirseModal from "../Modals/UnirseModal";
 
 const sampleProjects = [
-  { id: 1, name: "Task Board App", description: "Plataforma de gestiÃ³n de tareas con sprints y equipos", owner: "Zio Zukey", image: "", status: "activo", startDate: "01/2026" },
-  { id: 2, name: "E-commerce API", description: "Backend para tienda online con pagos y envÃ­os", owner: "Zio Zukey", image: "", status: "activo", startDate: "03/2026" },
-  { id: 3, name: "RediseÃ±o Web", description: "ActualizaciÃ³n completa del diseÃ±o corporativo", owner: "Ana G.", image: "", status: "pendiente", startDate: "06/2026" },
-  { id: 4, name: "App MÃ³vil", description: "Desarrollo de app nativa para iOS y Android", owner: "Carlos R.", image: "", status: "activo", startDate: "02/2026" },
+  { id: 1, name: "Task Board App", description: "Plataforma de gestión de tareas con sprints y equipos", owner: "Zio Zukey", image: "", status: "activo", startDate: "01/2026" },
+  { id: 2, name: "E-commerce API", description: "Backend para tienda online con pagos y envíos", owner: "Zio Zukey", image: "", status: "activo", startDate: "03/2026" },
+  { id: 3, name: "Rediseño Web", description: "Actualización completa del diseño corporativo", owner: "Ana G.", image: "", status: "pendiente", startDate: "06/2026" },
+  { id: 4, name: "App Móvil", description: "Desarrollo de app nativa para iOS y Android", owner: "Carlos R.", image: "", status: "activo", startDate: "02/2026" },
 ];
 
 const Proyect = () => {
   const [mode, setMode] = useState("propios");
   const [view, setView] = useState("grid");
   const [filterOpen, setFilterOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [unirseOpen, setUnirseOpen] = useState(false);
 
   useBreadcrumb([
     { label: "Dashboard", path: "/dashboard" },
@@ -56,13 +60,16 @@ const Proyect = () => {
           Filtros
         </button>
 
+        {/* ← Cambiado: abre form según el modo activo */}
         <button
-          onClick={() => {}}
+          onClick={() => mode === 'propios' ? setCreateOpen(true) : setUnirseOpen(true)}
           className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white
           transition hover:bg-primary-hover cursor-pointer"
         >
           <Plus size={16} />
-          <span className="hidden sm:inline">Crear proyecto</span>
+          <span className="hidden sm:inline">
+            {mode === 'propios' ? 'Crear proyecto' : 'Unirse a proyecto'}
+          </span>
         </button>
       </div>
 
@@ -103,6 +110,17 @@ const Proyect = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ← Agregado: modales al final */}
+      <ProyectoForm
+        isOpen={createOpen}
+        onClose={() => setCreateOpen(false)}
+      />
+
+      <UnirseModal
+        isOpen={unirseOpen}
+        onClose={() => setUnirseOpen(false)}
+      />
     </div>
   );
 };
