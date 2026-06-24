@@ -5,12 +5,13 @@ import ProjectCarousel from "../Components/ProjectCarousel";
 import "../../styles/branding.css";
 import React, { useState } from "react";
 import ProyectoForm from "../Forms/ProyectoForm";
+import UnirseModal from '../Modals/UnirseModal'; 
 
 const Dashboard = () => {
   const [createOpen, setCreateOpen] = useState(false);
+  const [unirseOpen, setUnirseOpen] = useState(false); 
   const projects = [];
 
-  // Lee el usuario guardado al hacer login
   const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
 
   useBreadcrumb([{ label: "Dashboard" }]);
@@ -36,7 +37,7 @@ const Dashboard = () => {
             icon={<Link2 size={36} />}
             label="Unirse al proyecto"
             color="var(--color-selection)"
-            onClick={() => console.log("Unirse al proyecto")}
+            onClick={() => setUnirseOpen(true)} // ← 3. console.log reemplazado
           />
 
           <Card
@@ -53,6 +54,11 @@ const Dashboard = () => {
       <ProyectoForm
         isOpen={createOpen}
         onClose={() => setCreateOpen(false)}
+      />
+
+      <UnirseModal  // ← 4. Modal agregado
+        isOpen={unirseOpen}
+        onClose={() => setUnirseOpen(false)}
       />
     </div>
   );
