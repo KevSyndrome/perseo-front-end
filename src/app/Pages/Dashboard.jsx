@@ -3,18 +3,31 @@ import Breadcrumb, { useBreadcrumb } from "../Components/Breadcrumb";
 import Card from "../Components/Card";
 import ProjectCarousel from "../Components/ProjectCarousel";
 import "../../styles/branding.css";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ProyectoForm from "../Forms/ProyectoForm";
-import UnirseModal from '../Modals/UnirseModal'; 
+import UnirseModal from '../Modals/UnirseModal';
+import { getProyectos } from "../../services/proyectoService";
 
 const Dashboard = () => {
   const [createOpen, setCreateOpen] = useState(false);
-  const [unirseOpen, setUnirseOpen] = useState(false); 
-  const projects = [];
+  const [unirseOpen, setUnirseOpen] = useState(false);
+  const [proyectosActivos, setProyectosActivos] = useState(0);
 
   const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
 
   useBreadcrumb([{ label: "Dashboard" }]);
+
+  useEffect(() => {
+    getProyectos()
+      .then((data) => {
+        const lista = data?.data || data || [];
+        const activos = lista.filter(
+          (p) => p.status?.nombre?.toLowerCase() === 'activo'
+        );
+        setProyectosActivos(activos.length);
+      })
+      .catch(() => setProyectosActivos(0));
+  }, []);
 
   return (
     <div className="flex h-full w-full flex-col">
@@ -30,6 +43,7 @@ const Dashboard = () => {
           <Card
             icon={<BarChart3 size={36} />}
             label="Proyectos activos"
+            value={proyectosActivos}
             color="var(--color-selection)"
           />
 
@@ -37,7 +51,7 @@ const Dashboard = () => {
             icon={<Link2 size={36} />}
             label="Unirse al proyecto"
             color="var(--color-selection)"
-            onClick={() => setUnirseOpen(true)} // ← 3. console.log reemplazado
+            onClick={() => setUnirseOpen(true)}
           />
 
           <Card
@@ -48,7 +62,7 @@ const Dashboard = () => {
           />
         </div>
 
-        <ProjectCarousel projects={projects} />
+        <ProjectCarousel projects={[]} />
       </div>
 
       <ProyectoForm
@@ -56,7 +70,7 @@ const Dashboard = () => {
         onClose={() => setCreateOpen(false)}
       />
 
-      <UnirseModal  // ← 4. Modal agregado
+      <UnirseModal
         isOpen={unirseOpen}
         onClose={() => setUnirseOpen(false)}
       />
