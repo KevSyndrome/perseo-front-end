@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 
-const UnirseForm = ({ onConfirm, onCancel, code, onChange }) => {
+const UnirseForm = ({ onConfirm, onCancel, code, onChange, error }) => {
   const inputs = useRef([]);
 
   const handleKeyDown = (e, index) => {
@@ -48,7 +48,6 @@ const UnirseForm = ({ onConfirm, onCancel, code, onChange }) => {
           Ingresa el codigo para unirte al proyecto
         </p>
 
-        {/* Cajas con input dentro de cada una */}
         <div className="flex justify-center items-center gap-3 mb-2">
           {[0, 1, 2].map((i) => (
             <input
@@ -84,11 +83,16 @@ const UnirseForm = ({ onConfirm, onCancel, code, onChange }) => {
           ))}
         </div>
 
-        <p className="text-slate-400 text-xs text-center mb-8">
+        <p className="text-slate-400 text-xs text-center mb-3">
           Utiliza el codigo de 6 digitos dados por el administrador del proyecto
         </p>
 
-        <div className="flex gap-4">
+        {/* ← Error message */}
+        {error && (
+          <p className="text-red-500 text-sm text-center mb-3">{error}</p>
+        )}
+
+        <div className="flex gap-4 mt-2">
           <button
             onClick={onCancel}
             className="flex-1 py-3 rounded-xl border border-slate-300 text-slate-700 font-semibold hover:bg-slate-50 transition"
@@ -97,7 +101,6 @@ const UnirseForm = ({ onConfirm, onCancel, code, onChange }) => {
           </button>
           <button
             onClick={() => onConfirm(code)}
-            disabled={code.length !== 6 || code.includes('')}
             className="flex-1 py-3 rounded-xl font-semibold text-white transition"
             style={{
               backgroundColor: code.length === 6 && !code.includes('') ? '#0d3b4a' : '#94a3b8',

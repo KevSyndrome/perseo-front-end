@@ -135,3 +135,4 @@ const TareaForm = ({ tipo: tipoInicial = "", onCancel }) => {
 };
 
 export default TareaForm;
+  
