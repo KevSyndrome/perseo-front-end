@@ -1,100 +1,185 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Filter, Search, Tag } from "lucide-react";
+import { Plus, LayoutGrid, List, Users, User } from "lucide-react";
 import Breadcrumb, { useBreadcrumb } from "../Components/Breadcrumb";
-import ToggleGroup from "../Components/ToggleGroup";
-import FilterPanel from "../Components/FilterPanel";
-import Input from "../Components/Input";
-import ViewToggle from "../Components/ViewToggle";
 import ProjectCard from "../Components/ProjectCard";
 import ProyectoForm from "../Forms/ProyectoForm";
 import UnirseModal from "../Modals/UnirseModal";
-
-const sampleProjects = [
-  { id: 1, name: "Task Board App", description: "Plataforma de gestión de tareas con sprints y equipos", owner: "Zio Zukey", image: "", status: "activo", startDate: "01/2026" },
-  { id: 2, name: "E-commerce API", description: "Backend para tienda online con pagos y envíos", owner: "Zio Zukey", image: "", status: "activo", startDate: "03/2026" },
-  { id: 3, name: "Rediseño Web", description: "Actualización completa del diseño corporativo", owner: "Ana G.", image: "", status: "pendiente", startDate: "06/2026" },
-  { id: 4, name: "App Móvil", description: "Desarrollo de app nativa para iOS y Android", owner: "Carlos R.", image: "", status: "activo", startDate: "02/2026" },
-];
+import { getProyectos } from "../../services/proyectoService";
 
 const Proyect = () => {
   const [mode, setMode] = useState("propios");
   const [view, setView] = useState("grid");
-  const [filterOpen, setFilterOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [unirseOpen, setUnirseOpen] = useState(false);
+  const [proyectos, setProyectos] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useBreadcrumb([
     { label: "Dashboard", path: "/dashboard" },
     { label: "Proyectos" },
   ]);
 
-  const toggleOptions = [
-    { label: "Propios", value: "propios" },
-    { label: "Colaborativos", value: "colaborativos" },
-  ];
+  useEffect(() => {
+    setLoading(true);
+    getProyectos()
+      .then((data) => setProyectos(data?.data || data || []))
+      .catch(() => setProyectos([]))
+      .finally(() => setLoading(false));
+  }, []);
 
-  const filteredProjects = mode === "propios" ? sampleProjects : [];
-
-  const handleFilter = () => {
-    setFilterOpen(false);
+  // Cuando se crea un proyecto nuevo lo agrega sin recargar
+  const handleProyectoCreado = (nuevo) => {
+    setProyectos((prev) => [nuevo, ...prev]);
   };
+
+  const filteredProjects = mode === "propios"
+    ? proyectos.filter((p) => {
+        const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
+        return p.propietario_id === usuario.id;
+      })
+    : proyectos.filter((p) => {
+        const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
+        return p.propietario_id !== usuario.id;
+      });
 
   return (
     <div className="flex h-full w-full flex-col gap-5">
-      <Breadcrumb />
 
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex-1 min-w-[200px]">
-          <ToggleGroup options={toggleOptions} value={mode} onChange={setMode} />
-        </div>
-
-        <ViewToggle view={view} onChange={setView} />
-
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <Breadcrumb />
         <button
-          onClick={() => setFilterOpen(true)}
-          className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm 
-          font-medium text-slate-600 transition hover:bg-slate-50 hover:border-slate-300 cursor-pointer"
-        >
-          <Filter size={16} />
-          Filtros
-        </button>
-
-        {/* ← Cambiado: abre form según el modo activo */}
-        <button
-          onClick={() => mode === 'propios' ? setCreateOpen(true) : setUnirseOpen(true)}
-          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white
-          transition hover:bg-primary-hover cursor-pointer"
+          onClick={() => mode === "propios" ? setCreateOpen(true) : setUnirseOpen(true)}
+          style={{
+            backgroundColor: "var(--color-selection)",
+            color: "var(--color-blanco)",
+            borderRadius: "var(--radius-lg)",
+            padding: "0.6rem 1.25rem",
+            fontWeight: 600,
+            fontSize: "0.875rem",
+            border: "none",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            transition: "opacity var(--transition-fast)",
+          }}
+          onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
+          onMouseLeave={e => e.currentTarget.style.opacity = "1"}
         >
           <Plus size={16} />
-          <span className="hidden sm:inline">
-            {mode === 'propios' ? 'Crear proyecto' : 'Unirse a proyecto'}
-          </span>
+          {mode === "propios" ? "Nuevo proyecto" : "Unirse a proyecto"}
         </button>
       </div>
 
-      <FilterPanel isOpen={filterOpen} onClose={() => setFilterOpen(false)} onFilter={handleFilter}>
-        <Input label="Nombre del proyecto" icon={<Search size={16} />} placeholder="Buscar por nombre..." />
-        <Input label="Estado" icon={<Tag size={16} />} placeholder="Activo, pendiente, inactivo..." />
-        <Input label="Autor" placeholder="Buscar por autor..." />
-      </FilterPanel>
+      {/* Controles */}
+      <div className="flex items-center justify-between">
 
+        {/* Toggle Propios / Colaborativos */}
+        <div style={{
+          display: "flex",
+          backgroundColor: "var(--color-blanco)",
+          borderRadius: "999px",
+          width:"1100PX",
+          padding: "4px",
+          gap: "2px",
+          border: "1px solid var(--border-color)",
+        }}>
+          {[
+            { value: "propios", label: "Propios", Icon: User },
+            { value: "colaborativos", label: "Colaborativos", Icon: Users },
+          ].map(({ value, label, Icon }) => (
+            <button
+              key={value}
+              onClick={() => setMode(value)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.5rem",
+                padding: "0.6rem 2rem",
+                borderRadius: "999px",
+                border: "none",
+                cursor: "pointer",
+                fontSize: "0.875rem",
+                fontWeight: 600,
+                flex: 1,
+                transition: "all var(--transition-fast)",
+                backgroundColor: mode === value ? "var(--color-selection)" : "transparent",
+                color: mode === value ? "var(--color-blanco)" : "var(--color-negro)",
+              }}
+            >
+              <Icon size={15} color={mode === value ? "var(--color-blanco)" : "var(--color-negro)"} />
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Toggle vista */}
+        <div style={{
+          display: "flex",
+          border: "1px solid var(--border-color)",
+          borderRadius: "var(--radius-md)",
+          overflow: "hidden",
+          backgroundColor: "var(--bg-card)",
+        }}>
+          {[
+            { value: "grid", Icon: LayoutGrid },
+            { value: "list", Icon: List },
+          ].map(({ value, Icon }) => (
+            <button
+              key={value}
+              onClick={() => setView(value)}
+              style={{
+                padding: "0.5rem 0.65rem",
+                border: "none",
+                cursor: "pointer",
+                transition: "all var(--transition-fast)",
+                backgroundColor: view === value ? "var(--color-primary)" : "transparent",
+                color: view === value ? "var(--color-blanco)" : "var(--color-dark-grey)",
+              }}
+            >
+              <Icon size={17} />
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Proyectos */}
       <AnimatePresence mode="wait">
-        {filteredProjects.length > 0 ? (
+        {loading ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-1 items-center justify-center"
+          >
+            <p style={{ color: "var(--text-muted)" }}>Cargando proyectos...</p>
+          </motion.div>
+        ) : filteredProjects.length > 0 ? (
           <motion.div
             key={view}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2 }}
-            className={view === 'grid'
-              ? "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-              : "flex flex-col gap-3"
+            className={
+              view === "grid"
+                ? "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                : "flex flex-col gap-3"
             }
           >
             {filteredProjects.map((project) => (
               <ProjectCard
                 key={project.id}
-                project={project}
+                project={{
+                  id: project.id,
+                  name: project.nombre,
+                  description: project.descripcion,
+                  owner: project.propietario?.nombre || "Sin propietario",
+                  image: project.logo || "",
+                  status: project.status?.nombre?.toLowerCase() || "activo",
+                  startDate: project.fecha_inicial?.slice(0, 7),
+                }}
                 view={view}
                 onClick={() => {}}
               />
@@ -104,19 +189,21 @@ const Proyect = () => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex flex-1 items-center justify-center rounded-xl border-2 border-dashed border-slate-200 text-slate-400"
+            style={{ borderColor: "var(--border-color)" }}
+            className="flex flex-1 items-center justify-center rounded-xl border-2 border-dashed"
           >
-            <p className="text-lg font-medium">No hay proyectos para mostrar</p>
+            <p style={{ color: "var(--text-muted)", fontSize: "1rem", fontWeight: 500 }}>
+              No hay proyectos para mostrar
+            </p>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ← Agregado: modales al final */}
       <ProyectoForm
         isOpen={createOpen}
         onClose={() => setCreateOpen(false)}
+        onProyectoCreado={handleProyectoCreado}
       />
-
       <UnirseModal
         isOpen={unirseOpen}
         onClose={() => setUnirseOpen(false)}

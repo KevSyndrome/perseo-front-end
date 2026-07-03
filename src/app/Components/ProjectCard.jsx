@@ -1,11 +1,6 @@
 import { motion } from 'framer-motion';
-import { FolderOpen, Calendar, User } from 'lucide-react';
-
-const statusColors = {
-  activo: 'bg-green-100 text-green-700',
-  pendiente: 'bg-amber-100 text-amber-700',
-  inactivo: 'bg-slate-100 text-slate-500',
-};
+import { User, FolderOpen } from 'lucide-react';
+import Breadcrumb, { useBreadcrumb } from "../Components/Breadcrumb";
 
 export default function ProjectCard({ project, view = 'grid', onClick }) {
   if (view === 'list') {
@@ -15,39 +10,44 @@ export default function ProjectCard({ project, view = 'grid', onClick }) {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         onClick={onClick}
-        className="group flex w-full items-center gap-5 rounded-xl border border-slate-100 bg-white px-5 py-4 text-left shadow-sm transition hover:border-primary/30 hover:shadow-md cursor-pointer"
+        style={{
+          backgroundColor: "var(--color-primary)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          borderRadius: "var(--radius-xl)",
+          padding: "1rem 1.25rem",
+          display: "flex",
+          alignItems: "center",
+          gap: "1rem",
+          width: "100%",
+          textAlign: "left",
+          cursor: "pointer",
+          transition: "all var(--transition-fast)",
+        }}
+        onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
+        onMouseLeave={e => e.currentTarget.style.opacity = "1"}
       >
-        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary/10 to-primary/20 transition group-hover:from-primary/20 group-hover:to-primary/30">
-          {project.image ? (
-            <img src={project.image} alt={project.name} className="h-full w-full rounded-lg object-cover" />
-          ) : (
-            <FolderOpen size={22} className="text-primary" />
-          )}
+        {/* Logo */}
+        <div style={{
+          width: "48px", height: "48px", borderRadius: "var(--radius-md)",
+          overflow: "hidden", flexShrink: 0,
+          backgroundColor: "rgba(255,255,255,0.1)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          {project.image
+            ? <img src={project.image} alt={project.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            : <FolderOpen size={22} color="var(--color-terciario)" />}
         </div>
 
-        <div className="flex min-w-0 flex-1 items-center gap-6">
-          <div className="min-w-0 flex-1">
-            <h3 className="truncate text-base font-semibold text-slate-800">{project.name}</h3>
-            <p className="truncate text-sm text-slate-500">{project.description}</p>
-          </div>
+        {/* Info */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h3 style={{ color: "var(--color-blanco)", fontWeight: 700, fontSize: "0.95rem", margin: 0 }}>{project.name}</h3>
+          <p style={{ color: "var(--color-dark-grey)", fontSize: "0.8rem", margin: 0 }}>{project.description}</p>
+        </div>
 
-          <div className="hidden items-center gap-1.5 text-xs text-slate-500 sm:flex">
-            <User size={12} />
-            {project.owner}
-          </div>
-
-          {project.startDate && (
-            <div className="hidden items-center gap-1.5 text-xs text-slate-400 md:flex">
-              <Calendar size={12} />
-              {project.startDate}
-            </div>
-          )}
-
-          {project.status && (
-            <span className={`hidden rounded-full px-2.5 py-1 text-xs font-medium sm:inline-block ${statusColors[project.status] || statusColors.inactivo}`}>
-              {project.status}
-            </span>
-          )}
+        {/* Owner */}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", color: "var(--color-blanco)", fontSize: "0.8rem", flexShrink: 0 }}>
+          <User size={13} />
+          {project.owner}
         </div>
       </motion.button>
     );
@@ -59,33 +59,67 @@ export default function ProjectCard({ project, view = 'grid', onClick }) {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       onClick={onClick}
-      className="group flex w-full flex-col items-start overflow-hidden rounded-xl border border-slate-100 bg-white text-left shadow-sm transition hover:border-primary/30 hover:shadow-lg cursor-pointer"
+      style={{
+        backgroundColor: "var(--color-primary)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: "var(--radius-xl)",
+        padding: "1.25rem",
+        display: "flex",
+        flexDirection: "column",
+        gap: "0.875rem",
+        width: "100%",
+        textAlign: "left",
+        cursor: "pointer",
+        transition: "all var(--transition-fast)",
+      }}
+      onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
+      onMouseLeave={e => e.currentTarget.style.opacity = "1"}
     >
-      <div className="flex h-28 w-full items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 group-hover:from-primary/5 group-hover:to-primary/10 transition-colors">
-        {project.image ? (
-          <img src={project.image} alt={project.name} className="h-full w-full object-cover" />
-        ) : (
-          <FolderOpen size={36} className="text-slate-300 group-hover:text-primary transition-colors" />
-        )}
+      {/* Header: logo + título */}
+      <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        <div style={{
+          width: "56px", height: "56px", borderRadius: "var(--radius-md)",
+          overflow: "hidden", flexShrink: 0,
+          backgroundColor: "rgba(255,255,255,0.1)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          {project.image
+            ? <img src={project.image} alt={project.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            : <FolderOpen size={26} color="var(--color-terciario)" />}
+        </div>
+
+        <h3 style={{
+          color: "var(--color-blanco)",
+          fontWeight: 800,
+          fontSize: "1.1rem",
+          lineHeight: 1.2,
+          margin: 0,
+          textTransform: "uppercase",
+          letterSpacing: "0.01em",
+        }}>
+          {project.name}
+        </h3>
       </div>
 
-      <div className="flex w-full flex-col gap-2 p-4">
-        <h3 className="truncate text-base font-semibold text-slate-800">{project.name}</h3>
-        <p className="line-clamp-2 text-xs text-slate-500">{project.description}</p>
+      {/* Descripción */}
+      <p style={{
+        color: "var(--color-dark-grey)",
+        fontSize: "0.82rem",
+        lineHeight: 1.5,
+        margin: 0,
+        display: "-webkit-box",
+        WebkitLineClamp: 3,
+        WebkitBoxOrient: "vertical",
+        overflow: "hidden",
+      }}>
+        {project.description}
+      </p>
 
-        <div className="mt-1 flex items-center justify-between border-t border-slate-100 pt-3">
-          <div className="flex items-center gap-1.5 text-xs text-slate-500">
-            <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
-              {project.owner.charAt(0)}
-            </div>
-            <span className="truncate max-w-[80px]">{project.owner}</span>
-          </div>
-
-          {project.status && (
-            <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${statusColors[project.status] || statusColors.inactivo}`}>
-              {project.status}
-            </span>
-          )}
+      {/* Divider + owner */}
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "0.75rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--color-dark-grey)", fontSize: "0.8rem" }}>
+          <User size={13} />
+          {project.owner}
         </div>
       </div>
     </motion.button>
