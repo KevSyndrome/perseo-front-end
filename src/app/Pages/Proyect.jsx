@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, LayoutGrid, List, Users, User } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
 import Breadcrumb, { useBreadcrumb } from "../Components/Breadcrumb";
-import ProjectCard from "../Components/ProjectCard";
+import ProjectCard from "../Components/Cards/ProjectCard";
 import ProyectoForm from "../Forms/ProyectoForm";
 import UnirseModal from "../Modals/UnirseModal";
 import { getProyectos } from "../../services/proyectoService";
 
 const Proyect = () => {
+  const navigate = useNavigate();
   const [mode, setMode] = useState("propios");
   const [view, setView] = useState("grid");
   const [createOpen, setCreateOpen] = useState(false);
@@ -28,25 +30,19 @@ const Proyect = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  // Cuando se crea un proyecto nuevo lo agrega sin recargar
   const handleProyectoCreado = (nuevo) => {
     setProyectos((prev) => [nuevo, ...prev]);
   };
 
+  const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
+
   const filteredProjects = mode === "propios"
-    ? proyectos.filter((p) => {
-        const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
-        return p.propietario_id === usuario.id;
-      })
-    : proyectos.filter((p) => {
-        const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
-        return p.propietario_id !== usuario.id;
-      });
+    ? proyectos.filter((p) => p.tipo === "privado" && p.propietario_id === usuario.id)
+    : proyectos.filter((p) => p.tipo === "colaborativo");
 
   return (
     <div className="flex h-full w-full flex-col gap-5">
 
-      {/* Header */}
       <div className="flex items-center justify-between">
         <Breadcrumb />
         <button
@@ -73,15 +69,11 @@ const Proyect = () => {
         </button>
       </div>
 
-      {/* Controles */}
       <div className="flex items-center justify-between">
-
-        {/* Toggle Propios / Colaborativos */}
         <div style={{
           display: "flex",
           backgroundColor: "var(--color-blanco)",
           borderRadius: "999px",
-          width:"1100PX",
           padding: "4px",
           gap: "2px",
           border: "1px solid var(--border-color)",
@@ -116,7 +108,6 @@ const Proyect = () => {
           ))}
         </div>
 
-        {/* Toggle vista */}
         <div style={{
           display: "flex",
           border: "1px solid var(--border-color)",
@@ -146,7 +137,6 @@ const Proyect = () => {
         </div>
       </div>
 
-      {/* Proyectos */}
       <AnimatePresence mode="wait">
         {loading ? (
           <motion.div
@@ -181,7 +171,7 @@ const Proyect = () => {
                   startDate: project.fecha_inicial?.slice(0, 7),
                 }}
                 view={view}
-                onClick={() => {}}
+                onClick={() => navigate(`/proyectos/${project.id}`)}
               />
             ))}
           </motion.div>

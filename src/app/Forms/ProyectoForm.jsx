@@ -47,7 +47,7 @@ export default function ProyectoForm({ isOpen, onClose, onProyectoCreado }) {
     if (!file) return;
     setLogoPreview(URL.createObjectURL(file));
     const reader = new FileReader();
-    reader.onloadend = () => setLogoBase64(reader.result);
+    reader.onloadend = () => setLogoBase64 (reader.result);
     reader.readAsDataURL(file);
   };
 
@@ -70,7 +70,7 @@ export default function ProyectoForm({ isOpen, onClose, onProyectoCreado }) {
     try {
       const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
 
-      console.log('statusId en submit:', statusId); // ← agrega esta línea aquí
+      console.log('statusId en submit:', statusId); 
 
       const payload = {
         nombre,

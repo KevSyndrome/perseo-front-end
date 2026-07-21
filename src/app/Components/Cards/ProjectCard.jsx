@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
 import { User, FolderOpen } from 'lucide-react';
-import Breadcrumb, { useBreadcrumb } from "../Components/Breadcrumb";
 
 export default function ProjectCard({ project, view = 'grid', onClick }) {
   if (view === 'list') {
@@ -26,7 +25,6 @@ export default function ProjectCard({ project, view = 'grid', onClick }) {
         onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
         onMouseLeave={e => e.currentTarget.style.opacity = "1"}
       >
-        {/* Logo */}
         <div style={{
           width: "48px", height: "48px", borderRadius: "var(--radius-md)",
           overflow: "hidden", flexShrink: 0,
@@ -38,13 +36,11 @@ export default function ProjectCard({ project, view = 'grid', onClick }) {
             : <FolderOpen size={22} color="var(--color-terciario)" />}
         </div>
 
-        {/* Info */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <h3 style={{ color: "var(--color-blanco)", fontWeight: 700, fontSize: "0.95rem", margin: 0 }}>{project.name}</h3>
           <p style={{ color: "var(--color-dark-grey)", fontSize: "0.8rem", margin: 0 }}>{project.description}</p>
         </div>
 
-        {/* Owner */}
         <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", color: "var(--color-blanco)", fontSize: "0.8rem", flexShrink: 0 }}>
           <User size={13} />
           {project.owner}
@@ -75,7 +71,6 @@ export default function ProjectCard({ project, view = 'grid', onClick }) {
       onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
       onMouseLeave={e => e.currentTarget.style.opacity = "1"}
     >
-      {/* Header: logo + título */}
       <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
         <div style={{
           width: "56px", height: "56px", borderRadius: "var(--radius-md)",
@@ -101,7 +96,6 @@ export default function ProjectCard({ project, view = 'grid', onClick }) {
         </h3>
       </div>
 
-      {/* Descripción */}
       <p style={{
         color: "var(--color-dark-grey)",
         fontSize: "0.82rem",
@@ -115,7 +109,6 @@ export default function ProjectCard({ project, view = 'grid', onClick }) {
         {project.description}
       </p>
 
-      {/* Divider + owner */}
       <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "0.75rem" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--color-dark-grey)", fontSize: "0.8rem" }}>
           <User size={13} />

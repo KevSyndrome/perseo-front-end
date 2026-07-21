@@ -1,6 +1,6 @@
 import { Plus, Link2, BarChart3 } from "lucide-react";
 import Breadcrumb, { useBreadcrumb } from "../Components/Breadcrumb";
-import Card from "../Components/Card";
+import Card from "../Components/Cards/Card";
 import ProjectCarousel from "../Components/ProjectCarousel";
 import "../../styles/branding.css";
 import React, { useState, useEffect } from "react";

@@ -9,6 +9,7 @@ import Profile from "./app/Pages/Profile";
 import Configuration from "./app/Pages/Configuration";
 import Task from "./app/Pages/Task";
 import Mensajes from "./app/Pages/Mensajes";
+import ProyectDetalle from "./app/Pages/ProyectDetalle";
 
 // ← Agregado: guarda la ruta, si no hay sesión manda al login
 const PrivateRoute = ({ children }) => {
@@ -32,6 +33,17 @@ function App() {
             </PrivateRoute>
           }
         />
+
+        <Route
+          path="/proyectos/:id"
+          element={
+            <PrivateRoute>
+              <Layout><ProyectDetalle/></Layout>
+            </PrivateRoute>
+          }
+        />
+
+        
 
         <Route
           path="/calendario"
