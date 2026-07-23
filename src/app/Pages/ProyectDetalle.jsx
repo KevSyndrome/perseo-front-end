@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import ProjectDetalleCard from '../Components/Cards/ProjectDetalleCard';
-import { getProyectoPorId } from '../../services/proyectoService';
+import { getProyectos } from '../../services/proyectoService';
+import { extraerIdCortoDeSlug } from '../../utils/slug';
 import Breadcrumb, { useBreadcrumb } from '../Components/Breadcrumb';
 
 const ProyectDetalle = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const [proyecto, setProyecto] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -17,11 +18,19 @@ const ProyectDetalle = () => {
   ]);
 
   useEffect(() => {
-    getProyectoPorId(id)
-      .then((data) => setProyecto(data?.data || data))
+    const idCorto = extraerIdCortoDeSlug(slug);
+
+    // No existe endpoint de búsqueda por fragmento de id en el backend,
+    // así que traemos la lista completa y buscamos coincidencia por prefijo.
+    getProyectos(1, 1000)
+      .then((data) => {
+        const lista = data?.data || data || [];
+        const encontrado = lista.find((p) => p.id.startsWith(idCorto));
+        setProyecto(encontrado || null);
+      })
       .catch(() => setProyecto(null))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [slug]);
 
   if (loading) return (
     <div className="flex h-full items-center justify-center">

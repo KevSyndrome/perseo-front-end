@@ -7,6 +7,7 @@ import ProjectCard from "../Components/Cards/ProjectCard";
 import ProyectoForm from "../Forms/ProyectoForm";
 import UnirseModal from "../Modals/UnirseModal";
 import { getProyectos } from "../../services/proyectoService";
+import { generarSlugProyecto } from '../../utils/slug';
 
 const Proyect = () => {
   const navigate = useNavigate();
@@ -171,7 +172,7 @@ const Proyect = () => {
                   startDate: project.fecha_inicial?.slice(0, 7),
                 }}
                 view={view}
-                onClick={() => navigate(`/proyectos/${project.id}`)}
+                onClick={() => navigate(`/proyectos/${generarSlugProyecto(project)}`)}
               />
             ))}
           </motion.div>

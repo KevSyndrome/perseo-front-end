@@ -36,7 +36,7 @@ function App() {
         />
 
         <Route
-          path="/proyectos/:id"
+          path="/proyectos/:slug"
           element={
             <PrivateRoute>
               <Layout><ProyectDetalle/></Layout>
