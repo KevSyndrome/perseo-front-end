@@ -10,6 +10,7 @@ import Configuration from "./app/Pages/Configuration";
 import Task from "./app/Pages/Task";
 import Mensajes from "./app/Pages/Mensajes";
 import ProyectDetalle from "./app/Pages/ProyectDetalle";
+import ConfigurationAdmin from "./app/Pages/ConfigurationAdmin";
 
 // ← Agregado: guarda la ruta, si no hay sesión manda al login
 const PrivateRoute = ({ children }) => {
@@ -77,6 +78,15 @@ function App() {
           element={
             <PrivateRoute>
               <Layout><Configuration /></Layout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/configurationAdmin"
+          element={
+            <PrivateRoute>
+              <Layout><ConfigurationAdmin /></Layout>
             </PrivateRoute>
           }
         />
