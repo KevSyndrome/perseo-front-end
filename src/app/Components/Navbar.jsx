@@ -2,12 +2,12 @@ import React, { useState, useRef, useEffect } from "react";
 import { Search, Bell, Settings, User, HelpCircle, LogOut, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/branding.css"
+import "../Pages/Profile"
 
 const Navbar = ({ sidebarOpen, sidebarCollapsed, onToggleSidebar }) => {
-  const navigate = useNavigate();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [chatConnected, setChatConnected] = useState(false);
   const dropdownRef = useRef(null);
+  const navigate = useNavigate();
 
   // Escuchar estado de conexión del chat
   useEffect(() => {
@@ -43,20 +43,18 @@ const Navbar = ({ sidebarOpen, sidebarCollapsed, onToggleSidebar }) => {
           <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-white" title="Chat conectado" />
         )}
       </button>
-
-      <div style={{ position: 'relative' }} ref={dropdownRef}>
+      <button>
+        <div style={{ position: 'relative' }} ref={dropdownRef}>
         <img
           src="https://i.pravatar.cc/300"
           alt="Perfil"
           className="app-navbar__avatar"
-          onClick={() => setDropdownOpen(!dropdownOpen)}
-        />
-        
-        {dropdownOpen && (
-          <button className="app-dropdown">
-          </button>
-        )}
+          onClick={() => navigate("/profile")}
+        />  
+
       </div>
+      </button>
+      
     </nav>
   );
 };
