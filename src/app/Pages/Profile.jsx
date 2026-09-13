@@ -1,10 +1,11 @@
 // src/Pages/Profile.jsx
-import { getUsuarioPorId, actualizarUsuario } from "../../services/usuariosService";
+import { getUsuarioPorId } from "../../services/usuariosService";
 import React, { useState, useEffect } from "react";
 import AvatarCard from "../Components/Profile/AvatarCard";
 import StatCard from "../Components/Profile/StatCard";
 import InfoSection from "../Components/Profile/InfoSection";
 import ChangePasswordModal from "../Modals/ChangePasswordModal";
+import Breadcrumb, { useBreadcrumb } from "../Components/Breadcrumb";
 
 const getTokenPayload = () => {
   try {
@@ -32,10 +33,13 @@ const formatMonthYear = (isoString) => {
 };
 
 const Profile = () => {
+
   const [usuario, setUsuario] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   const [modalContrasena, setModalContrasena] = useState(false);
+
+  useBreadcrumb([{ label: "Profile" }]);
 
   useEffect(() => {
     const payload = getTokenPayload();
@@ -71,7 +75,8 @@ const Profile = () => {
   return (
     <div style={styles.page}>
 
-      <p style={styles.breadcrumb}>Proyectos / Propios</p>
+    <Breadcrumb/>
+    <br></br>
 
       {/* ── TOP GRID ── */}
       <div style={styles.topGrid}>
