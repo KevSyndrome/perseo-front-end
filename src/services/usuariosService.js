@@ -57,5 +57,11 @@ export const cambiarContraseña = async (datos) => {
     headers: getHeaders(),
     body: JSON.stringify(datos),
   });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "Error al cambiar contraseña");
+  }
+  
   return await response.json();
 };
