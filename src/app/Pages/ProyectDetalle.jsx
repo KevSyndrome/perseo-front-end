@@ -7,6 +7,8 @@ import {
   getColaboradoresProyecto,
   regenerarCodigoProyecto,
   eliminarColaborador,
+  subirLogoProyecto,
+  eliminarLogoProyecto,
 } from '../../services/proyectoService';
 import { extraerIdCortoDeSlug } from '../../utils/slug';
 import Breadcrumb, { useBreadcrumb } from '../Components/Breadcrumb';
@@ -55,6 +57,16 @@ const ProyectDetalle = () => {
     try {
       const res = await regenerarCodigoProyecto(proyecto.id);
       setProyecto((prev) => ({ ...prev, codigo_invitacion: res.data.codigo_invitacion }));
+    } catch (err) {
+      setErrorAccion(err.message);
+    }
+  };
+
+  const handleLogo = async (file) => {
+    setErrorAccion('');
+    try {
+      const res = file ? await subirLogoProyecto(proyecto.id, file) : await eliminarLogoProyecto(proyecto.id);
+      setProyecto(res.data);
     } catch (err) {
       setErrorAccion(err.message);
     }
@@ -111,6 +123,7 @@ const ProyectDetalle = () => {
         esPropietario={esPropietario}
         usuarioActualId={usuario.id}
         onQuitarColaborador={handleQuitarColaborador}
+        onLogo={esPropietario ? handleLogo : null}
         error={errorAccion}
       />
     </motion.div>

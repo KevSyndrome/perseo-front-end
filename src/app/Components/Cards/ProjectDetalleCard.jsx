@@ -1,5 +1,6 @@
 import { User, FolderOpen, Calendar, Plus, RefreshCw, X } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useRef } from 'react';
 
 const ProjectDetalleCard = ({
   project,
@@ -9,8 +10,10 @@ const ProjectDetalleCard = ({
   esPropietario,
   usuarioActualId,
   onQuitarColaborador,
+  onLogo,
   error,
 }) => {
+  const logoInputRef = useRef(null);
 
   const formatFecha = (iso) => {
     if (!iso) return '—';
@@ -46,6 +49,32 @@ const ProjectDetalleCard = ({
             ? <img src={project.image} alt={project.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             : <FolderOpen size={40} color="var(--color-terciario)" />}
         </div>
+        {/* Solo el propietario: onLogo(file) sube, onLogo(null) quita */}
+        {onLogo && (
+          <div className="flex flex-col gap-1 self-end">
+            <input
+              ref={logoInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/gif,image/webp"
+              hidden
+              onChange={(e) => e.target.files[0] && onLogo(e.target.files[0])}
+            />
+            <button
+              onClick={() => logoInputRef.current.click()}
+              className="cursor-pointer bg-transparent text-left text-xs font-semibold text-[var(--color-terciario)] hover:underline"
+            >
+              Cambiar logo
+            </button>
+            {project.image && (
+              <button
+                onClick={() => onLogo(null)}
+                className="cursor-pointer bg-transparent text-left text-xs text-red-300 hover:underline"
+              >
+                Quitar logo
+              </button>
+            )}
+          </div>
+        )}
 
         <div style={{ flex: 1 }}>
           <h1 style={{

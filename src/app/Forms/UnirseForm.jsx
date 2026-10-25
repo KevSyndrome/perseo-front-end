@@ -54,7 +54,7 @@ const UnirseForm = ({ onConfirm, onCancel, code, onChange, error, loading }) => 
         </p>
 
         {/* Cajas con input dentro de cada una */}
-        <div className="flex justify-center items-center gap-3 mb-2">
+        <div className="flex justify-center items-center gap-2 mb-2">
           {[0, 1, 2, 3].map((i) => (
             <input
               key={i}
@@ -66,7 +66,7 @@ const UnirseForm = ({ onConfirm, onCancel, code, onChange, error, loading }) => 
               onKeyDown={(e) => handleKeyDown(e, i)}
               onPaste={handlePaste}
               autoFocus={i === 0}
-              className="w-16 h-16 rounded-xl text-center text-2xl font-bold text-slate-700 border-2 focus:outline-none focus:border-teal-500"
+              className="w-11 h-14 rounded-lg text-center text-xl font-bold text-slate-700 border-2 focus:outline-none focus:border-teal-500"
               style={{ backgroundColor: '#8ecdd4', borderColor: code[i] ? '#0d3b4a' : '#8ecdd4' }}
             />
           ))}
@@ -83,7 +83,7 @@ const UnirseForm = ({ onConfirm, onCancel, code, onChange, error, loading }) => 
               onChange={(e) => handleChange(e, i)}
               onKeyDown={(e) => handleKeyDown(e, i)}
               onPaste={handlePaste}
-              className="w-16 h-16 rounded-xl text-center text-2xl font-bold text-slate-700 border-2 focus:outline-none focus:border-teal-500"
+              className="w-11 h-14 rounded-lg text-center text-xl font-bold text-slate-700 border-2 focus:outline-none focus:border-teal-500"
               style={{ backgroundColor: '#8ecdd4', borderColor: code[i] ? '#0d3b4a' : '#8ecdd4' }}
             />
           ))}

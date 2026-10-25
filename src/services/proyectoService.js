@@ -105,3 +105,11 @@ export const eliminarColaborador = async (id, usuarioId) => {
   });
   return response.ok;
 };
+
+export const eliminarLogoProyecto = async (id) => {
+  const response = await apiFetch(`${BASE_URL}/proyectos/${id}/logo`, {
+    method: "DELETE",
+    headers: getHeaders(),
+  });
+  return jsonOrThrow(response);
+};

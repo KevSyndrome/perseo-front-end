@@ -63,9 +63,8 @@ export default function ProyectoForm({ isOpen, onClose, onProyectoCreado }) {
         nombre,
         descripcion,
         fecha_inicial: new Date().toISOString(),
-        fecha_final: fechaFin
-          ? new Date(fechaFin).toISOString()
-          : new Date().toISOString(),
+        // fecha_final es opcional: sin fecha se omite
+        ...(fechaFin && { fecha_final: new Date(fechaFin).toISOString() }),
         status_id: statusId,
       };
 
@@ -73,7 +72,10 @@ export default function ProyectoForm({ isOpen, onClose, onProyectoCreado }) {
       let proyecto = resultado?.data;
 
       if (!proyecto?.id) {
-        setError(typeof resultado?.detail === 'string' ? resultado.detail : 'No se pudo crear el proyecto. Intenta de nuevo.');
+        const detail = resultado?.detail;
+        // 422 de validación trae detail como lista: [{ msg: "Value error, ..." }]
+        const mensaje = typeof detail === 'string' ? detail : detail?.[0]?.msg?.replace(/^Value error, /, '');
+        setError(mensaje || 'No se pudo crear el proyecto. Intenta de nuevo.');
         return;
       }
       if (logoFile) {
