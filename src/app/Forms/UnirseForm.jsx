@@ -3,7 +3,7 @@ import React, { useRef } from 'react';
 // Código de invitación del backend: 8 caracteres A-Z / 2-9
 const LARGO = 8;
 
-const UnirseForm = ({ onConfirm, onCancel, code, onChange, error, loading }) => {
+const UnirseForm = ({ onConfirm, onCancel, code, onChange, loading }) => {
   const completo = code.length === LARGO;
 
   const inputs = useRef([]);
@@ -88,8 +88,6 @@ const UnirseForm = ({ onConfirm, onCancel, code, onChange, error, loading }) => 
             />
           ))}
         </div>
-
-        {error && <p className="text-red-500 text-sm text-center mb-2">{error}</p>}
 
         <p className="text-slate-400 text-xs text-center mb-8">
           Utiliza el código de 8 caracteres que te compartió el dueño del proyecto

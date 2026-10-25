@@ -97,7 +97,7 @@ Reglas del backend: cada usuario solo ve los proyectos donde es **propietario o 
 | `src/app/Forms/ProyectoForm.jsx` | Ya no manda `tipo`, `propietario_id` ni `logo` en base64. El logo se sube con `POST /proyectos/{id}/logo` **después** de crear el proyecto. `fecha_final` se omite si está vacía; antes mandaba "ahora" y el backend la rechazaba por no ser posterior a la inicial. Se muestra el mensaje de validación del backend. La descripción va de 10 a 200 caracteres. Se quitó el selector "Tipo de proyecto". |
 | `src/app/Components/UI/TextArea.jsx` | Acepta `minLength` y `maxLength`. |
 | `src/app/Forms/UnirseForm.jsx` | El código ahora es de **8 caracteres** (4 — 4); antes eran 6. Bug corregido: el botón nunca se habilitaba porque `code.includes('')` siempre es `true`. Muestra el error del backend y un estado "Uniendo...". |
-| `src/app/Modals/UnirseModal.jsx` | Llama a `POST /proyectos/unirse` (antes solo hacía `console.log`). Prop nueva `onUnido(proyecto)`. |
+| `src/app/Modals/UnirseModal.jsx` | Llama a `POST /proyectos/unirse` (antes solo hacía `console.log`). Prop nueva `onUnido(proyecto)`. Al terminar muestra un **modal de resultado**: éxito ("¡Te uniste al proyecto!" con el nombre, y los botones *Cerrar* y *Ver proyecto*) o rechazo ("No se pudo unir" con el motivo del backend, por ejemplo código inválido o ya eres miembro, y los botones *Cerrar* e *Intentar de nuevo*). |
 | `src/app/Pages/Proyect.jsx` | "Propios" = soy dueño y no tiene colaboradores. "Colaborativos" = `colaborativo === true`. Al unirse, el proyecto se agrega a la lista y cambia a "Colaborativos". |
 | `src/app/Pages/ProyectDetalle.jsx` + `Cards/ProjectDetalleCard.jsx` | **Propietario:** tiene un menú **⋮** en la esquina superior derecha con "Generar código", "Cambiar logo" y "Quitar logo". El código (que ya existe desde que se crea el proyecto) queda **oculto** hasta elegir "Generar código". Ahí se muestra con la opción "Generar nuevo" (el anterior deja de funcionar) y una ✕ para ocultarlo. **Todos:** ven la lista de colaboradores. El propietario puede "Quitar" a alguien y un colaborador puede "Salir"; al salir regresa a `/proyectos`. |
 
@@ -105,7 +105,8 @@ Reglas del backend: cada usuario solo ve los proyectos donde es **propietario o 
 
 - `POST /usuarios/me/imagen` en `usuariosService.subirImagenPerfil`.
 - `Profile/AvatarCard.jsx`: el botón "Cambiar foto" ya funciona y muestra la imagen si existe.
-- `Navbar.jsx`: muestra `usuario.imagen`, que se lee de `localStorage` y se actualiza al subir la foto.
+- `Navbar.jsx`: ya **no usa pravatar** (era una foto aleatoria). Pide el usuario con `GET /usuarios/{id}`, con el id del token, y muestra `imagen`. Si no tiene, muestra el ícono genérico de perfil (`CircleUserRound`). Al subir una foto en Perfil se emite el evento `imagen-perfil` y el Navbar se actualiza sin recargar.
+- `getTokenPayload()` se movió de `Profile.jsx` a `services/authService.js` para reutilizarlo.
 
 ## 7. Permisos por cargo (`GET /usuarios/me/permisos`)
 
