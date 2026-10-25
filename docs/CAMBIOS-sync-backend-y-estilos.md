@@ -11,6 +11,7 @@ Ramas (ya mergeadas, en este orden):
 5. `feature/chat-salas`: chat por salas estilo Discord, fondos, no leídos y avisos en tiempo real (sección 9).
 6. `fix/scroll-chat`: el scroll del chat no dejaba ver los mensajes anteriores (sección 9).
 7. `feature/fondos-y-responsivo`: fondos con más animación y diseño responsivo en móvil y tablet (sección 10).
+8. `fix/chat-movil-pantalla-completa`: el chat en celular ocupa toda la pantalla (sección 10).
 
 Backend correspondiente: repo `backend-tasks`, desplegado desde la rama `supabase`. El contrato completo está en `docs/CAMBIOS-API.md` de ese repo.
 
@@ -206,7 +207,7 @@ Puntos de corte de Tailwind: `sm` 640px, `md` 768px, `lg` 1024px.
 | `Pages/Dashboard.jsx` | Tarjetas de acciones: 1 columna en móvil, 3 desde `sm`. |
 | `Pages/Profile.jsx` | Grids que estaban en estilos en línea pasados a Tailwind: avatar arriba en móvil, estadísticas en 1, 2 o 3 columnas, e información en 1 o 2 columnas. |
 | `Cards/ProjectDetalleCard.jsx` | Logo y título más chicos en móvil; fechas y descripción apiladas. |
-| `Pages/Mensajes.jsx` | El alto del chat se ajusta al padding del `main` en cada tamaño (`100dvh`). |
+| `Pages/Mensajes.jsx` | **Celular (<640px): pantalla completa** debajo del Navbar (`fixed` con `top`/`bottom`, sin márgenes ni bordes). Así no hay doble scroll (página + chat) y no depende de `dvh`, que algunos navegadores no soportan. Se quedan el encabezado de la sala y la caja de mensaje. La caja usa letra de 16 px en celular porque con menos iOS hace zoom al tocarla, y respeta la barra de inicio del iPhone (`safe-area-inset-bottom`; `viewport-fit=cover` en `index.html`). **Tablet y escritorio:** tarjeta como antes. |
 
 Revisado en 390 px (celular) y 820 px (tablet): Dashboard, Proyectos, detalle de proyecto, Perfil, Configuración (la tabla hace scroll horizontal dentro de su tarjeta), panel de salas, chat, menú lateral y modales. No hay scroll horizontal de página.
 
