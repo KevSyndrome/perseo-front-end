@@ -3,9 +3,14 @@ import { Trash2, Plus, Loader2, RotateCcw, Pencil } from 'lucide-react';
 import DataTable from '../Components/DataTable';
 import UsuarioForm from '../Forms/UsuarioForm';
 import { getUsuarios, desactivarUsuario, actualizarUsuario } from '../../services/usuariosService';
+import { usePermisosStore, puede } from '../Components/PermisosStore';
 
 export default function UsuariosTab() {
   const [data, setData] = useState([]);
+  const permisos = usePermisosStore((s) => s.permisos);
+  const puedeCrear = puede(permisos, 'usuarios', 'crear');
+  const puedeEditar = puede(permisos, 'usuarios', 'editar');
+  const puedeEliminar = puede(permisos, 'usuarios', 'eliminar');
   const [loading, setLoading] = useState(true);
 
   const [formOpen, setFormOpen] = useState(false);
@@ -93,18 +98,20 @@ export default function UsuariosTab() {
       header: 'Acciones',
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <button onClick={() => abrirEditar(row.original)}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-blue-50 hover:text-blue-500 cursor-pointer"
-            title="Editar usuario">
-            <Pencil size={16} />
-          </button>
-          {row.original.status_logico ? (
+          {puedeEditar && (
+            <button onClick={() => abrirEditar(row.original)}
+              className="rounded-lg p-1.5 text-slate-400 hover:bg-blue-50 hover:text-blue-500 cursor-pointer"
+              title="Editar usuario">
+              <Pencil size={16} />
+            </button>
+          )}
+          {row.original.status_logico ? puedeEliminar && (
             <button onClick={() => handleDesactivar(row.original.id)}
               className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500 cursor-pointer"
               title="Desactivar usuario">
               <Trash2 size={16} />
             </button>
-          ) : (
+          ) : puedeEditar && (
             <button onClick={() => handleActivar(row.original)}
               className="rounded-lg p-1.5 text-slate-400 hover:bg-green-50 hover:text-green-600 cursor-pointer"
               title="Activar usuario">
@@ -114,7 +121,7 @@ export default function UsuariosTab() {
         </div>
       ),
     },
-  ], []);
+  ], [puedeEditar, puedeEliminar]);
 
   if (loading) return (
     <div className="flex items-center justify-center gap-2 text-slate-500 py-10">
@@ -126,12 +133,12 @@ export default function UsuariosTab() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-end">
-        <button onClick={abrirCrear}
+        {puedeCrear && <button onClick={abrirCrear}
           className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition cursor-pointer"
           style={{ backgroundColor: "var(--color-selection)" }}>
           <Plus size={16} />
           Nuevo Usuario
-        </button>
+        </button>}
       </div>
 
       <DataTable data={data} columns={columns} pageSize={8} />

@@ -1,7 +1,22 @@
-import { User, FolderOpen, Calendar, Plus } from 'lucide-react';
+import { User, FolderOpen, Calendar, Plus, RefreshCw, X, MoreVertical, KeyRound, ImageUp, ImageOff } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useRef, useState } from 'react';
 
-const ProjectDetalleCard = ({ project }) => {
+const ProjectDetalleCard = ({
+  project,
+  codigoInvitacion,
+  onRegenerarCodigo,
+  colaboradores = [],
+  esPropietario,
+  usuarioActualId,
+  onQuitarColaborador,
+  onLogo,
+  error,
+}) => {
+  const logoInputRef = useRef(null);
+  const [menuAbierto, setMenuAbierto] = useState(false);
+  // El código existe desde que se crea el proyecto; solo se muestra a petición
+  const [mostrarCodigo, setMostrarCodigo] = useState(false);
 
   const formatFecha = (iso) => {
     if (!iso) return '—';
@@ -23,8 +38,57 @@ const ProjectDetalleCard = ({ project }) => {
         flexDirection: "column",
         gap: "1.5rem",
         width: "100%",
+        position: "relative",
       }}
     >
+      {/* Menú de opciones: solo el propietario */}
+      {esPropietario && (
+        <div className="absolute right-4 top-4">
+          <button
+            onClick={() => setMenuAbierto((v) => !v)}
+            title="Opciones del proyecto"
+            className="flex cursor-pointer items-center justify-center rounded-full bg-transparent p-2 text-[var(--color-blanco)] hover:bg-white/10"
+          >
+            <MoreVertical size={20} />
+          </button>
+          {menuAbierto && (
+            <>
+              {/* Capa invisible para cerrar al hacer clic fuera */}
+              <div className="fixed inset-0 z-10" onClick={() => setMenuAbierto(false)} />
+              <div className="absolute right-0 z-20 mt-1 flex w-52 flex-col overflow-hidden rounded-lg bg-white py-1 text-sm text-slate-700 shadow-[var(--shadow-lg)]">
+                <button
+                  onClick={() => { setMenuAbierto(false); setMostrarCodigo(true); }}
+                  className="flex cursor-pointer items-center gap-2 bg-transparent px-4 py-2 text-left hover:bg-slate-100"
+                >
+                  <KeyRound size={15} /> Generar código
+                </button>
+                <button
+                  onClick={() => { setMenuAbierto(false); logoInputRef.current.click(); }}
+                  className="flex cursor-pointer items-center gap-2 bg-transparent px-4 py-2 text-left hover:bg-slate-100"
+                >
+                  <ImageUp size={15} /> Cambiar logo
+                </button>
+                {project.image && (
+                  <button
+                    onClick={() => { setMenuAbierto(false); onLogo(null); }}
+                    className="flex cursor-pointer items-center gap-2 bg-transparent px-4 py-2 text-left text-red-500 hover:bg-red-50"
+                  >
+                    <ImageOff size={15} /> Quitar logo
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+          <input
+            ref={logoInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/gif,image/webp"
+            hidden
+            onChange={(e) => e.target.files[0] && onLogo(e.target.files[0])}
+          />
+        </div>
+      )}
+
       {/* Header: logo + nombre + owner */}
       <div style={{ display: "flex", alignItems: "flex-start", gap: "1.5rem" }}>
         <div style={{
@@ -98,6 +162,72 @@ const ProjectDetalleCard = ({ project }) => {
       </div>
 
       {/* Divider */}
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }} />
+
+      {/* Invitación y colaboradores */}
+      <div className="flex flex-col gap-4">
+        {error && <p className="text-sm text-red-400">{error}</p>}
+
+        {mostrarCodigo && codigoInvitacion && (
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-xs text-[var(--color-dark-grey)]">Código de invitación:</span>
+            <span className="rounded-lg bg-white/10 px-3 py-1 font-mono text-lg font-bold tracking-[0.3em] text-[var(--color-blanco)]">
+              {codigoInvitacion}
+            </span>
+            <button
+              onClick={onRegenerarCodigo}
+              title="El código anterior dejará de funcionar"
+              className="flex cursor-pointer items-center gap-1.5 rounded-full bg-transparent px-3 py-1 text-xs font-semibold text-[var(--color-terciario)] hover:bg-white/10"
+            >
+              <RefreshCw size={13} />
+              Generar nuevo
+            </button>
+            <button
+              onClick={() => setMostrarCodigo(false)}
+              title="Ocultar código"
+              className="flex cursor-pointer items-center rounded-full bg-transparent p-1 text-[var(--color-dark-grey)] hover:bg-white/10"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        )}
+
+        <div>
+          <h2 className="mb-2 text-xl font-bold text-[var(--color-blanco)]">
+            Colaboradores ({colaboradores.length})
+          </h2>
+          {colaboradores.length === 0 ? (
+            <p className="text-sm text-[var(--color-dark-grey)]">
+              {esPropietario ? 'Usa el menú ⋮ → "Generar código" para invitar colaboradores.' : 'Sin colaboradores.'}
+            </p>
+          ) : (
+            <ul className="flex flex-wrap gap-2">
+              {colaboradores.map(({ usuario }) => {
+                const esYo = usuario.id === usuarioActualId;
+                return (
+                  <li
+                    key={usuario.id}
+                    className="flex items-center gap-2 rounded-full bg-white/10 py-1 pl-3 pr-1 text-sm text-[var(--color-blanco)]"
+                  >
+                    {usuario.nombre}
+                    {(esPropietario || esYo) && (
+                      <button
+                        onClick={() => onQuitarColaborador(usuario.id)}
+                        title={esYo ? 'Salir del proyecto' : 'Quitar del proyecto'}
+                        className="flex cursor-pointer items-center gap-1 rounded-full bg-transparent px-2 py-0.5 text-xs text-red-300 hover:bg-white/10"
+                      >
+                        <X size={12} />
+                        {esYo ? 'Salir' : 'Quitar'}
+                      </button>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </div>
+
       <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }} />
 
       {/* Sprints */}

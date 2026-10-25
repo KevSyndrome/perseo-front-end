@@ -1,7 +1,7 @@
 import { BASE_URL, getHeaders, apiFetch } from "./api";
 
-export const getComentarios = async (page = 1, limit = 10) => {
-  const response = await apiFetch(`${BASE_URL}/comentarios/?page=${page}&limit=${limit}`, {
+export const getComentarios = async (tareaId, page = 1, limit = 10) => {
+  const response = await apiFetch(`${BASE_URL}/comentarios/?tarea_id=${tareaId}&page=${page}&limit=${limit}`, {
     headers: getHeaders(),
   });
   return await response.json();

@@ -1,7 +1,7 @@
 import { BASE_URL, getHeaders, apiFetch } from "./api";
 
-export const getFases = async (page = 1, limit = 10) => {
-  const response = await apiFetch(`${BASE_URL}/fases/?page=${page}&limit=${limit}`, {
+export const getFases = async (proyectoId, page = 1, limit = 10) => {
+  const response = await apiFetch(`${BASE_URL}/fases/?proyecto_id=${proyectoId}&page=${page}&limit=${limit}`, {
     headers: getHeaders(),
   });
   return await response.json();
@@ -63,11 +63,3 @@ export const getFaseEstadisticas = async (faseId) => {
   return await response.json();
 };
 
-export const bulkCreateFases = async (fases) => {
-  const response = await apiFetch(`${BASE_URL}/fases/bulk`, {
-    method: "POST",
-    headers: getHeaders(),
-    body: JSON.stringify({ fases }),
-  });
-  return await response.json();
-};

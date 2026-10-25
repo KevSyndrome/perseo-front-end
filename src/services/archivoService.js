@@ -1,14 +1,9 @@
 import { BASE_URL, getHeaders, apiFetch } from "./api";
 
-export const getArchivos = async (page = 1, limit = 10) => {
-  const response = await apiFetch(`${BASE_URL}/archivos/?page=${page}&limit=${limit}`, {
-    headers: getHeaders(),
-  });
-  return await response.json();
-};
-
-export const getArchivosDrive = async () => {
-  const response = await apiFetch(`${BASE_URL}/archivos/drive`, {
+// Sin filtros devuelve el drive personal; filtros: { tarea_id | proyecto_id | mensaje_id }
+export const getArchivos = async (page = 1, limit = 10, filtros = {}) => {
+  const params = new URLSearchParams({ page, limit, ...filtros });
+  const response = await apiFetch(`${BASE_URL}/archivos/?${params}`, {
     headers: getHeaders(),
   });
   return await response.json();
@@ -17,22 +12,6 @@ export const getArchivosDrive = async () => {
 export const getArchivoPorId = async (id) => {
   const response = await apiFetch(`${BASE_URL}/archivos/${id}`, {
     headers: getHeaders(),
-  });
-  return await response.json();
-};
-
-export const getArchivoMetadata = async (id) => {
-  const response = await apiFetch(`${BASE_URL}/archivos/${id}/metadata`, {
-    headers: getHeaders(),
-  });
-  return await response.json();
-};
-
-export const crearArchivo = async (archivo) => {
-  const response = await apiFetch(`${BASE_URL}/archivos/`, {
-    method: "POST",
-    headers: getHeaders(),
-    body: JSON.stringify(archivo),
   });
   return await response.json();
 };

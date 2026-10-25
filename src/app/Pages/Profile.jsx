@@ -1,5 +1,5 @@
 // src/Pages/Profile.jsx
-import { getUsuarioPorId } from "../../services/usuariosService";
+import { getUsuarioPorId, subirImagenPerfil } from "../../services/usuariosService";
 import React, { useState, useEffect } from "react";
 import AvatarCard from "../Components/Profile/AvatarCard";
 import StatCard from "../Components/Profile/StatCard";
@@ -38,6 +38,7 @@ const Profile = () => {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   const [modalContrasena, setModalContrasena] = useState(false);
+  const [errorFoto, setErrorFoto] = useState(null);
 
   useBreadcrumb([{ label: "Profile" }]);
 
@@ -65,6 +66,20 @@ const Profile = () => {
 
   const rol = usuario.cargo?.nombre ?? "Sin rol";
 
+  const handleCambiarFoto = async (file) => {
+    setErrorFoto(null);
+    try {
+      const res = await subirImagenPerfil(file);
+      setUsuario((prev) => ({ ...prev, imagen: res.data.imagen }));
+      // El Navbar lee la foto del usuario guardado en localStorage
+      const guardado = JSON.parse(localStorage.getItem("usuario") || "{}");
+      localStorage.setItem("usuario", JSON.stringify({ ...guardado, imagen: res.data.imagen }));
+      window.dispatchEvent(new Event("storage"));
+    } catch (err) {
+      setErrorFoto(err.message);
+    }
+  };
+
   const stats = {
     proyectosPropios: 4,
     proyectosColaborativos: 2,
@@ -86,6 +101,9 @@ const Profile = () => {
           apellidoMaterno={usuario.apellido_materno}
           rol={rol}
           estado={usuario.status_logico}
+          imagen={usuario.imagen}
+          onCambiarFoto={handleCambiarFoto}
+          errorFoto={errorFoto}
         />
 
         <div style={styles.statsGrid}>

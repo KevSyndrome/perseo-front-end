@@ -9,7 +9,6 @@ export * from './faseService';
 export * from './mensajesServices';
 export * from './permisoCargoService';
 export * from './proyectoService';
-export * from './proyectoColaborativoService';
 export * from './salaService';
 export * from './tareaService';
 export * from './tipoStatusService';
