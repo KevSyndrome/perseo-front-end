@@ -33,8 +33,10 @@ const Sidebar = ({ isCollapsed, onToggleSidebar }) => {
   return (
     <>
       <aside
-        className={`fixed top-0 left-0 bottom-0 z-[110] flex flex-col overflow-hidden border-r border-[var(--border-color)] bg-[var(--color-primary)] p-4 shadow-[var(--shadow-lg)] transition-[width] duration-300 ease-[var(--transition-slow)] ${
-          isCollapsed ? 'w-[var(--sidebar-collapsed)]' : 'w-[var(--sidebar-width)]'
+        className={`fixed top-0 left-0 bottom-0 z-[110] flex flex-col overflow-hidden border-r border-[var(--border-color)] bg-[var(--color-primary)] p-4 shadow-[var(--shadow-lg)] transition-[width,transform] duration-300 ease-[var(--transition-slow)] ${
+          isCollapsed
+            ? '-translate-x-full md:w-[var(--sidebar-collapsed)] md:translate-x-0'
+            : 'w-[var(--sidebar-width)] translate-x-0'
         }`}
       >
         <div
@@ -61,7 +63,11 @@ const Sidebar = ({ isCollapsed, onToggleSidebar }) => {
             return (
               <button
                 key={index}
-                onClick={() => navigate(item.path)}
+                onClick={() => {
+                  navigate(item.path);
+                  // En móvil el menú tapa la pantalla: se cierra al elegir una opción
+                  if (!isCollapsed && window.innerWidth < 768) onToggleSidebar();
+                }}
                 className={`group relative flex w-full items-center gap-3.5 rounded-xl border-none bg-transparent px-3 py-3 text-left text-[0.9375rem] font-medium text-[var(--color-blanco)] transition-all duration-150 cursor-pointer whitespace-nowrap ${
                   isActive
                     ? 'bg-white/15 font-semibold'
@@ -107,7 +113,7 @@ const Sidebar = ({ isCollapsed, onToggleSidebar }) => {
       <button
         onClick={onToggleSidebar}
         className={`fixed top-4 z-[120] flex items-center justify-center rounded-r-lg bg-white p-2 text-[var(--color-negro)] shadow-[var(--shadow-md)] transition-[left] duration-300 ease-[var(--transition-slow)] cursor-pointer ${
-          isCollapsed ? 'left-[var(--sidebar-collapsed)]' : 'left-[var(--sidebar-width)]'
+          isCollapsed ? 'left-0 md:left-[var(--sidebar-collapsed)]' : 'left-[var(--sidebar-width)]'
         }`}
       >
         <Menu size={22} />

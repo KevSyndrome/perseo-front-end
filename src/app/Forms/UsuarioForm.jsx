@@ -129,7 +129,7 @@ export default function UsuarioForm({ isOpen, onClose, usuario, onGuardado }) {
           <p style={{ color: 'var(--error)', fontSize: '0.85rem' }}>{error}</p>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField label="Nombre" required>
             <InputText
               value={form.nombre}

@@ -17,20 +17,39 @@ function random(min, max) {
   return Math.random() * (max - min) + min;
 }
 
-export default function FloatingBg({ count = 18 }) {
+const pick = (list) => list[Math.floor(Math.random() * list.length)];
+
+// Fondo "burbujas": figuras que flotan con recorrido amplio + burbujas pequeñas que suben
+export default function FloatingBg({ count = 16, rising = 14 }) {
   const particles = useMemo(() => {
     return Array.from({ length: count }, (_, i) => ({
       id: i,
-      x: random(5, 95),
-      y: random(5, 95),
-      size: random(60, 180),
-      color: palette[Math.floor(Math.random() * palette.length)],
-      shape: shapes[Math.floor(Math.random() * shapes.length)],
-      duration: random(18, 35),
-      delay: random(0, 10),
-      opacity: random(0.08, 0.18),
+      x: random(0, 90),
+      y: random(0, 90),
+      size: random(60, 170),
+      color: pick(palette),
+      shape: pick(shapes),
+      // Recorrido en px: suficientemente amplio para que se note el movimiento
+      dx: [random(-140, 140), random(-140, 140), random(-140, 140)],
+      dy: [random(-120, 120), random(-120, 120), random(-120, 120)],
+      duration: random(10, 18),
+      delay: random(-10, 0),
+      opacity: random(0.14, 0.26),
     }));
   }, [count]);
+
+  const burbujas = useMemo(() => {
+    return Array.from({ length: rising }, (_, i) => ({
+      id: i,
+      x: random(2, 96),
+      size: random(10, 34),
+      color: pick(palette),
+      duration: random(9, 17),
+      // Delay negativo: arrancan ya repartidas por la pantalla, no todas desde abajo
+      delay: random(-17, 0),
+      sway: random(15, 40),
+    }));
+  }, [rising]);
 
   return (
     <div
@@ -39,7 +58,7 @@ export default function FloatingBg({ count = 18 }) {
         inset: 0,
         overflow: 'hidden',
         zIndex: 0,
-        background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+        background: 'linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%)',
       }}
     >
       {particles.map((p) => (
@@ -58,20 +77,47 @@ export default function FloatingBg({ count = 18 }) {
                 ? '50%'
                 : p.shape === 'pill'
                 ? '9999px'
-                : '16px',
-            filter: 'blur(1px)',
+                : '22px',
+            filter: 'blur(2px)',
           }}
           animate={{
-            y: [0, -40, 20, -30, 0],
-            x: [0, 25, -15, 20, 0],
-            scale: [1, 1.15, 0.9, 1.1, 1],
-            rotate: [0, 10, -5, 8, 0],
+            x: [0, ...p.dx, 0],
+            y: [0, ...p.dy, 0],
+            scale: [1, 1.2, 0.85, 1.1, 1],
+            rotate: [0, 25, -15, 20, 0],
           }}
           transition={{
             duration: p.duration,
             repeat: Infinity,
             ease: 'easeInOut',
             delay: p.delay,
+          }}
+        />
+      ))}
+
+      {burbujas.map((b) => (
+        <motion.span
+          key={`b${b.id}`}
+          style={{
+            position: 'absolute',
+            left: `${b.x}%`,
+            bottom: -40,
+            width: b.size,
+            height: b.size,
+            borderRadius: '50%',
+            border: `2px solid ${b.color}`,
+            background: `radial-gradient(circle at 30% 30%, #ffffffcc, ${b.color}33)`,
+          }}
+          animate={{
+            y: ['0vh', '-115vh'],
+            x: [0, b.sway, -b.sway, 0],
+            opacity: [0, 0.7, 0.7, 0],
+          }}
+          transition={{
+            duration: b.duration,
+            repeat: Infinity,
+            ease: 'linear',
+            delay: b.delay,
           }}
         />
       ))}

@@ -18,16 +18,16 @@ export default function CreateProyectoModal({ isOpen, onClose, title, children, 
           />
 
           <motion.div
-          style={{padding: "20px"}}
+          style={{padding: "min(20px, 3vw)"}}
             initial={{ y: -20, opacity: 0, scale: 0.95 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: -20, opacity: 0, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            className={`fixed left-1/2 top-1/2 z-50 ${width} ${height} -translate-x-1/2 
+            className={`fixed left-1/2 top-1/2 z-50 ${width} ${height} max-h-[calc(100dvh-2rem)] max-w-[calc(100vw-2rem)] -translate-x-1/2 
             -translate-y-1/2 rounded-2xl bg-white shadow-2xl flex flex-col overflow-hidden`}
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-slate-100 px-8 py-5 shrink-0">
+            <div className="flex items-center justify-between border-b border-slate-100 px-4 py-4 shrink-0 sm:px-8 sm:py-5">
               <h3 className="text-xl font-bold text-slate-800">{title}</h3>
               <button
                 onClick={onClose}
@@ -39,7 +39,7 @@ export default function CreateProyectoModal({ isOpen, onClose, title, children, 
             </div>
 
             {/* Contenido */}
-            <div className="overflow-y-auto flex-1 px-8 py-6">
+            <div className="overflow-y-auto flex-1 px-4 py-4 sm:px-8 sm:py-6">
               {children}
             </div>
 
