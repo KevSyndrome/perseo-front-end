@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { MoreVertical, Palette, KeyRound, Users, LogOut, Trash2, RefreshCw, ImageUp, X, Check } from 'lucide-react';
 import Modal from '../Modals/CreateProyectoModal';
+import CopiarLink from './CopiarLink';
 import { FONDOS_ANIMADOS, FONDO_DEFAULT } from './fondosSala';
 import {
   cambiarFondoSala,
@@ -136,7 +137,7 @@ export default function SalaOpciones({ sala, usuarioId, onSalaActualizada, onSal
       <Modal isOpen={modal === 'invitar'} onClose={() => setModal(null)} title="Código de invitación">
         <div className="flex flex-col items-center gap-4">
           {error && <p className="text-sm text-red-500">{error}</p>}
-          <p className="text-center text-sm text-slate-500">Comparte este código; con él cualquiera puede unirse desde "Unirse con código".</p>
+          <p className="text-center text-sm text-slate-500">Comparte el link o el código; con el código se entra desde "Unirse con código".</p>
           <span className="rounded-lg bg-slate-100 px-4 py-2 font-mono text-2xl font-bold tracking-[0.3em] text-slate-800">
             {sala.codigo_invitacion}
           </span>
@@ -150,6 +151,7 @@ export default function SalaOpciones({ sala, usuarioId, onSalaActualizada, onSal
           >
             <RefreshCw size={14} /> Generar nuevo
           </button>
+          <CopiarLink tipo="sala" codigo={sala.codigo_invitacion} />
         </div>
       </Modal>
 
