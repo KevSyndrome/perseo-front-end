@@ -1,16 +1,18 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #22d3ee;
-  --color-primary-hover: #06b6d4;
-  --color-secondary: #34d399;
-  --color-secondary-hover: #10b981;
-  --color-tertiary: #475569;
-  --color-tertiary-hover: #334155;
-  
-  /* AÑADE ESTOS para disabled */
-  --color-primary-disabled: #7dd3fc;      /* Azul más claro */
-  --color-primary-disabled-bg: #e0f2fe;   /* Fondo azul muy claro */
-  --color-tertiary-disabled: #94a3b8;     /* Gris más claro */
-  --color-tertiary-disabled-bg: #f1f5f9;  /* Fondo gris muy claro */
+  /* Colores de marca definidos en branding.css para evitar conflictos.
+     Aquí se exponen como utilidades de Tailwind. */
+  --color-primary: var(--color-primary);
+  --color-primary-hover: var(--color-selection);
+  --color-secondary: var(--color-secondary);
+  --color-secondary-hover: var(--color-secondary);
+  --color-tertiary: var(--color-terciario);
+  --color-tertiary-hover: var(--color-terciario);
+
+  /* Estados disabled */
+  --color-primary-disabled: #7dd3fc;
+  --color-primary-disabled-bg: #e0f2fe;
+  --color-tertiary-disabled: #94a3b8;
+  --color-tertiary-disabled-bg: #f1f5f9;
 }
