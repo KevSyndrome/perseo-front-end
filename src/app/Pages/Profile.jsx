@@ -1,5 +1,6 @@
 // src/Pages/Profile.jsx
 import { getUsuarioPorId, subirImagenPerfil } from "../../services/usuariosService";
+import { getTokenPayload } from "../../services/authService";
 import React, { useState, useEffect } from "react";
 import AvatarCard from "../Components/Profile/AvatarCard";
 import StatCard from "../Components/Profile/StatCard";
@@ -7,14 +8,6 @@ import InfoSection from "../Components/Profile/InfoSection";
 import ChangePasswordModal from "../Modals/ChangePasswordModal";
 import Breadcrumb, { useBreadcrumb } from "../Components/Breadcrumb";
 
-const getTokenPayload = () => {
-  try {
-    const token = localStorage.getItem("token");
-    return JSON.parse(atob(token.split(".")[1]));
-  } catch {
-    return null;
-  }
-};
 
 const formatDate = (isoString) => {
   if (!isoString) return "—";
@@ -71,10 +64,8 @@ const Profile = () => {
     try {
       const res = await subirImagenPerfil(file);
       setUsuario((prev) => ({ ...prev, imagen: res.data.imagen }));
-      // El Navbar lee la foto del usuario guardado en localStorage
-      const guardado = JSON.parse(localStorage.getItem("usuario") || "{}");
-      localStorage.setItem("usuario", JSON.stringify({ ...guardado, imagen: res.data.imagen }));
-      window.dispatchEvent(new Event("storage"));
+      // Avisa al Navbar para que cambie la foto sin recargar
+      window.dispatchEvent(new CustomEvent("imagen-perfil", { detail: res.data.imagen }));
     } catch (err) {
       setErrorFoto(err.message);
     }

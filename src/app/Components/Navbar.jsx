@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Search, Bell, Settings, User, HelpCircle, LogOut, Menu } from "lucide-react";
+import { Bell, CircleUserRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import "../Pages/Profile"
+import { getUsuarioPorId } from "../../services/usuariosService";
+import { getTokenPayload } from "../../services/authService";
 
 const Navbar = () => {
   const [chatConnected, setChatConnected] = useState(false);
-  const [imagen, setImagen] = useState(() => JSON.parse(localStorage.getItem('usuario') || '{}').imagen);
+  const [imagen, setImagen] = useState(null);
   const navigate = useNavigate();
 
   // Escuchar estado de conexión del chat
@@ -13,10 +14,22 @@ const Navbar = () => {
     const handleStorage = () => {
       const status = localStorage.getItem('chat_connected');
       setChatConnected(status === 'true');
-      setImagen(JSON.parse(localStorage.getItem('usuario') || '{}').imagen);
     };
     window.addEventListener('storage', handleStorage);
     return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
+  // Foto de perfil desde la API; Profile emite "imagen-perfil" al cambiarla
+  useEffect(() => {
+    const id = getTokenPayload()?.sub;
+    if (id) {
+      getUsuarioPorId(id)
+        .then((res) => setImagen(res.data?.imagen || null))
+        .catch(() => setImagen(null));
+    }
+    const handleImagen = (e) => setImagen(e.detail || null);
+    window.addEventListener('imagen-perfil', handleImagen);
+    return () => window.removeEventListener('imagen-perfil', handleImagen);
   }, []);
 
   return (
@@ -28,18 +41,22 @@ const Navbar = () => {
           <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-white" title="Chat conectado" />
         )}
       </button>
-      <button>
-        <div style={{ position: 'relative' }}>
-        <img
-          src={imagen || "https://i.pravatar.cc/300"}
-          alt="Perfil"
-          className="ml-3 h-9 w-9 cursor-pointer rounded-full border-2 border-[var(--color-primary)] object-cover"
-          onClick={() => navigate("/profile")}
-        />  
-
-      </div>
+      <button
+        onClick={() => navigate("/profile")}
+        title="Mi perfil"
+        className="ml-3 flex cursor-pointer items-center justify-center rounded-full bg-transparent text-[var(--color-primary)]"
+      >
+        {imagen ? (
+          <img
+            src={imagen}
+            alt="Perfil"
+            className="h-9 w-9 rounded-full border-2 border-[var(--color-primary)] object-cover"
+          />
+        ) : (
+          <CircleUserRound size={36} strokeWidth={1.5} />
+        )}
       </button>
-      
+
     </nav>
   );
 };

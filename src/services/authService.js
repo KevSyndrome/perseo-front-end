@@ -20,3 +20,13 @@ export const logoutUsuario = () => {
   localStorage.clear();
   sessionStorage.clear();
 };
+
+// Payload del access token: { sub (id del usuario), correo, sid }
+export const getTokenPayload = () => {
+  try {
+    const token = localStorage.getItem("token");
+    return JSON.parse(atob(token.split(".")[1]));
+  } catch {
+    return null;
+  }
+};
