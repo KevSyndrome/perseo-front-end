@@ -1,6 +1,11 @@
 # Cambios: sincronización con backend y limpieza de estilos
 
-Rama: `feature/sync-backend-sesiones-y-estilos` (sale de `develop`)
+Ramas (en este orden, cada una sale de la anterior):
+1. `feature/sync-backend-sesiones-y-estilos` (sale de `develop`): secciones 1 a 4.
+2. `feature/proyectos-invitaciones`: secciones 5 a 8.
+
+Backend correspondiente: `backend-tasks`, rama `feature/proyectos-colaboracion` y luego `feature/permisos-cargo`. El contrato completo está en `docs/CAMBIOS-API.md` de ese repo.
+
 Fecha: 2026-10-24
 
 ## Resumen
@@ -32,7 +37,7 @@ Fecha: 2026-10-24
 ### Configuración (Usuarios / Cargos / Permisos por cargo)
 - **Archivo:** `src/app/Pages/Configuration.jsx`
 - **Antes:** se comparaba `usuario.cargo_id` contra `VITE_CARGO_ADMIN_ID`.
-- **Ahora:** se consulta `GET /permisos-cargos/?cargo_id=<cargo del usuario>` y la página se muestra solo si el módulo `usuarios` tiene la acción `editar` habilitada.
+- **Ahora:** usa los permisos del cargo. En la rama 2 se reemplazó por `GET /usuarios/me/permisos`; ver la sección 7.
 - **Por qué:** el backend exige `usuarios.editar` para escribir en usuarios, cargos, permisos-cargos y tipo-status (si falta, responde 403). Así el front usa la misma regla que el backend y no depende de un id fijo.
 - **`.env.example`:** se eliminó `VITE_CARGO_ADMIN_ID`, que ya no se usa. Pueden quitarlo también de su `.env` local.
 
@@ -82,10 +87,73 @@ No queda ningún componente que use clases del CSS eliminado.
 
 ---
 
-## Pendiente (no incluido en esta rama)
+## 5. Proyectos: invitación por código y colaboradores
 
-- **Proyectos:** visibilidad por propietario o colaborador, invitación por código y propietario asignado por el backend. Es una propuesta del backend que todavía no está implementada.
-- **Colaboradores:** el backend usa `/colaboraciones/...`; `/proyectos-colaborativos` no existe (404). Se va a rediseñar junto con las invitaciones.
-- **Módulos rotos en el backend** (no conectar pantallas todavía): `/comentarios`, `/fases/timeline`, `/fases/estadisticas`, `/tareas/estadisticas`, `PUT /fases/reordenar`.
-- **Mostrar los 403 en la UI:** hoy los tabs de Configuración solo hacen `console.error` del `detail`.
-- `Task.jsx`, `Sprint.jsx` y `Calendar.jsx` siguen usando datos mock.
+Reglas del backend: cada usuario solo ve los proyectos donde es **propietario o colaborador**; el propietario se toma del token; ya **no existe `tipo`** y en su lugar viene `colaborativo` (true si hay al menos un colaborador); `codigo_invitacion` solo le llega al propietario.
+
+| Archivo | Cambio |
+|---|---|
+| `src/services/proyectoService.js` | `getProyectos(page, limit, filtros)` acepta `status_id`, `colaborativo` y `solo_propios`. Funciones nuevas: `subirLogoProyecto`, `eliminarLogoProyecto`, `regenerarCodigoProyecto`, `unirseProyecto`, `getColaboradoresProyecto` y `eliminarColaborador`. Las nuevas lanzan `Error` con el `detail` del backend. |
+| `src/app/Forms/ProyectoForm.jsx` | Ya no manda `tipo`, `propietario_id` ni `logo` en base64. El logo se sube con `POST /proyectos/{id}/logo` **después** de crear el proyecto. `fecha_final` se omite si está vacía; antes mandaba "ahora" y el backend la rechazaba por no ser posterior a la inicial. Se muestra el mensaje de validación del backend. La descripción va de 10 a 200 caracteres. Se quitó el selector "Tipo de proyecto". |
+| `src/app/Components/UI/TextArea.jsx` | Acepta `minLength` y `maxLength`. |
+| `src/app/Forms/UnirseForm.jsx` | El código ahora es de **8 caracteres** (4 — 4); antes eran 6. Bug corregido: el botón nunca se habilitaba porque `code.includes('')` siempre es `true`. Muestra el error del backend y un estado "Uniendo...". |
+| `src/app/Modals/UnirseModal.jsx` | Llama a `POST /proyectos/unirse` (antes solo hacía `console.log`). Prop nueva `onUnido(proyecto)`. |
+| `src/app/Pages/Proyect.jsx` | "Propios" = soy dueño y no tiene colaboradores. "Colaborativos" = `colaborativo === true`. Al unirse, el proyecto se agrega a la lista y cambia a "Colaborativos". |
+| `src/app/Pages/ProyectDetalle.jsx` + `Cards/ProjectDetalleCard.jsx` | **Propietario:** ve el código, puede generar uno nuevo (el anterior deja de funcionar) y puede cambiar o quitar el logo. **Todos:** ven la lista de colaboradores. El propietario puede "Quitar" a alguien y un colaborador puede "Salir"; al salir regresa a `/proyectos`. |
+
+## 6. Perfil
+
+- `POST /usuarios/me/imagen` en `usuariosService.subirImagenPerfil`.
+- `Profile/AvatarCard.jsx`: el botón "Cambiar foto" ya funciona y muestra la imagen si existe.
+- `Navbar.jsx`: muestra `usuario.imagen`, que se lee de `localStorage` y se actualiza al subir la foto.
+
+## 7. Permisos por cargo (`GET /usuarios/me/permisos`)
+
+Respuesta: `{ cargo, modulos, permisos: { <modulo>: { ver, crear, editar, eliminar, ... } } }`. Una acción que no viene cuenta como `false`.
+Módulos: `dashboard, proyectos, fases, tareas, comentarios, archivos, mensajes, usuarios, configuracion`.
+
+| Archivo | Cambio |
+|---|---|
+| `src/app/Components/PermisosStore.js` (nuevo) | Store de zustand con los permisos del usuario logueado. Se recarga si cambia el token (otro login). Helpers: `puede(permisos, modulo, accion)` y `tieneModulo(permisos, modulo)`. |
+| `src/app/Components/Sidebar.jsx` | "Configuración" solo aparece si el cargo tiene algo de `usuarios` o de `configuracion`. |
+| `src/app/Pages/Configuration.jsx` | El tab **Usuarios** depende del módulo `usuarios`; **Cargos** y **Permisos por Cargo** dependen de `configuracion`. Si no tiene ninguno, muestra "No tienes permisos". |
+| `src/app/Tabs/UsuariosTab.jsx` | "Nuevo usuario" → `usuarios.crear`; editar y reactivar → `usuarios.editar`; desactivar → `usuarios.eliminar`. |
+| `src/app/Tabs/PermisoCargoTab.jsx` | El módulo se elige de un **select** con los 9 nombres exactos. Antes era texto libre y permitía crear "Dashboard" con mayúscula, que el backend no reconoce (ahora daría 422). Para `tareas` aparece además **"Ver todas las tareas"** (`acciones.ver_todas`), en el formulario y en una columna de la tabla. |
+
+En **sus** proyectos el propietario puede hacer todo, sin importar su cargo: no ocultar acciones del dueño dentro de su propio proyecto.
+
+Cargo admin en el esquema nuevo: **"Administrador"**, que tiene todos los módulos incluido `configuracion`. "Administrador Total" es un resto del seed viejo y **no** tiene `configuracion`.
+
+## 8. Otros services alineados
+
+| Service | Cambio |
+|---|---|
+| `proyectoColaborativoService.js` | **Eliminado** (`/colaboraciones` ya no existe). |
+| `archivoService.js` | Se quitaron `getArchivosDrive`, `getArchivoMetadata` y `crearArchivo`. `getArchivos(page, limit, filtros)`: sin filtros devuelve el drive personal. |
+| `faseService.js` | `getFases(proyectoId, page, limit)` (proyecto obligatorio). Se quitó `bulkCreateFases`. |
+| `tareaService.js` | `getTareas(filtros, page, limit)` con `{ fase_id }` o `{ proyecto_id }`. Se quitó `bulkCreateTareas`. |
+| `comentarioService.js` | `getComentarios(tareaId, page, limit)`. |
+| `tipoStatusService.js` | Se quitó `getTiposStatusOpciones`. |
+| `usuariosService.js` | Se quitó `getUsuarioPublico`. Funciones nuevas: `subirImagenPerfil` y `getMisPermisos`. |
+| `mensajesServices.js` | `GET /mensajes/` sin `sala_id` = sala Global. La página 1 trae los más recientes. |
+
+---
+
+## Cómo se probó
+
+Front local (`VITE_API_URL=http://127.0.0.1:8765 npx vite`) contra el backend local con BD de prueba, usando dos usuarios de prueba: uno con cargo "Administrador" y otro con "Usuario Básico".
+
+- ✅ Login; 401 → regresa a login (sesión borrada en el backend).
+- ✅ Crear proyecto sin fecha final; ver y regenerar el código.
+- ✅ Unirse con el código en minúsculas desde otra cuenta → aparece en "Colaborativos".
+- ✅ El colaborador no ve el código; "Salir" lo quita del proyecto.
+- ✅ Usuario Básico: no ve "Configuración" y la ruta directa muestra "No tienes permisos".
+- ✅ Administrador: ve los 3 tabs y todas las acciones; select de módulos y checkbox `ver_todas` en Permisos por Cargo.
+- ✅ Chat conecta el WebSocket; el Perfil carga.
+- ⚠️ **No probado en el navegador:** subir o quitar el logo y la foto de perfil (requieren elegir un archivo local), quitar a un colaborador desde el propietario y cambiar la contraseña.
+
+## Pendiente
+
+- Conectar `Task.jsx`, `Sprint.jsx` y `Calendar.jsx` (hoy usan datos mock) con fases y tareas. Con permisos: si `tareas` no tiene `ver_todas` (por ejemplo, Tester), el usuario solo ve las tareas asignadas a él o creadas por él.
+- Mostrar los 403 en pantalla en los tabs de Configuración (hoy solo hacen `console.error`). Con los permisos aplicados en la UI ya casi no deberían ocurrir.
+- Al desplegar: todos los usuarios vuelven a iniciar sesión una vez, y se puede borrar `VITE_CARGO_ADMIN_ID` del entorno.
