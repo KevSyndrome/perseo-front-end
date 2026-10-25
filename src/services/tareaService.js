@@ -1,7 +1,9 @@
 import { BASE_URL, getHeaders, apiFetch } from "./api";
 
-export const getTareas = async (page = 1, limit = 10) => {
-  const response = await apiFetch(`${BASE_URL}/tareas/?page=${page}&limit=${limit}`, {
+// filtros: { fase_id } o { proyecto_id } (el backend exige uno)
+export const getTareas = async (filtros, page = 1, limit = 10) => {
+  const params = new URLSearchParams({ page, limit, ...filtros });
+  const response = await apiFetch(`${BASE_URL}/tareas/?${params}`, {
     headers: getHeaders(),
   });
   return await response.json();
@@ -63,11 +65,3 @@ export const moverTarea = async (id, faseId) => {
   return await response.json();
 };
 
-export const bulkCreateTareas = async (tareas) => {
-  const response = await apiFetch(`${BASE_URL}/tareas/bulk`, {
-    method: "POST",
-    headers: getHeaders(),
-    body: JSON.stringify({ tareas }),
-  });
-  return await response.json();
-};

@@ -7,13 +7,6 @@ export const getTiposStatus = async (page = 1, limit = 10) => {
   return await response.json();
 };
 
-export const getTiposStatusOpciones = async () => {
-  const response = await apiFetch(`${BASE_URL}/tipo-status/opciones`, {
-    headers: getHeaders(),
-  });
-  return await response.json();
-};
-
 export const getTipoStatusPorId = async (id) => {
   const response = await apiFetch(`${BASE_URL}/tipo-status/${id}`, {
     headers: getHeaders(),

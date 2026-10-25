@@ -10,7 +10,7 @@ export const obtenerMensajes = async (sala_id = null, page = 1, limit = 20) => {
   params.append('page', page);
   params.append('limit', limit);
   const query = params.toString();
-  const response = await apiFetch(`${BASE_URL}/mensajes?${query}`, {
+  const response = await apiFetch(`${BASE_URL}/mensajes/?${query}`, {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,

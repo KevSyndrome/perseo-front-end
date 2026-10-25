@@ -18,13 +18,6 @@ export const getUsuarioPorId = async (id) => {
   return await response.json();
 };
 
-export const getUsuarioPublico = async (id) => {
-  const response = await apiFetch(`${BASE_URL}/usuarios/publico/${id}`, {
-    headers: getHeaders(),
-  });
-  return await response.json();
-};
-
 export const crearUsuario = async (usuario) => {
   const response = await apiFetch(`${BASE_URL}/usuarios/`, {
     method: "POST",
@@ -64,4 +57,17 @@ export const cambiarContraseña = async (datos) => {
   }
   
   return await response.json();
+};
+
+export const subirImagenPerfil = async (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await apiFetch(`${BASE_URL}/usuarios/me/imagen`, {
+    method: "POST",
+    headers: getHeaders(false),
+    body: formData,
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.detail || "Error al subir la imagen");
+  return data;
 };
