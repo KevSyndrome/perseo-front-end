@@ -191,7 +191,11 @@ const Mensajes = () => {
           setWsConnected(true);
           setError(null);
         };
-        ws.onclose = () => setWsConnected(false);
+        ws.onclose = (event) => {
+          setWsConnected(false);
+          // 1008 = rechazo del backend con motivo (ej. "No tienes acceso a esta sala")
+          if (event.code === 1008) setError(event.reason || 'Conexión rechazada');
+        };
       } catch (err) {
         setError(err.message || 'Error al conectar al chat');
         console.error(err);

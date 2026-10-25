@@ -16,6 +16,7 @@ Ramas (ya mergeadas, en este orden):
 10. `feature/chat-pantalla-completa`: chat a pantalla completa en todos los tamaños, menú ⋮ en Safari y modales encima del chat (sección 10).
 11. `feature/recuperar-contrasena`: recuperación de contraseña por correo (sección 12).
 12. `fix/sesion-persistente`: la sesión dura lo que dice el backend (renovación con refresh token) y la raíz respeta la sesión (sección 1).
+13. `feature/logout-revoca-sesion`: cerrar sesión revoca la sesión en el backend; los WebSocket reaccionan al motivo del 1008 (sección 1).
 
 Backend correspondiente: repo `backend-tasks`, desplegado desde la rama `supabase`. El contrato completo está en `docs/CAMBIOS-API.md` de ese repo.
 
@@ -50,7 +51,14 @@ Backend correspondiente: repo `backend-tasks`, desplegado desde la rama `supabas
   - `loginUsuario` guarda también `refresh_token` en `localStorage`.
   - `services/api.js` tiene `refrescarSesion()`: llama a `POST /usuarios/me/refresh`, guarda el par nuevo (el backend **rota** ambos tokens) y comparte **una sola renovación** entre peticiones simultáneas; una segunda renovación con el refresh viejo cerraría la sesión.
   - `apiFetch`: ante un 401 renueva una vez y **repite la petición**. Solo si no se puede renovar limpia la sesión y manda a login (`cerrarSesionYIrALogin`).
-  - Canal de avisos (WebSocket): si el backend rechaza el token en el handshake, el navegador ve **1006** (no 1008). Si la conexión no llegó a abrir y el token está vencido (`exp` del JWT), renueva y reconecta.
+  - Canal de avisos (WebSocket): el backend acepta y cierra con **1008** y el motivo en `reason`. "Token inválido o expirado" → renueva **una vez** y reconecta. "Sesión revocada o expirada" → login. Otro motivo (por ejemplo, el cargo sin acceso a mensajes) → no reintenta, para no entrar en bucle. 1006 y otros códigos = red caída → reintenta a los 5 s.
+  - Chat de una sala: si el WebSocket se cierra con 1008 (por ejemplo, "No tienes acceso a esta sala"), se muestra el motivo en la barra de error.
+
+### Cerrar sesión
+- `logoutUsuario()` llama a `DELETE /usuarios/me/active-sessions/{sid}` (el `sid` sale del access token) para **revocar la sesión en el backend**: ni el access ni el refresh vuelven a servir. Luego borra `localStorage`/`sessionStorage`. Si responde 401 o no hay red, borra igual.
+- `LogoutModal` hace una **recarga completa** a `/login`. Antes navegaba dentro de la app, y el canal de avisos y los stores en memoria seguían vivos.
+- Cambiar y restablecer contraseña usan `logoutUsuario({ revocar: false })`, porque el backend ya cerró todas las sesiones.
+- Probado: después de cerrar sesión, el access y el refresh anteriores responden 401.
 - **Rutas:** `/` y cualquier ruta desconocida llevan a `/dashboard` si hay sesión, si no a `/login` (antes `/` mandaba siempre a login). El Login con sesión guardada redirige solo.
 - Probado: con el access token vencido el dashboard carga sin pedir login; 5 peticiones simultáneas → 1 renovación → las 5 responden 200; los avisos se reconectan; con el refresh token inválido → login.
 - Quien inició sesión antes de este cambio no tiene `refresh_token` guardado: al vencer su token entrará una vez más y desde ahí se mantiene.

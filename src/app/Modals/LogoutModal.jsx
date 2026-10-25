@@ -1,20 +1,15 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import LogoutForm from '../Forms/LogoutForm';
+import { logoutUsuario } from '../../services/authService';
 
 const LogoutModal = ({ isOpen, onClose }) => {
-  const navigate = useNavigate();
-
   if (!isOpen) return null;
 
-  const handleConfirm = () => {
-    // Limpia la sesión
-    localStorage.clear();
-    sessionStorage.clear();
-
-    // Redirige al login reemplazando el historial
-    // "replace: true" evita que las flechas del navegador regresen al dashboard
-    navigate('/login', { replace: true });
+  const handleConfirm = async () => {
+    await logoutUsuario();
+    // Recarga completa: cierra el canal de avisos y limpia los stores en memoria.
+    // replace evita que las flechas del navegador regresen al dashboard.
+    window.location.replace('/login');
   };
 
   return (
