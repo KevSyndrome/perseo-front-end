@@ -1,12 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, Bell, Settings, User, HelpCircle, LogOut, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import "../../styles/branding.css"
 import "../Pages/Profile"
 
-const Navbar = ({ sidebarOpen, sidebarCollapsed, onToggleSidebar }) => {
+const Navbar = () => {
   const [chatConnected, setChatConnected] = useState(false);
-  const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
   // Escuchar estado de conexión del chat
@@ -19,36 +17,21 @@ const Navbar = ({ sidebarOpen, sidebarCollapsed, onToggleSidebar }) => {
     return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const handleLogout = () => {  
-    setDropdownOpen(false);
-    navigate("/login");
-  };
-
   return (
-    <nav elevation={0} style={{backgroundColor: "var(--color-blanco)"}} className={`app-navbar ${sidebarOpen ? 'sidebar-open' : ''} ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-      <div className="app-navbar__spacer" />
-      <button style={{Color: "var(--color-negro)"}}className="app-navbar__icon-btn relative">
+    <nav className="fixed inset-x-0 top-0 z-[100] flex h-[var(--navbar-height)] items-center border-b border-[var(--border-color)] bg-[var(--color-blanco)] px-6">
+      <div className="flex-1" />
+      <button className="relative flex cursor-pointer items-center justify-center rounded-[var(--radius-md)] bg-transparent p-2 text-[var(--color-negro)] transition-colors duration-150 hover:bg-blue-500/10">
         <Bell size={30} />
         {chatConnected && (
           <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-white" title="Chat conectado" />
         )}
       </button>
       <button>
-        <div style={{ position: 'relative' }} ref={dropdownRef}>
+        <div style={{ position: 'relative' }}>
         <img
           src="https://i.pravatar.cc/300"
           alt="Perfil"
-          className="app-navbar__avatar"
+          className="ml-3 h-9 w-9 cursor-pointer rounded-full border-2 border-[var(--color-primary)] object-cover"
           onClick={() => navigate("/profile")}
         />  
 

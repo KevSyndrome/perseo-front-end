@@ -1,4 +1,4 @@
-import { BASE_URL } from './api'
+import { BASE_URL, apiFetch } from './api'
 
 const WS_URL = BASE_URL.replace(/^http/, 'ws');
 
@@ -10,7 +10,7 @@ export const obtenerMensajes = async (sala_id = null, page = 1, limit = 20) => {
   params.append('page', page);
   params.append('limit', limit);
   const query = params.toString();
-  const response = await fetch(`${BASE_URL}/mensajes?${query}`, {
+  const response = await apiFetch(`${BASE_URL}/mensajes?${query}`, {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
@@ -46,6 +46,10 @@ export const crearConexionWS = (sala_id = null, onMessage, onError, onClose) => 
     }
     if (msg.type === 'new_message' && onMessage) {
       onMessage(msg.data);
+    }
+    // typing llega en la raíz, no dentro de data
+    if (msg.type === 'typing' && onMessage) {
+      onMessage(msg);
     }
   };
 

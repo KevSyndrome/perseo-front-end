@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { cambiarContraseña } from "../../services/usuariosService";
+import { logoutUsuario } from "../../services/authService";
 
 const ChangePasswordModal = ({ onClose }) => {
   const [valores, setValores] = useState({
@@ -40,8 +41,10 @@ const ChangePasswordModal = ({ onClose }) => {
         nueva_contraseña: valores.nueva_contraseña,
       });
       setExito(true);
+      // El backend cierra todas las sesiones al cambiar la contraseña
       setTimeout(() => {
-        onClose();
+        logoutUsuario();
+        window.location.replace("/login");
       }, 1500);
     } catch (err) {
       setError("Contraseña actual incorrecta o error al actualizar.");
@@ -97,7 +100,7 @@ const ChangePasswordModal = ({ onClose }) => {
         {error && <p style={styles.error}>{error}</p>}
 
         {/* Éxito */}
-        {exito && <p style={styles.exito}>¡Contraseña actualizada correctamente!</p>}
+        {exito && <p style={styles.exito}>¡Contraseña actualizada! Vuelve a iniciar sesión.</p>}
 
         {/* Acciones */}
         <div style={styles.actions}>
