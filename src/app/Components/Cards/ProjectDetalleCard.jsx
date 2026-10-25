@@ -33,13 +33,13 @@ const ProjectDetalleCard = ({
         backgroundColor: "var(--color-primary)",
         border: "1px solid rgba(255,255,255,0.08)",
         borderRadius: "var(--radius-xl)",
-        padding: "2rem",
         display: "flex",
         flexDirection: "column",
         gap: "1.5rem",
         width: "100%",
         position: "relative",
       }}
+      className="p-4 sm:p-8"
     >
       {/* Menú de opciones: solo el propietario */}
       {esPropietario && (
@@ -90,9 +90,9 @@ const ProjectDetalleCard = ({
       )}
 
       {/* Header: logo + nombre + owner */}
-      <div style={{ display: "flex", alignItems: "flex-start", gap: "1.5rem" }}>
-        <div style={{
-          width: "100px", height: "100px", borderRadius: "var(--radius-md)",
+      <div className="flex items-start gap-3 pr-8 sm:gap-6">
+        <div className="h-16 w-16 sm:h-[100px] sm:w-[100px]" style={{
+          borderRadius: "var(--radius-md)",
           overflow: "hidden", flexShrink: 0,
           backgroundColor: "rgba(255,255,255,0.1)",
           display: "flex", alignItems: "center", justifyContent: "center",
@@ -102,11 +102,10 @@ const ProjectDetalleCard = ({
             : <FolderOpen size={40} color="var(--color-terciario)" />}
         </div>
 
-        <div style={{ flex: 1 }}>
-          <h1 style={{
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h1 className="break-words text-xl sm:text-[2rem]" style={{
             color: "var(--color-blanco)",
             fontWeight: 800,
-            fontSize: "2rem",
             textTransform: "uppercase",
             letterSpacing: "0.02em",
             margin: 0,
@@ -127,10 +126,10 @@ const ProjectDetalleCard = ({
       </div>
 
       {/* Body: fechas + descripción */}
-      <div style={{ display: "grid", gridTemplateColumns: "180px 1fr", gap: "2rem" }}>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-[180px_1fr] sm:gap-8">
 
         {/* Fechas */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+        <div className="flex flex-row gap-6 sm:flex-col">
           <div>
             <p style={{ color: "var(--color-dark-grey)", fontSize: "0.75rem", margin: "0 0 0.25rem 0" }}>
               Fecha de inicio:

@@ -10,6 +10,7 @@ Ramas (ya mergeadas, en este orden):
 4. `fix/vercel-spa-rewrites`: `vercel.json` para que recargar una ruta no dé 404.
 5. `feature/chat-salas`: chat por salas estilo Discord, fondos, no leídos y avisos en tiempo real (sección 9).
 6. `fix/scroll-chat`: el scroll del chat no dejaba ver los mensajes anteriores (sección 9).
+7. `feature/fondos-y-responsivo`: fondos con más animación y diseño responsivo en móvil y tablet (sección 10).
 
 Backend correspondiente: repo `backend-tasks`, desplegado desde la rama `supabase`. El contrato completo está en `docs/CAMBIOS-API.md` de ese repo.
 
@@ -183,6 +184,31 @@ El scroll no permitía subir a los mensajes anteriores por tres causas en `Mensa
 - **Sidebar:** la insignia de "Chat" es el total de no leídos. **Navbar:** el punto verde indica que el canal de avisos está conectado.
 - Si la pestaña no está a la vista, se muestra una notificación del navegador con el nombre de la sala.
 - Se eliminó el contador viejo en `localStorage` (`unread_messages`, `chat_connected`), que solo funcionaba con la pantalla de chat abierta.
+
+## 10. Fondos animados y diseño responsivo
+
+### Fondos (`FloatingBg.jsx`, `SalaFondo.jsx`)
+- **Burbujas:** las figuras ahora recorren hasta ±140 px en ciclos de 10 a 18 s (antes ±40 px en 18 a 35 s, casi no se notaba) y son más visibles. Se agregaron burbujas pequeñas que suben de abajo hacia arriba.
+- **Aurora:** cuatro manchas grandes y difuminadas (teal, violeta, rosa, azul) que se desplazan y cambian de tamaño. Antes era un solo degradado al 35%.
+- **Estrellas:** 220 estrellas que parpadean, el cielo gira lentamente (un ciclo de 4 min) y pasan estrellas fugaces cada pocos segundos.
+- Si el usuario activó **"reducir movimiento"** en su sistema operativo, los fondos quedan quietos (`MotionConfig reducedMotion="user"`).
+
+### Responsivo
+Puntos de corte de Tailwind: `sm` 640px, `md` 768px, `lg` 1024px.
+
+| Archivo | Cambio |
+|---|---|
+| `Layouts/Layout.jsx` + `Components/Sidebar.jsx` | **Móvil (<768px):** el sidebar queda oculto y el ☰ lo abre **encima** del contenido, con fondo oscuro; se cierra al tocar fuera o al elegir una opción. **Tablet (<1024px):** arranca colapsado (solo íconos). **Escritorio:** igual que antes. El `main` usa `p-3` en móvil y `p-6` desde `sm`. |
+| `Components/Navbar.jsx` | Menos padding lateral en móvil. |
+| `Modals/CreateProyectoModal.jsx` | Nunca más ancho ni alto que la pantalla (`max-w`/`max-h` + scroll interno); padding menor en móvil. Aplica a todos los modales que lo usan. |
+| `Forms/ProyectoForm.jsx`, `Forms/UsuarioForm.jsx` | Columnas de 2 → 1 en móvil. ProyectoForm ya no tiene alto fijo. |
+| `Forms/UnirseForm.jsx`, `Modals/UnirseModal.jsx` | Las 8 casillas del código caben en 360 px (más chicas en móvil). |
+| `Pages/Dashboard.jsx` | Tarjetas de acciones: 1 columna en móvil, 3 desde `sm`. |
+| `Pages/Profile.jsx` | Grids que estaban en estilos en línea pasados a Tailwind: avatar arriba en móvil, estadísticas en 1, 2 o 3 columnas, e información en 1 o 2 columnas. |
+| `Cards/ProjectDetalleCard.jsx` | Logo y título más chicos en móvil; fechas y descripción apiladas. |
+| `Pages/Mensajes.jsx` | El alto del chat se ajusta al padding del `main` en cada tamaño (`100dvh`). |
+
+Revisado en 390 px (celular) y 820 px (tablet): Dashboard, Proyectos, detalle de proyecto, Perfil, Configuración (la tabla hace scroll horizontal dentro de su tarjeta), panel de salas, chat, menú lateral y modales. No hay scroll horizontal de página.
 
 ---
 

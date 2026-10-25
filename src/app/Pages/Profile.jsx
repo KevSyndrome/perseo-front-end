@@ -85,7 +85,7 @@ const Profile = () => {
     <br></br>
 
       {/* ── TOP GRID ── */}
-      <div style={styles.topGrid}>
+      <div className="mb-4 grid grid-cols-1 items-start gap-4 lg:grid-cols-[260px_1fr]">
         <AvatarCard
           nombre={usuario.nombre}
           apellidoPaterno={usuario.apellido_paterno}
@@ -97,7 +97,7 @@ const Profile = () => {
           errorFoto={errorFoto}
         />
 
-        <div style={styles.statsGrid}>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <StatCard label="PROYECTOS PROPIOS ACTIVOS"       value={stats.proyectosPropios}       sublabel="en curso" />
           <StatCard label="PROYECTOS COLABORATIVOS ACTIVOS" value={stats.proyectosColaborativos} sublabel="activos" />
           <StatCard label="TAREAS COMPLETADAS"              value={stats.tareasCompletadas}      sublabel="este mes" />
@@ -108,7 +108,7 @@ const Profile = () => {
       </div>
 
       {/* ── BOTTOM INFO ── */}
-      <div style={styles.bottomGrid}>
+      <div className="grid grid-cols-1 overflow-hidden rounded-xl border border-[#e0e0e0] bg-white md:grid-cols-2">
         <InfoSection
           title="Información personal"
           fields={[
@@ -171,26 +171,6 @@ const styles = {
     fontSize: "0.8rem",
     color: "#888",
     marginBottom: "1.25rem",
-  },
-  topGrid: {
-    display: "grid",
-    gridTemplateColumns: "260px 1fr",
-    gap: "1rem",
-    alignItems: "start",
-    marginBottom: "1rem",
-  },
-  statsGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
-    gap: "1rem",
-  },
-  bottomGrid: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    border: "1px solid #e0e0e0",
-    borderRadius: "12px",
-    overflow: "hidden",
-    backgroundColor: "#fff",
   },
   changePassBtn: {
     background: "none",
