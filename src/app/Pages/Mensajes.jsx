@@ -264,13 +264,14 @@ const Mensajes = () => {
   };
 
   return (
-    // Celular: pantalla completa bajo el Navbar (top/bottom fijos, sin depender de dvh);
-    // desde sm: tarjeta dentro del layout
-    <div className="fixed inset-x-0 bottom-0 top-[var(--navbar-height)] z-[90] flex flex-col overflow-hidden bg-white sm:relative sm:inset-auto sm:z-auto sm:h-[calc(100dvh-var(--navbar-height)-3rem)] sm:w-full sm:rounded-xl">
+    // Pantalla completa en todos los tamaños: entre el Navbar y el borde inferior, a la
+    // derecha del sidebar (--contenido-left lo define el Layout). Sin depender de dvh.
+    <div className="fixed bottom-0 right-0 left-[var(--contenido-left)] top-[var(--navbar-height)] z-[90] flex flex-col overflow-hidden bg-white transition-[left] duration-300">
       <SalaFondo fondoTipo={sala?.fondo_tipo} fondo={sala?.fondo} />
 
       {/* Encabezado de la sala */}
-      <div className="relative z-20 flex items-center gap-3 border-b border-slate-200/50 bg-white/80 px-3 py-2 backdrop-blur-sm">
+      {/* Sin backdrop-blur: Safari recorta lo que sobresale de él y el menú ⋮ quedaba invisible */}
+      <div className="relative z-20 flex items-center gap-3 border-b border-slate-200/50 bg-white/95 px-3 py-2">
         <button
           onClick={() => navigate('/mensajes')}
           title="Volver a las salas"
@@ -385,7 +386,7 @@ const Mensajes = () => {
         </div>
 
         {/* Input */}
-        <div className="relative z-10 flex items-end gap-2 border-t border-slate-200/50 bg-white/80 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-sm">
+        <div className="relative z-10 flex items-end gap-2 border-t border-slate-200/50 bg-white/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <div className="relative">
             <button
               onClick={() => setAttachOpen(!attachOpen)}

@@ -40,7 +40,7 @@ const UnirseForm = ({ onConfirm, onCancel, code, onChange, loading, entidad = 'p
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-[200] flex items-center justify-center"
       style={{ backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)' }}
     >
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 p-5 sm:p-10">

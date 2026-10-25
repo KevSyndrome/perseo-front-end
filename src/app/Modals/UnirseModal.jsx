@@ -58,7 +58,7 @@ const UnirseModal = ({ isOpen, onClose, onUnido, entidad = 'proyecto' }) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-[200] flex items-center justify-center"
       style={{ backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)' }}
     >
       <div className="mx-4 flex w-full max-w-md flex-col items-center gap-3 rounded-2xl bg-white p-6 text-center shadow-xl sm:p-10">

@@ -11,7 +11,11 @@ const Layout = ({ children }) => {
   };
 
   return (
-    <div className="flex min-h-screen">
+    // --contenido-left: dónde empieza el contenido (0 en móvil; ancho del sidebar desde md).
+    // Lo usan las pantallas fixed a pantalla completa, como el chat.
+    <div className={`flex min-h-screen [--contenido-left:0px] ${
+      sidebarCollapsed ? 'md:[--contenido-left:var(--sidebar-collapsed)]' : 'md:[--contenido-left:var(--sidebar-width)]'
+    }`}>
       <Navbar />
 
       <Sidebar

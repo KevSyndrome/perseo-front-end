@@ -65,7 +65,7 @@ export default function SalaOpciones({ sala, usuarioId, onSalaActualizada, onSal
       <button
         onClick={() => setMenuAbierto((v) => !v)}
         title="Opciones de la sala"
-        className="flex cursor-pointer items-center justify-center rounded-full bg-transparent p-2 text-slate-600 hover:bg-slate-100"
+        className="flex cursor-pointer items-center justify-center rounded-full bg-slate-100 p-2 text-slate-700 hover:bg-slate-200"
       >
         <MoreVertical size={20} />
       </button>
