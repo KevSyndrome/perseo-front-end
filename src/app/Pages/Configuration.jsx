@@ -4,23 +4,34 @@ import Breadcrumb from '../Components/Breadcrumb';
 import UsuariosTab from '../Tabs/UsuariosTab';
 import CargosTab from '../Tabs/CargosTab';
 import PermisoCargoTab from '../Tabs/PermisoCargoTab';
-
-const CARGO_ADMIN_ID = import.meta.env.VITE_CARGO_ADMIN_ID;
+import { getPermisosCargos } from '../../services/permisoCargoService';
 
 const tabs = ["Usuarios", "Cargos", "Permisos por Cargo"];
 
 export default function Configuration() {
   const [activeTab, setActiveTab] = useState("Usuarios");
 
-  const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
-  const esAdmin = usuario.cargo_id === CARGO_ADMIN_ID;
+  const [puedeEditar, setPuedeEditar] = useState(null);
+
+  // El backend exige usuarios.editar para escribir en usuarios, cargos y permisos
+  useEffect(() => {
+    const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
+    getPermisosCargos(1, 100, usuario.cargo_id)
+      .then((res) => {
+        const permiso = (res.data || []).find((p) => p.modulo === "usuarios");
+        setPuedeEditar(Boolean(permiso?.acciones?.editar));
+      })
+      .catch(() => setPuedeEditar(false));
+  }, []);
 
   useBreadcrumb([
     { label: 'Dashboard', path: '/dashboard' },
     { label: 'Configuración' },
   ]);
 
-  if (!esAdmin) {
+  if (puedeEditar === null) return null;
+
+  if (!puedeEditar) {
     return (
       <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-slate-500">
         <p className="text-lg font-semibold">No tienes permisos para acceder a esta sección.</p>
