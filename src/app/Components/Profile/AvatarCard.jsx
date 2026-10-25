@@ -1,19 +1,30 @@
 // src/Components/Profile/AvatarCard.jsx
 
-import React from "react";
+import React, { useRef } from "react";
 
 const getInitials = (nombre = "", apellido = "") =>
   `${nombre.charAt(0)}${apellido.charAt(0)}`.toUpperCase();
 
-const AvatarCard = ({ nombre, apellidoPaterno, apellidoMaterno, rol, estado }) => {
+const AvatarCard = ({ nombre, apellidoPaterno, apellidoMaterno, rol, estado, imagen, onCambiarFoto, errorFoto }) => {
+  const inputRef = useRef(null);
   const iniciales = getInitials(nombre, apellidoPaterno);
   const nombreCompleto = `${nombre} ${apellidoPaterno} ${apellidoMaterno}`;
   const activo = estado === true || estado === "Activo";
 
   return (
     <div style={styles.card}>
-      <div style={styles.avatarCircle}>{iniciales}</div>
-      <button style={styles.changePhotoBtn}>Cambiar foto</button>
+      {imagen
+        ? <img src={imagen} alt={nombreCompleto} style={{ ...styles.avatarCircle, objectFit: "cover" }} />
+        : <div style={styles.avatarCircle}>{iniciales}</div>}
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/gif,image/webp"
+        hidden
+        onChange={(e) => e.target.files[0] && onCambiarFoto(e.target.files[0])}
+      />
+      <button style={styles.changePhotoBtn} onClick={() => inputRef.current.click()}>Cambiar foto</button>
+      {errorFoto && <p style={{ color: "var(--error)", fontSize: "0.75rem" }}>{errorFoto}</p>}
       <p style={styles.nombre}>{nombreCompleto}</p>
       <p style={styles.rol}>{rol}</p>
       <span style={{ ...styles.badge, ...(activo ? styles.badgeActivo : styles.badgeInactivo) }}>

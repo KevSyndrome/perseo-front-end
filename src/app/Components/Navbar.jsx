@@ -5,6 +5,7 @@ import "../Pages/Profile"
 
 const Navbar = () => {
   const [chatConnected, setChatConnected] = useState(false);
+  const [imagen, setImagen] = useState(() => JSON.parse(localStorage.getItem('usuario') || '{}').imagen);
   const navigate = useNavigate();
 
   // Escuchar estado de conexión del chat
@@ -12,6 +13,7 @@ const Navbar = () => {
     const handleStorage = () => {
       const status = localStorage.getItem('chat_connected');
       setChatConnected(status === 'true');
+      setImagen(JSON.parse(localStorage.getItem('usuario') || '{}').imagen);
     };
     window.addEventListener('storage', handleStorage);
     return () => window.removeEventListener('storage', handleStorage);
@@ -29,7 +31,7 @@ const Navbar = () => {
       <button>
         <div style={{ position: 'relative' }}>
         <img
-          src="https://i.pravatar.cc/300"
+          src={imagen || "https://i.pravatar.cc/300"}
           alt="Perfil"
           className="ml-3 h-9 w-9 cursor-pointer rounded-full border-2 border-[var(--color-primary)] object-cover"
           onClick={() => navigate("/profile")}
