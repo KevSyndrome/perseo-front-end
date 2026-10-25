@@ -1,9 +1,11 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 
 export default function CreateProyectoModal({ isOpen, onClose, title, children, width = "w-[580px]", height = "h-auto" }) {
-  return (
+  // Portal a body: un ancestro con transform/backdrop-filter rompería el position: fixed
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <>
@@ -12,7 +14,7 @@ export default function CreateProyectoModal({ isOpen, onClose, title, children, 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z|-40 bg-black/20 backdrop-blur-sm"
+            className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
           />
 
           <motion.div
@@ -44,6 +46,7 @@ export default function CreateProyectoModal({ isOpen, onClose, title, children, 
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
-} 
+}

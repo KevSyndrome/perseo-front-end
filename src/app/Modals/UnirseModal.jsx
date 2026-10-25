@@ -3,13 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, XCircle } from 'lucide-react';
 import UnirseForm from '../Forms/UnirseForm';
 import { unirseProyecto } from '../../services/proyectoService';
+import { unirseSala } from '../../services/salaService';
 import { generarSlugProyecto } from '../../utils/slug';
 
-const UnirseModal = ({ isOpen, onClose, onUnido }) => {
+// entidad: 'proyecto' (default) o 'sala'; cambia el endpoint, los textos y a dónde lleva "Ver"
+const TEXTOS = {
+  proyecto: { exito: '¡Te uniste al proyecto!', rol: 'colaborador', ver: 'Ver proyecto' },
+  sala: { exito: '¡Te uniste a la sala!', rol: 'miembro', ver: 'Abrir sala' },
+};
+
+const UnirseModal = ({ isOpen, onClose, onUnido, entidad = 'proyecto' }) => {
+  const textos = TEXTOS[entidad];
   const navigate = useNavigate();
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
-  // null = formulario; { ok: true, proyecto } o { ok: false, mensaje } = modal de resultado
+  // null = formulario; { ok: true, item } o { ok: false, mensaje } = modal de resultado
   const [resultado, setResultado] = useState(null);
 
   if (!isOpen) return null;
@@ -23,9 +31,9 @@ const UnirseModal = ({ isOpen, onClose, onUnido }) => {
   const handleConfirm = async (codigo) => {
     setLoading(true);
     try {
-      const res = await unirseProyecto(codigo);
+      const res = await (entidad === 'sala' ? unirseSala : unirseProyecto)(codigo);
       onUnido?.(res.data);
-      setResultado({ ok: true, proyecto: res.data });
+      setResultado({ ok: true, item: res.data });
     } catch (err) {
       setResultado({ ok: false, mensaje: err.message });
     } finally {
@@ -41,11 +49,12 @@ const UnirseModal = ({ isOpen, onClose, onUnido }) => {
         code={code}
         onChange={setCode}
         loading={loading}
+        entidad={entidad}
       />
     );
   }
 
-  const { ok, proyecto, mensaje } = resultado;
+  const { ok, item, mensaje } = resultado;
 
   return (
     <div
@@ -58,11 +67,11 @@ const UnirseModal = ({ isOpen, onClose, onUnido }) => {
           : <XCircle size={56} className="text-red-500" />}
 
         <h2 className="text-2xl font-bold text-slate-800">
-          {ok ? '¡Te uniste al proyecto!' : 'No se pudo unir'}
+          {ok ? textos.exito : 'No se pudo unir'}
         </h2>
         <p className="text-slate-600">
           {ok
-            ? <>Ahora eres colaborador de <span className="font-semibold">{proyecto?.nombre}</span>.</>
+            ? <>Ahora eres {textos.rol} de <span className="font-semibold">{item?.nombre}</span>.</>
             : mensaje}
         </p>
 
@@ -78,12 +87,12 @@ const UnirseModal = ({ isOpen, onClose, onUnido }) => {
               <button
                 onClick={() => {
                   handleClose();
-                  navigate(`/proyectos/${generarSlugProyecto(proyecto)}`);
+                  navigate(entidad === 'sala' ? `/mensajes/${item.id}` : `/proyectos/${generarSlugProyecto(item)}`);
                 }}
                 className="flex-1 cursor-pointer rounded-xl py-3 font-semibold text-white transition"
                 style={{ backgroundColor: '#0d3b4a' }}
               >
-                Ver proyecto
+                {textos.ver}
               </button>
             </>
           ) : (

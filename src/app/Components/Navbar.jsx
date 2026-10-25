@@ -3,21 +3,13 @@ import { Bell, CircleUserRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getUsuarioPorId } from "../../services/usuariosService";
 import { getTokenPayload } from "../../services/authService";
+import { useNotificacionesStore } from "./NotificacionesStore";
 
 const Navbar = () => {
-  const [chatConnected, setChatConnected] = useState(false);
+  // Punto verde: canal de avisos del chat conectado
+  const chatConnected = useNotificacionesStore((s) => s.conectado);
   const [imagen, setImagen] = useState(null);
   const navigate = useNavigate();
-
-  // Escuchar estado de conexión del chat
-  useEffect(() => {
-    const handleStorage = () => {
-      const status = localStorage.getItem('chat_connected');
-      setChatConnected(status === 'true');
-    };
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
-  }, []);
 
   // Foto de perfil desde la API; Profile emite "imagen-perfil" al cambiarla
   useEffect(() => {

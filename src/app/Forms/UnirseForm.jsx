@@ -3,7 +3,8 @@ import React, { useRef } from 'react';
 // Código de invitación del backend: 8 caracteres A-Z / 2-9
 const LARGO = 8;
 
-const UnirseForm = ({ onConfirm, onCancel, code, onChange, loading }) => {
+const UnirseForm = ({ onConfirm, onCancel, code, onChange, loading, entidad = 'proyecto' }) => {
+  const esSala = entidad === 'sala';
   const completo = code.length === LARGO;
 
   const inputs = useRef([]);
@@ -45,12 +46,12 @@ const UnirseForm = ({ onConfirm, onCancel, code, onChange, loading }) => {
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4" style={{ padding: '2.5rem' }}>
 
         <h2 className="text-2xl font-bold text-slate-800 text-center tracking-wide uppercase mb-2">
-          Unirse a Proyecto
+          {esSala ? 'Unirse a una sala' : 'Unirse a Proyecto'}
         </h2>
         <hr style={{ borderColor: '#1a8fa0', marginBottom: '1.5rem' }} />
 
         <p className="text-slate-600 text-base text-center mb-6">
-          Ingresa el codigo para unirte al proyecto
+          {esSala ? 'Ingresa el código para unirte a la sala' : 'Ingresa el código para unirte al proyecto'}
         </p>
 
         {/* Cajas con input dentro de cada una */}
@@ -90,7 +91,7 @@ const UnirseForm = ({ onConfirm, onCancel, code, onChange, loading }) => {
         </div>
 
         <p className="text-slate-400 text-xs text-center mb-8">
-          Utiliza el código de 8 caracteres que te compartió el dueño del proyecto
+          Utiliza el código de 8 caracteres que te compartió {esSala ? 'el creador de la sala' : 'el dueño del proyecto'}
         </p>
 
         <div className="flex gap-4">
@@ -109,7 +110,7 @@ const UnirseForm = ({ onConfirm, onCancel, code, onChange, loading }) => {
               cursor: completo && !loading ? 'pointer' : 'not-allowed'
             }}
           >
-            {loading ? 'Uniendo...' : 'Unirse al proyecto'}
+            {loading ? 'Uniendo...' : esSala ? 'Unirse a la sala' : 'Unirse al proyecto'}
           </button>
         </div>
 
