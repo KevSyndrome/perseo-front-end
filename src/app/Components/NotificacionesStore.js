@@ -2,13 +2,6 @@ import { create } from 'zustand';
 import { crearConexionAvisos } from '../../services/mensajesServices';
 import { getSalas } from '../../services/salaService';
 import { refrescarSesion, cerrarSesionYIrALogin } from '../../services/api';
-import { getTokenPayload } from '../../services/authService';
-
-// Vencido o ilegible (con 10 s de margen)
-const tokenVencido = () => {
-  const exp = getTokenPayload()?.exp;
-  return !exp || exp * 1000 < Date.now() + 10000;
-};
 
 let ws = null;
 let reintento = null;
@@ -34,9 +27,8 @@ export const useNotificacionesStore = create((set, get) => ({
       .then((res) => get().setDesdeSalas(res.data || []))
       .catch(() => {});
 
-    const abrir = () => {
-      let abierto = false;
-      const tokenUsado = localStorage.getItem('token');
+    // renovado: ya se intentó renovar en este intento de conexión (evita bucles)
+    const abrir = (renovado = false) => {
       ws = crearConexionAvisos(
         (aviso) => {
           const { salaAbierta, noLeidos } = get();
@@ -57,27 +49,25 @@ export const useNotificacionesStore = create((set, get) => ({
         (event) => {
           set({ conectado: false });
           if (get().token !== token) return;
-          // Si el backend rechaza el token en el handshake, el navegador solo ve 1006 (no 1008).
-          // Rechazada sin abrir y con el token vencido → renovar y reconectar (o ir a login).
-          if (event.code === 1008 || (!abierto && tokenVencido())) {
+          // 1006 y otros = red caída: reintentar. 1008 = rechazo con motivo en reason.
+          if (event.code !== 1008) {
+            reintento = setTimeout(abrir, 5000);
+          } else if (/token/i.test(event.reason) && !renovado) {
+            // "Token inválido o expirado": renovar una vez y reconectar
             refrescarSesion().then((ok) => {
               if (!ok) return cerrarSesionYIrALogin();
               token = localStorage.getItem('token');
               set({ token });
-              abrir();
+              abrir(true);
             });
-          } else if (!abierto && localStorage.getItem('token') !== tokenUsado) {
-            // Otra petición ya renovó la sesión mientras se conectaba: reintentar ya
-            abrir();
-          } else {
-            reintento = setTimeout(abrir, 5000);
+          } else if (/sesi[oó]n/i.test(event.reason)) {
+            // "Sesión revocada o expirada"
+            cerrarSesionYIrALogin();
           }
+          // Otro motivo (ej. el cargo no tiene acceso a mensajes): no reintentar
         }
       );
-      ws.onopen = () => {
-        abierto = true;
-        set({ conectado: true });
-      };
+      ws.onopen = () => set({ conectado: true });
     };
     abrir();
   },

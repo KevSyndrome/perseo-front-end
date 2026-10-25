@@ -31,7 +31,8 @@ const RestablecerContrasena = () => {
     setLoading(true);
     try {
       await restablecerContrasena(token, nueva);
-      logoutUsuario();
+      // El backend ya cerró todas las sesiones de esa cuenta; solo se limpia lo local
+      await logoutUsuario({ revocar: false });
       setListo(true);
       setTimeout(() => navigate("/login", { replace: true }), 2500);
     } catch (err) {
