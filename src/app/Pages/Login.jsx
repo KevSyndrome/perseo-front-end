@@ -148,7 +148,7 @@ const LoginModal = () => {
           <Box sx={{ textAlign: "center", mt: 1 }}>
             <Button
               variant="text"
-              onClick={() => navigate("/recuperarpass")}
+              onClick={() => navigate("/recuperar-contrasena")}
               sx={{ color: "var(--color-blanco)" }}
             >
               ¿Olvidaste tu contraseña?

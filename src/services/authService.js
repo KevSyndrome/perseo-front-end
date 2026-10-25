@@ -36,6 +36,37 @@ export const registrarUsuario = async (datos) => {
   return data;
 };
 
+// Siempre responde 200 con un mensaje genérico (no revela si el correo existe)
+export const solicitarRecuperacion = async (correo) => {
+  const response = await fetch(`${BASE_URL}/usuarios/recuperar-contraseña`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ correo }),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(typeof data.detail === "string" ? data.detail : "No se pudo enviar el correo");
+  return data;
+};
+
+// 400: token inválido, ya usado o expirado (vence en 15 min). Cierra todas las sesiones.
+export const restablecerContrasena = async (token, nueva_contraseña) => {
+  const response = await fetch(`${BASE_URL}/usuarios/restablecer-contraseña`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, nueva_contraseña }),
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    const detail = data.detail;
+    throw new Error(
+      Array.isArray(detail)
+        ? detail.map((d) => d.msg.replace(/^Value error, /, "")).join(". ")
+        : detail || "No se pudo restablecer la contraseña"
+    );
+  }
+  return data;
+};
+
 export const logoutUsuario = () => {
   localStorage.clear();
   sessionStorage.clear();
