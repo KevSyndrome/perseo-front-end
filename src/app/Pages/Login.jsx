@@ -5,7 +5,6 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { loginUsuario } from "../../services/authService";
-import "../../styles/branding.css";
 
 const LoginModal = () => {
   const navigate = useNavigate();
