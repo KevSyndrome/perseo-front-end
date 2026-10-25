@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { crearConexionAvisos } from '../../services/mensajesServices';
 import { getSalas } from '../../services/salaService';
+import { refrescarSesion, cerrarSesionYIrALogin } from '../../services/api';
 
 let ws = null;
 let reintento = null;
@@ -16,7 +17,7 @@ export const useNotificacionesStore = create((set, get) => ({
 
   // Idempotente: solo reconecta si cambió el token (otro login)
   conectar: () => {
-    const token = localStorage.getItem('token');
+    let token = localStorage.getItem('token');
     if (!token || get().token === token) return;
     clearTimeout(reintento);
     ws?.close();
@@ -26,7 +27,8 @@ export const useNotificacionesStore = create((set, get) => ({
       .then((res) => get().setDesdeSalas(res.data || []))
       .catch(() => {});
 
-    const abrir = () => {
+    // renovado: ya se intentó renovar en este intento de conexión (evita bucles)
+    const abrir = (renovado = false) => {
       ws = crearConexionAvisos(
         (aviso) => {
           const { salaAbierta, noLeidos } = get();
@@ -46,8 +48,23 @@ export const useNotificacionesStore = create((set, get) => ({
         },
         (event) => {
           set({ conectado: false });
-          // 1008 = sesión inválida (apiFetch ya manda a login); otro cierre → reintentar
-          if (event.code !== 1008 && get().token === token) reintento = setTimeout(abrir, 5000);
+          if (get().token !== token) return;
+          // 1006 y otros = red caída: reintentar. 1008 = rechazo con motivo en reason.
+          if (event.code !== 1008) {
+            reintento = setTimeout(abrir, 5000);
+          } else if (/token/i.test(event.reason) && !renovado) {
+            // "Token inválido o expirado": renovar una vez y reconectar
+            refrescarSesion().then((ok) => {
+              if (!ok) return cerrarSesionYIrALogin();
+              token = localStorage.getItem('token');
+              set({ token });
+              abrir(true);
+            });
+          } else if (/sesi[oó]n/i.test(event.reason)) {
+            // "Sesión revocada o expirada"
+            cerrarSesionYIrALogin();
+          }
+          // Otro motivo (ej. el cargo no tiene acceso a mensajes): no reintentar
         }
       );
       ws.onopen = () => set({ conectado: true });

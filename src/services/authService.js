@@ -12,6 +12,8 @@ export const loginUsuario = async (correo, contraseña) => {
   if (!response.ok) throw new Error(data.detail || "Error al iniciar sesión");
   const payload = data.data;
   localStorage.setItem("token", payload.access_token);
+  // Para renovar la sesión cuando venza el access token (ver refrescarSesion en api.js)
+  localStorage.setItem("refresh_token", payload.refresh_token);
   localStorage.setItem("usuario", JSON.stringify(payload.usuario));
   return payload;
 };
@@ -67,7 +69,21 @@ export const restablecerContrasena = async (token, nueva_contraseña) => {
   return data;
 };
 
-export const logoutUsuario = () => {
+// Cierra la sesión: la revoca en el backend (access y refresh dejan de servir) y borra
+// el almacenamiento local. revocar=false cuando el backend ya cerró todas las sesiones
+// (cambiar o restablecer contraseña). Si el token ya venció (401), se borra igual.
+export const logoutUsuario = async ({ revocar = true } = {}) => {
+  const sid = getTokenPayload()?.sid;
+  if (revocar && sid) {
+    try {
+      await fetch(`${BASE_URL}/usuarios/me/active-sessions/${sid}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+    } catch {
+      // Sin red: la sesión vence sola en el backend
+    }
+  }
   localStorage.clear();
   sessionStorage.clear();
 };

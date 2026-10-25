@@ -43,8 +43,7 @@ const ChangePasswordModal = ({ onClose }) => {
       setExito(true);
       // El backend cierra todas las sesiones al cambiar la contraseña
       setTimeout(() => {
-        logoutUsuario();
-        window.location.replace("/login");
+        logoutUsuario({ revocar: false }).then(() => window.location.replace("/login"));
       }, 1500);
     } catch (err) {
       setError("Contraseña actual incorrecta o error al actualizar.");
