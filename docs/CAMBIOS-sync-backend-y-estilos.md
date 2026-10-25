@@ -7,6 +7,8 @@ Ramas (ya mergeadas, en este orden):
 1. `feature/sync-backend-sesiones-y-estilos`: secciones 1 a 4.
 2. `feature/proyectos-invitaciones`: secciones 5 a 8.
 3. `feature/modal-unirse-y-avatar`: modal de resultado al unirse y foto del Navbar (secciones 5 y 6).
+4. `fix/vercel-spa-rewrites`: `vercel.json` para que recargar una ruta no dé 404.
+5. `feature/chat-salas`: chat por salas estilo Discord, fondos, no leídos y avisos en tiempo real (sección 9).
 
 Backend correspondiente: repo `backend-tasks`, desplegado desde la rama `supabase`. El contrato completo está en `docs/CAMBIOS-API.md` de ese repo.
 
@@ -146,6 +148,35 @@ Cargo admin en el esquema nuevo: **"Administrador"**, que tiene todos los módul
 | `usuariosService.js` | Se quitó `getUsuarioPublico`. Funciones nuevas: `subirImagenPerfil` y `getMisPermisos`. |
 | `mensajesServices.js` | `GET /mensajes/` sin `sala_id` = sala Global. La página 1 trae los más recientes. |
 
+## 9. Chat por salas (estilo Discord)
+
+Backend: sección 9 de `docs/CAMBIOS-API.md`. Tipos de sala: **libre** (Global y otras generales; todos la ven), **proyecto** (se crea sola con cada proyecto; la ven el dueño y los colaboradores) y **privada** (solo miembros; se entra con un código de 8 caracteres).
+
+### Rutas
+- `/mensajes` → **panel de tarjetas** (`Pages/Salas.jsx`).
+- `/mensajes/:salaId` → **chat de esa sala** (`Pages/Mensajes.jsx`). Antes era siempre la sala Global.
+
+### Archivos
+| Archivo | Cambio |
+|---|---|
+| `src/services/salaService.js` | Reescrito: `getSalas(filtros)` (sin paginación), `getSalaPorId`, `crearSala`, `actualizarSala`, `eliminarSala`, `unirseSala`, `regenerarCodigoSala`, `getMiembrosSala`, `eliminarMiembroSala`, `cambiarFondoSala`, `subirFondoImagenSala` y `quitarFondoSala`. Lanzan `Error` con el `detail` del backend. |
+| `src/app/Pages/Salas.jsx` (nuevo) | Cuadrícula de tarjetas: franja con el fondo, ícono por tipo, proyecto, último mensaje, miembros, hora e **insignia de no leídos**. Botones "Crear sala" y "Unirse con código". Con cada aviso en tiempo real, la tarjeta actualiza su último mensaje y sube; las generales quedan primero, como en el backend. |
+| `src/app/Pages/Mensajes.jsx` | Usa `salaId` de la URL para el historial y el WebSocket. Tiene un encabezado con ← volver, el nombre y la descripción de la sala y el menú ⋮, y usa el fondo de la sala. Ahora **muestra los errores**: antes se guardaban pero nunca se veían. |
+| `src/app/Components/SalaOpciones.jsx` (nuevo) | Menú ⋮ según lo que el backend permite: **Cambiar fondo** (`puede_administrar`), **Código de invitación** (creador de una privada), **Miembros** (el creador puede quitar), **Salir** (miembro de una privada) y **Eliminar sala** (con confirmación; no aparece en Global). |
+| `src/app/Forms/SalaForm.jsx` (nuevo) | Crear sala: **privada** (cualquiera), **canal de un proyecto mío** (si eres dueño de alguno) o **general** (requiere el módulo `configuracion`). |
+| `src/app/Components/SalaFondo.jsx` + `fondosSala.js` (nuevos) | Fondos animados: `burbujas` (el de antes y el default), `aurora`, `estrellas` y `ondas`. La **clave** es lo que se guarda en el backend (`PUT /salas/{id}/fondo`). Si es imagen, se muestra la URL subida. Para agregar un fondo: agregarlo en `FONDOS_ANIMADOS` y en `COMPONENTES`. |
+| `src/app/Modals/UnirseModal.jsx` + `Forms/UnirseForm.jsx` | Prop `entidad="sala"` para reutilizarlos con salas (textos, endpoint y "Abrir sala"). |
+| `src/app/Modals/CreateProyectoModal.jsx` | Ahora se dibuja con un **portal** en `body`. Dentro del encabezado del chat (que tiene `backdrop-blur`) el `position: fixed` quedaba relativo al encabezado y el modal salía cortado. También se corrigió la clase rota `z|-40` → `z-40`. |
+| `src/app/Components/Sidebar.jsx` | El ítem queda activo también en subrutas (`/mensajes/...`, `/proyectos/...`). |
+
+### No leídos y avisos en tiempo real
+- `src/app/Components/NotificacionesStore.js` (nuevo, zustand) abre **una sola conexión** a `/mensajes/ws/notificaciones` mientras hay sesión (la inicia el Sidebar) y reintenta cada 5 s si se cae, salvo con el código 1008, que significa sesión inválida.
+- Los no leídos iniciales salen de `no_leidos` de `GET /salas/`. Cada aviso `nuevo_mensaje` suma +1 a su sala, **excepto si es la sala abierta**, porque ese mensaje ya llega por el WS del chat.
+- Al abrir una sala su contador queda en 0; el backend la marca leída solo al abrir el historial o el WS.
+- **Sidebar:** la insignia de "Chat" es el total de no leídos. **Navbar:** el punto verde indica que el canal de avisos está conectado.
+- Si la pestaña no está a la vista, se muestra una notificación del navegador con el nombre de la sala.
+- Se eliminó el contador viejo en `localStorage` (`unread_messages`, `chat_connected`), que solo funcionaba con la pantalla de chat abierta.
+
 ---
 
 ## Cómo se probó
@@ -163,6 +194,10 @@ Front local (`VITE_API_URL=http://127.0.0.1:8765 npx vite`) contra el backend lo
 - ✅ Unirse con un código válido → modal "¡Te uniste al proyecto!"; "Ver proyecto" abre el detalle.
 - ✅ Navbar sin foto → ícono genérico de perfil.
 - ✅ Chat conecta el WebSocket; el Perfil carga.
+- ✅ Chat por salas: el panel muestra Global y las salas de proyecto creadas solas; un mensaje de otro usuario sube la tarjeta, aparece la insignia en la tarjeta y en el Sidebar, y al abrir la sala el contador baja.
+- ✅ Fondos animados aurora, estrellas y ondas aplicados y guardados; la tarjeta muestra el fondo elegido.
+- ✅ Crear una sala privada → abre la sala; código de invitación visible; enviar un mensaje; otro usuario se une con el código en minúsculas.
+- ⚠️ Fondo con imagen (Cloudinary) sin probar en el navegador: requiere elegir un archivo local.
 - ⚠️ **No probado en el navegador:** subir o quitar el logo y la foto de perfil (requieren elegir un archivo local), quitar a un colaborador desde el propietario y cambiar la contraseña.
 
 ## Pendiente

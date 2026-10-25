@@ -3,6 +3,7 @@ import { Home, Settings, LogOut, MessageCircleMoreIcon, FolderKanban, Calendar, 
 import { useNavigate, useLocation } from 'react-router-dom';
 import LogoutModal from '../Modals/LogoutModal';
 import { usePermisosStore, tieneModulo } from './PermisosStore';
+import { useNotificacionesStore, totalNoLeidos } from './NotificacionesStore';
 
 const menuItems = [
   { icon: Home, label: 'Dashboard', path: '/dashboard' },
@@ -16,36 +17,18 @@ const Sidebar = ({ isCollapsed, onToggleSidebar }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [logoutOpen, setLogoutOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
   const { permisos, cargar } = usePermisosStore();
+  const { noLeidos, conectar } = useNotificacionesStore();
+  const unreadCount = totalNoLeidos(noLeidos);
 
   useEffect(() => { cargar(); }, [cargar]);
+  // Canal de avisos del chat: una conexión mientras haya sesión
+  useEffect(() => { conectar(); }, [conectar]);
 
   // Configuración solo si el cargo tiene algo de usuarios o configuracion
   const items = menuItems.filter((item) =>
     item.path !== '/configuration' || tieneModulo(permisos, 'usuarios') || tieneModulo(permisos, 'configuracion')
   );
-
-  useEffect(() => {
-    const updateUnread = () => {
-      const count = parseInt(localStorage.getItem('unread_messages') || '0');
-      setUnreadCount(count);
-    };
-    updateUnread();
-    window.addEventListener('storage', updateUnread);
-    const interval = setInterval(updateUnread, 5000);
-    return () => {
-      window.removeEventListener('storage', updateUnread);
-      clearInterval(interval);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (location.pathname === '/mensajes') {
-      localStorage.setItem('unread_messages', '0');
-      setUnreadCount(0);
-    }
-  }, [location.pathname]);
 
   return (
     <>
@@ -73,7 +56,8 @@ const Sidebar = ({ isCollapsed, onToggleSidebar }) => {
         <nav className="mt-6 flex flex-1 flex-col gap-2">
           {items.map((item, index) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.path;
+            // También activo en subrutas: /mensajes/:salaId, /proyectos/:slug
+            const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
             return (
               <button
                 key={index}

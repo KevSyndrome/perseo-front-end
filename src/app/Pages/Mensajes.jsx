@@ -1,9 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Paperclip } from 'lucide-react';
+import { Send, Paperclip, ArrowLeft, Globe, FolderKanban, Lock } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useBreadcrumb } from '../Components/Breadcrumb';
 import AttachmentMenu from '../Components/AttachmentMenu';
-import FloatingBg from '../Components/FloatingBg';
+import SalaFondo from '../Components/SalaFondo';
+import SalaOpciones from '../Components/SalaOpciones';
+import { getSalaPorId } from '../../services/salaService';
+import { useNotificacionesStore } from '../Components/NotificacionesStore';
 import {
   crearConexionWS,
   enviarMensajeWS,
@@ -12,7 +16,15 @@ import {
   obtenerMensajes,
 } from '../../services/mensajesServices';
 
+const ICONO_TIPO = { libre: Globe, proyecto: FolderKanban, privada: Lock };
+
+// Chat de una sala: /mensajes/:salaId (el panel de salas está en /mensajes)
 const Mensajes = () => {
+  const { salaId } = useParams();
+  const navigate = useNavigate();
+  const [sala, setSala] = useState(null);
+  const abrirSala = useNotificacionesStore((s) => s.abrirSala);
+  const cerrarSala = useNotificacionesStore((s) => s.cerrarSala);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
   const [attachOpen, setAttachOpen] = useState(false);
@@ -40,15 +52,22 @@ const Mensajes = () => {
 
   useBreadcrumb([
     { label: 'Dashboard', path: '/dashboard' },
-    { label: 'Mensajes' },
+    { label: 'Chat', path: '/mensajes' },
+    { label: sala?.nombre || 'Sala' },
   ]);
+
+  useEffect(() => {
+    getSalaPorId(salaId)
+      .then((res) => setSala(res.data))
+      .catch((err) => setError(err.message));
+  }, [salaId]);
 
   // Cargar mensajes paginados
   const loadMessages = async (pageNum, append = false) => {
     if (loadingMore) return;
     setLoadingMore(true);
     try {
-      const mensajesPrevios = await obtenerMensajes(null, pageNum, 20);
+      const mensajesPrevios = await obtenerMensajes(salaId, pageNum, 20);
       if (mensajesPrevios.length === 0) {
         setHasMore(false);
         return;
@@ -108,7 +127,7 @@ const Mensajes = () => {
 
         // 2. Conectar WebSocket
         ws = crearConexionWS(
-          null, // null = sala Global
+          salaId,
           (msg) => {
             if (msg.type === 'typing') {
               const typingId = msg.usuario_id;
@@ -154,10 +173,6 @@ const Mensajes = () => {
                 icon: '/IsotipoPrometeoColoresOscuros.png',
               });
             }
-            // Actualizar contador de mensajes no leídos
-            const currentCount = parseInt(localStorage.getItem('unread_messages') || '0');
-            localStorage.setItem('unread_messages', (currentCount + 1).toString());
-            window.dispatchEvent(new Event('storage'));
           },
           (err) => {
             setError('Error de conexión con el chat');
@@ -171,15 +186,9 @@ const Mensajes = () => {
         wsRef.current = ws;
         ws.onopen = () => {
           setWsConnected(true);
-          localStorage.setItem('chat_connected', 'true');
-          window.dispatchEvent(new Event('storage'));
           setError(null);
         };
-        ws.onclose = () => {
-          setWsConnected(false);
-          localStorage.setItem('chat_connected', 'false');
-          window.dispatchEvent(new Event('storage'));
-        };
+        ws.onclose = () => setWsConnected(false);
       } catch (err) {
         setError(err.message || 'Error al conectar al chat');
         console.error(err);
@@ -205,15 +214,18 @@ const Mensajes = () => {
     }
   }, [messages.length]);
 
-  // Solicitar permiso de notificaciones + resetear contador al entrar
+  // Permiso de notificaciones del navegador
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
-    // Resetear contador de no leídos porque el usuario ya está en el chat
-    localStorage.setItem('unread_messages', '0');
-    window.dispatchEvent(new Event('storage'));
   }, []);
+
+  // Sala abierta: sus avisos se ignoran (llegan por este WS) y su contador queda en 0
+  useEffect(() => {
+    abrirSala(salaId);
+    return cerrarSala;
+  }, [salaId, abrirSala, cerrarSala]);
 
   const handleSend = () => {
     if (!message.trim()) return;
@@ -247,10 +259,46 @@ const Mensajes = () => {
   };
 
   return (
-    <div className="relative flex h-[calc(100vh-64px)] w-full flex-col overflow-hidden rounded-xl bg-white">
-      <FloatingBg />
+    <div className="relative flex h-[calc(100vh-var(--navbar-height)-3rem)] w-full flex-col overflow-hidden rounded-xl bg-white">
+      <SalaFondo fondoTipo={sala?.fondo_tipo} fondo={sala?.fondo} />
 
-      
+      {/* Encabezado de la sala */}
+      <div className="relative z-20 flex items-center gap-3 border-b border-slate-200/50 bg-white/80 px-3 py-2 backdrop-blur-sm">
+        <button
+          onClick={() => navigate('/mensajes')}
+          title="Volver a las salas"
+          className="flex cursor-pointer items-center justify-center rounded-full p-2 text-slate-600 hover:bg-slate-100"
+        >
+          <ArrowLeft size={18} />
+        </button>
+        {sala && (() => {
+          const Icono = ICONO_TIPO[sala.tipo] ?? Globe;
+          return (
+            <div className="min-w-0 flex-1">
+              <p className="flex items-center gap-2 truncate font-bold text-slate-800">
+                <Icono size={15} className="shrink-0 text-slate-500" /> {sala.nombre}
+              </p>
+              {sala.descripcion && <p className="truncate text-xs text-slate-500">{sala.descripcion}</p>}
+            </div>
+          );
+        })()}
+        {sala && (
+          <SalaOpciones
+            sala={sala}
+            usuarioId={userId}
+            onSalaActualizada={setSala}
+            onSalir={() => navigate('/mensajes')}
+          />
+        )}
+      </div>
+
+      {error && (
+        <div className="relative z-20 flex items-center justify-between bg-red-50 px-4 py-2 text-sm text-red-600">
+          {error}
+          <button onClick={() => setError(null)} className="cursor-pointer px-2 text-red-400 hover:text-red-600">✕</button>
+        </div>
+      )}
+
       <div className="relative z-10 flex flex-1 flex-col overflow-hidden">
         {/* Lista de mensajes — crece desde abajo como WhatsApp */}
         <div 
