@@ -1,6 +1,6 @@
-import { User, FolderOpen, Calendar, Plus, RefreshCw, X } from 'lucide-react';
+import { User, FolderOpen, Calendar, Plus, RefreshCw, X, MoreVertical, KeyRound, ImageUp, ImageOff } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 
 const ProjectDetalleCard = ({
   project,
@@ -14,6 +14,9 @@ const ProjectDetalleCard = ({
   error,
 }) => {
   const logoInputRef = useRef(null);
+  const [menuAbierto, setMenuAbierto] = useState(false);
+  // El código existe desde que se crea el proyecto; solo se muestra a petición
+  const [mostrarCodigo, setMostrarCodigo] = useState(false);
 
   const formatFecha = (iso) => {
     if (!iso) return '—';
@@ -35,8 +38,57 @@ const ProjectDetalleCard = ({
         flexDirection: "column",
         gap: "1.5rem",
         width: "100%",
+        position: "relative",
       }}
     >
+      {/* Menú de opciones: solo el propietario */}
+      {esPropietario && (
+        <div className="absolute right-4 top-4">
+          <button
+            onClick={() => setMenuAbierto((v) => !v)}
+            title="Opciones del proyecto"
+            className="flex cursor-pointer items-center justify-center rounded-full bg-transparent p-2 text-[var(--color-blanco)] hover:bg-white/10"
+          >
+            <MoreVertical size={20} />
+          </button>
+          {menuAbierto && (
+            <>
+              {/* Capa invisible para cerrar al hacer clic fuera */}
+              <div className="fixed inset-0 z-10" onClick={() => setMenuAbierto(false)} />
+              <div className="absolute right-0 z-20 mt-1 flex w-52 flex-col overflow-hidden rounded-lg bg-white py-1 text-sm text-slate-700 shadow-[var(--shadow-lg)]">
+                <button
+                  onClick={() => { setMenuAbierto(false); setMostrarCodigo(true); }}
+                  className="flex cursor-pointer items-center gap-2 bg-transparent px-4 py-2 text-left hover:bg-slate-100"
+                >
+                  <KeyRound size={15} /> Generar código
+                </button>
+                <button
+                  onClick={() => { setMenuAbierto(false); logoInputRef.current.click(); }}
+                  className="flex cursor-pointer items-center gap-2 bg-transparent px-4 py-2 text-left hover:bg-slate-100"
+                >
+                  <ImageUp size={15} /> Cambiar logo
+                </button>
+                {project.image && (
+                  <button
+                    onClick={() => { setMenuAbierto(false); onLogo(null); }}
+                    className="flex cursor-pointer items-center gap-2 bg-transparent px-4 py-2 text-left text-red-500 hover:bg-red-50"
+                  >
+                    <ImageOff size={15} /> Quitar logo
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+          <input
+            ref={logoInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/gif,image/webp"
+            hidden
+            onChange={(e) => e.target.files[0] && onLogo(e.target.files[0])}
+          />
+        </div>
+      )}
+
       {/* Header: logo + nombre + owner */}
       <div style={{ display: "flex", alignItems: "flex-start", gap: "1.5rem" }}>
         <div style={{
@@ -49,32 +101,6 @@ const ProjectDetalleCard = ({
             ? <img src={project.image} alt={project.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             : <FolderOpen size={40} color="var(--color-terciario)" />}
         </div>
-        {/* Solo el propietario: onLogo(file) sube, onLogo(null) quita */}
-        {onLogo && (
-          <div className="flex flex-col gap-1 self-end">
-            <input
-              ref={logoInputRef}
-              type="file"
-              accept="image/png,image/jpeg,image/gif,image/webp"
-              hidden
-              onChange={(e) => e.target.files[0] && onLogo(e.target.files[0])}
-            />
-            <button
-              onClick={() => logoInputRef.current.click()}
-              className="cursor-pointer bg-transparent text-left text-xs font-semibold text-[var(--color-terciario)] hover:underline"
-            >
-              Cambiar logo
-            </button>
-            {project.image && (
-              <button
-                onClick={() => onLogo(null)}
-                className="cursor-pointer bg-transparent text-left text-xs text-red-300 hover:underline"
-              >
-                Quitar logo
-              </button>
-            )}
-          </div>
-        )}
 
         <div style={{ flex: 1 }}>
           <h1 style={{
@@ -142,7 +168,7 @@ const ProjectDetalleCard = ({
       <div className="flex flex-col gap-4">
         {error && <p className="text-sm text-red-400">{error}</p>}
 
-        {codigoInvitacion && (
+        {mostrarCodigo && codigoInvitacion && (
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-xs text-[var(--color-dark-grey)]">Código de invitación:</span>
             <span className="rounded-lg bg-white/10 px-3 py-1 font-mono text-lg font-bold tracking-[0.3em] text-[var(--color-blanco)]">
@@ -154,7 +180,14 @@ const ProjectDetalleCard = ({
               className="flex cursor-pointer items-center gap-1.5 rounded-full bg-transparent px-3 py-1 text-xs font-semibold text-[var(--color-terciario)] hover:bg-white/10"
             >
               <RefreshCw size={13} />
-              Generar nuevo código
+              Generar nuevo
+            </button>
+            <button
+              onClick={() => setMostrarCodigo(false)}
+              title="Ocultar código"
+              className="flex cursor-pointer items-center rounded-full bg-transparent p-1 text-[var(--color-dark-grey)] hover:bg-white/10"
+            >
+              <X size={14} />
             </button>
           </div>
         )}
@@ -165,7 +198,7 @@ const ProjectDetalleCard = ({
           </h2>
           {colaboradores.length === 0 ? (
             <p className="text-sm text-[var(--color-dark-grey)]">
-              {esPropietario ? 'Comparte el código para invitar colaboradores.' : 'Sin colaboradores.'}
+              {esPropietario ? 'Usa el menú ⋮ → "Generar código" para invitar colaboradores.' : 'Sin colaboradores.'}
             </p>
           ) : (
             <ul className="flex flex-wrap gap-2">

@@ -99,7 +99,7 @@ Reglas del backend: cada usuario solo ve los proyectos donde es **propietario o 
 | `src/app/Forms/UnirseForm.jsx` | El código ahora es de **8 caracteres** (4 — 4); antes eran 6. Bug corregido: el botón nunca se habilitaba porque `code.includes('')` siempre es `true`. Muestra el error del backend y un estado "Uniendo...". |
 | `src/app/Modals/UnirseModal.jsx` | Llama a `POST /proyectos/unirse` (antes solo hacía `console.log`). Prop nueva `onUnido(proyecto)`. |
 | `src/app/Pages/Proyect.jsx` | "Propios" = soy dueño y no tiene colaboradores. "Colaborativos" = `colaborativo === true`. Al unirse, el proyecto se agrega a la lista y cambia a "Colaborativos". |
-| `src/app/Pages/ProyectDetalle.jsx` + `Cards/ProjectDetalleCard.jsx` | **Propietario:** ve el código, puede generar uno nuevo (el anterior deja de funcionar) y puede cambiar o quitar el logo. **Todos:** ven la lista de colaboradores. El propietario puede "Quitar" a alguien y un colaborador puede "Salir"; al salir regresa a `/proyectos`. |
+| `src/app/Pages/ProyectDetalle.jsx` + `Cards/ProjectDetalleCard.jsx` | **Propietario:** tiene un menú **⋮** en la esquina superior derecha con "Generar código", "Cambiar logo" y "Quitar logo". El código (que ya existe desde que se crea el proyecto) queda **oculto** hasta elegir "Generar código". Ahí se muestra con la opción "Generar nuevo" (el anterior deja de funcionar) y una ✕ para ocultarlo. **Todos:** ven la lista de colaboradores. El propietario puede "Quitar" a alguien y un colaborador puede "Salir"; al salir regresa a `/proyectos`. |
 
 ## 6. Perfil
 
