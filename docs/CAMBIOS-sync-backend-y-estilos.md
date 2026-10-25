@@ -14,6 +14,7 @@ Backend correspondiente: repo `backend-tasks`, desplegado desde la rama `supabas
 - **Todos los usuarios tienen que volver a iniciar sesión una vez**: los tokens anteriores ya no sirven.
 - En `.env`, `VITE_CARGO_ADMIN_ID` ya no se usa y se puede borrar.
 - El cargo admin es **"Administrador"**. "Administrador Total" es un resto del seed viejo y **no** tiene acceso a los catálogos.
+- **Deploy en Vercel:** `vercel.json` manda todas las rutas a `index.html`. Sin esto, recargar o abrir directo una ruta como `/dashboard` o `/proyectos/...` daba `404 NOT_FOUND`, porque Vercel buscaba un archivo con ese nombre y las rutas las maneja React Router en el navegador. Los archivos que sí existen (JS, CSS, imágenes) se siguen sirviendo normal.
 
 ## Resumen
 
