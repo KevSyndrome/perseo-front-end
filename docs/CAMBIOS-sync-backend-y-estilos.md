@@ -1,12 +1,19 @@
 # Cambios: sincronización con backend y limpieza de estilos
 
-Ramas (en este orden, cada una sale de la anterior):
-1. `feature/sync-backend-sesiones-y-estilos` (sale de `develop`): secciones 1 a 4.
+Fecha: 2026-10-24 / 2026-10-25
+Estado: **mergeado en `develop` y en `production`.**
+
+Ramas (ya mergeadas, en este orden):
+1. `feature/sync-backend-sesiones-y-estilos`: secciones 1 a 4.
 2. `feature/proyectos-invitaciones`: secciones 5 a 8.
+3. `feature/modal-unirse-y-avatar`: modal de resultado al unirse y foto del Navbar (secciones 5 y 6).
 
-Backend correspondiente: `backend-tasks`, rama `feature/proyectos-colaboracion` y luego `feature/permisos-cargo`. El contrato completo está en `docs/CAMBIOS-API.md` de ese repo.
+Backend correspondiente: repo `backend-tasks`, desplegado desde la rama `supabase`. El contrato completo está en `docs/CAMBIOS-API.md` de ese repo.
 
-Fecha: 2026-10-24
+### Antes de usar la versión nueva
+- **Todos los usuarios tienen que volver a iniciar sesión una vez**: los tokens anteriores ya no sirven.
+- En `.env`, `VITE_CARGO_ADMIN_ID` ya no se usa y se puede borrar.
+- El cargo admin es **"Administrador"**. "Administrador Total" es un resto del seed viejo y **no** tiene acceso a los catálogos.
 
 ## Resumen
 
@@ -37,8 +44,8 @@ Fecha: 2026-10-24
 ### Configuración (Usuarios / Cargos / Permisos por cargo)
 - **Archivo:** `src/app/Pages/Configuration.jsx`
 - **Antes:** se comparaba `usuario.cargo_id` contra `VITE_CARGO_ADMIN_ID`.
-- **Ahora:** usa los permisos del cargo. En la rama 2 se reemplazó por `GET /usuarios/me/permisos`; ver la sección 7.
-- **Por qué:** el backend exige `usuarios.editar` para escribir en usuarios, cargos, permisos-cargos y tipo-status (si falta, responde 403). Así el front usa la misma regla que el backend y no depende de un id fijo.
+- **Ahora:** usa los permisos del cargo con `GET /usuarios/me/permisos` (ver la sección 7).
+- **Por qué:** el backend valida cada acción por permiso (si falta, responde 403). Así el front usa la misma regla que el backend y no depende de un id fijo.
 - **`.env.example`:** se eliminó `VITE_CARGO_ADMIN_ID`, que ya no se usa. Pueden quitarlo también de su `.env` local.
 
 Permisos que exige el backend (referencia):
@@ -48,10 +55,10 @@ Permisos que exige el backend (referencia):
 | `POST /usuarios/` | `usuarios.crear` |
 | `PUT /usuarios/desactivar/{id}` | `usuarios.eliminar` |
 | `PUT /usuarios/{id}` sobre otro usuario, o cambiando `cargo_id`, `status_logico` o `contraseña` | `usuarios.editar` |
-| `POST/PUT/DELETE` en `/cargos/`, `/permisos-cargos/`, `/tipo-status/` | `usuarios.editar` |
+| `POST/PUT/DELETE` en `/cargos/`, `/permisos-cargos/`, `/tipo-status/` | `configuracion.crear` / `editar` / `eliminar` |
 | `PUT /usuarios/{id}` sobre uno mismo (nombre, apellidos, correo) | ninguno |
 
-Hoy solo el cargo "Administrador Total" tiene esos permisos.
+Cargos base: **Administrador** (todo), **Desarrollador** (todo en proyectos + `usuarios.ver`), **Tester** (ver, editar solo sus tareas, comentar, subir archivos y chatear) y **Usuario Básico** (todo en proyectos; es el cargo que recibe quien se registra).
 
 ## 3. Endpoints y chat
 
@@ -96,7 +103,7 @@ Reglas del backend: cada usuario solo ve los proyectos donde es **propietario o 
 | `src/services/proyectoService.js` | `getProyectos(page, limit, filtros)` acepta `status_id`, `colaborativo` y `solo_propios`. Funciones nuevas: `subirLogoProyecto`, `eliminarLogoProyecto`, `regenerarCodigoProyecto`, `unirseProyecto`, `getColaboradoresProyecto` y `eliminarColaborador`. Las nuevas lanzan `Error` con el `detail` del backend. |
 | `src/app/Forms/ProyectoForm.jsx` | Ya no manda `tipo`, `propietario_id` ni `logo` en base64. El logo se sube con `POST /proyectos/{id}/logo` **después** de crear el proyecto. `fecha_final` se omite si está vacía; antes mandaba "ahora" y el backend la rechazaba por no ser posterior a la inicial. Se muestra el mensaje de validación del backend. La descripción va de 10 a 200 caracteres. Se quitó el selector "Tipo de proyecto". |
 | `src/app/Components/UI/TextArea.jsx` | Acepta `minLength` y `maxLength`. |
-| `src/app/Forms/UnirseForm.jsx` | El código ahora es de **8 caracteres** (4 — 4); antes eran 6. Bug corregido: el botón nunca se habilitaba porque `code.includes('')` siempre es `true`. Muestra el error del backend y un estado "Uniendo...". |
+| `src/app/Forms/UnirseForm.jsx` | El código ahora es de **8 caracteres** (4 — 4); antes eran 6. Bug corregido: el botón nunca se habilitaba porque `code.includes('')` siempre es `true`. Tiene un estado "Uniendo...". |
 | `src/app/Modals/UnirseModal.jsx` | Llama a `POST /proyectos/unirse` (antes solo hacía `console.log`). Prop nueva `onUnido(proyecto)`. Al terminar muestra un **modal de resultado**: éxito ("¡Te uniste al proyecto!" con el nombre, y los botones *Cerrar* y *Ver proyecto*) o rechazo ("No se pudo unir" con el motivo del backend, por ejemplo código inválido o ya eres miembro, y los botones *Cerrar* e *Intentar de nuevo*). |
 | `src/app/Pages/Proyect.jsx` | "Propios" = soy dueño y no tiene colaboradores. "Colaborativos" = `colaborativo === true`. Al unirse, el proyecto se agrega a la lista y cambia a "Colaborativos". |
 | `src/app/Pages/ProyectDetalle.jsx` + `Cards/ProjectDetalleCard.jsx` | **Propietario:** tiene un menú **⋮** en la esquina superior derecha con "Generar código", "Cambiar logo" y "Quitar logo". El código (que ya existe desde que se crea el proyecto) queda **oculto** hasta elegir "Generar código". Ahí se muestra con la opción "Generar nuevo" (el anterior deja de funcionar) y una ✕ para ocultarlo. **Todos:** ven la lista de colaboradores. El propietario puede "Quitar" a alguien y un colaborador puede "Salir"; al salir regresa a `/proyectos`. |
@@ -150,6 +157,10 @@ Front local (`VITE_API_URL=http://127.0.0.1:8765 npx vite`) contra el backend lo
 - ✅ El colaborador no ve el código; "Salir" lo quita del proyecto.
 - ✅ Usuario Básico: no ve "Configuración" y la ruta directa muestra "No tienes permisos".
 - ✅ Administrador: ve los 3 tabs y todas las acciones; select de módulos y checkbox `ver_todas` en Permisos por Cargo.
+- ✅ Menú ⋮ del propietario: el código queda oculto hasta "Generar código"; el colaborador no ve el menú.
+- ✅ Unirse con un código inválido → modal "No se pudo unir" con el motivo; "Intentar de nuevo" limpia las casillas.
+- ✅ Unirse con un código válido → modal "¡Te uniste al proyecto!"; "Ver proyecto" abre el detalle.
+- ✅ Navbar sin foto → ícono genérico de perfil.
 - ✅ Chat conecta el WebSocket; el Perfil carga.
 - ⚠️ **No probado en el navegador:** subir o quitar el logo y la foto de perfil (requieren elegir un archivo local), quitar a un colaborador desde el propietario y cambiar la contraseña.
 
@@ -157,4 +168,3 @@ Front local (`VITE_API_URL=http://127.0.0.1:8765 npx vite`) contra el backend lo
 
 - Conectar `Task.jsx`, `Sprint.jsx` y `Calendar.jsx` (hoy usan datos mock) con fases y tareas. Con permisos: si `tareas` no tiene `ver_todas` (por ejemplo, Tester), el usuario solo ve las tareas asignadas a él o creadas por él.
 - Mostrar los 403 en pantalla en los tabs de Configuración (hoy solo hacen `console.error`). Con los permisos aplicados en la UI ya casi no deberían ocurrir.
-- Al desplegar: todos los usuarios vuelven a iniciar sesión una vez, y se puede borrar `VITE_CARGO_ADMIN_ID` del entorno.
