@@ -13,6 +13,7 @@ Ramas (ya mergeadas, en este orden):
 7. `feature/fondos-y-responsivo`: fondos con más animación y diseño responsivo en móvil y tablet (sección 10).
 8. `fix/chat-movil-pantalla-completa`: el chat en celular ocupa toda la pantalla (sección 10).
 9. `feature/invitacion-por-link`: links de invitación para salas y proyectos, y pantalla de registro (sección 11).
+10. `feature/chat-pantalla-completa`: chat a pantalla completa en todos los tamaños, menú ⋮ en Safari y modales encima del chat (sección 10).
 
 Backend correspondiente: repo `backend-tasks`, desplegado desde la rama `supabase`. El contrato completo está en `docs/CAMBIOS-API.md` de ese repo.
 
@@ -208,7 +209,10 @@ Puntos de corte de Tailwind: `sm` 640px, `md` 768px, `lg` 1024px.
 | `Pages/Dashboard.jsx` | Tarjetas de acciones: 1 columna en móvil, 3 desde `sm`. |
 | `Pages/Profile.jsx` | Grids que estaban en estilos en línea pasados a Tailwind: avatar arriba en móvil, estadísticas en 1, 2 o 3 columnas, e información en 1 o 2 columnas. |
 | `Cards/ProjectDetalleCard.jsx` | Logo y título más chicos en móvil; fechas y descripción apiladas. |
-| `Pages/Mensajes.jsx` | **Celular (<640px): pantalla completa** debajo del Navbar (`fixed` con `top`/`bottom`, sin márgenes ni bordes). Así no hay doble scroll (página + chat) y no depende de `dvh`, que algunos navegadores no soportan. Se quedan el encabezado de la sala y la caja de mensaje. La caja usa letra de 16 px en celular porque con menos iOS hace zoom al tocarla, y respeta la barra de inicio del iPhone (`safe-area-inset-bottom`; `viewport-fit=cover` en `index.html`). **Tablet y escritorio:** tarjeta como antes. |
+| `Pages/Mensajes.jsx` | **Pantalla completa en todos los tamaños:** la sala va `fixed` entre el Navbar y el borde inferior, a la derecha del sidebar. El `Layout` expone `--contenido-left` (0 en móvil; el ancho del sidebar, colapsado o no, desde `md`) y el chat lo usa como `left`, así que sigue al sidebar cuando se colapsa. No depende de `dvh` y no hay doble scroll. Se quedan el encabezado de la sala y la caja de mensaje. La caja usa letra de 16 px en celular porque con menos iOS hace zoom al tocarla, y respeta la barra de inicio del iPhone (`safe-area-inset-bottom`; `viewport-fit=cover` en `index.html`). |
+| Encabezado y caja del chat | **Sin `backdrop-blur`:** Safari recorta lo que sobresale de un elemento con `backdrop-filter`, así que el menú ⋮ (y el del clip) se abrían pero quedaban invisibles en iPhone. Ahora usan fondo blanco al 95%. |
+| `Modals/CreateProyectoModal.jsx`, `UnirseModal`, `UnirseForm` | `z-[200]`/`z-[210]`: por encima del Navbar (100), del Sidebar (110–120) y del chat a pantalla completa (90). Con `z-50` los modales del menú ⋮ del chat (fondo, código, miembros, eliminar) se abrían **detrás** del chat. |
+| Botones ⋮ (sala y proyecto) | Con fondo para que se vean; antes eran un ícono gris pequeño en la esquina. |
 
 Revisado en 390 px (celular) y 820 px (tablet): Dashboard, Proyectos, detalle de proyecto, Perfil, Configuración (la tabla hace scroll horizontal dentro de su tarjeta), panel de salas, chat, menú lateral y modales. No hay scroll horizontal de página.
 
@@ -256,7 +260,12 @@ Front local (`VITE_API_URL=http://127.0.0.1:8765 npx vite`) contra el backend lo
 - ✅ Link de sala sin sesión → login → entra directo a la sala. Con sesión y ya miembro → entra directo. Código inválido → mensaje de error.
 - ✅ Link de proyecto sin cuenta → Regístrate → registro + login automático → queda como colaborador en el detalle del proyecto.
 - ✅ "Copiar link" genera `/unirse/proyecto/<CODIGO>` (en el Chrome automatizado el portapapeles no responde, así que se probó el campo de respaldo).
-- ⚠️ Fondo con imagen (Cloudinary) sin probar en el navegador: requiere elegir un archivo local.
+- ✅ ⋮ del proyecto → "Generar código" → código + "Generar nuevo" + "Copiar link de invitación". ⋮ de una sala privada (como creador) → "Código de invitación" → modal con código, "Generar nuevo" y "Copiar link".
+- ✅ El propietario quita a un colaborador desde el detalle (el backend confirma 0 colaboradores).
+- ✅ Registro con un correo existente → "El correo ya está registrado" + botón "Iniciar sesión".
+- ✅ Cambiar contraseña → cierra la sesión y manda a login; la contraseña vieja da 401 y la nueva entra.
+- ⚠️ Subir imagen (foto de perfil, logo, fondo de sala): el front envía bien el archivo, pero el **backend local responde 500** en todas las subidas (probable configuración de Cloudinary en local). Reportado al backend; falta probarlo en Railway.
+- ⚠️ "¡Link copiado!" no se pudo ver: en el Chrome automatizado el portapapeles no responde; se probó el campo de respaldo con el link.
 - ⚠️ **No probado en el navegador:** subir o quitar el logo y la foto de perfil (requieren elegir un archivo local), quitar a un colaborador desde el propietario y cambiar la contraseña.
 
 ## Pendiente

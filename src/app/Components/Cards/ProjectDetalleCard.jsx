@@ -48,7 +48,7 @@ const ProjectDetalleCard = ({
           <button
             onClick={() => setMenuAbierto((v) => !v)}
             title="Opciones del proyecto"
-            className="flex cursor-pointer items-center justify-center rounded-full bg-transparent p-2 text-[var(--color-blanco)] hover:bg-white/10"
+            className="flex cursor-pointer items-center justify-center rounded-full bg-white/10 p-2 text-[var(--color-blanco)] hover:bg-white/20"
           >
             <MoreVertical size={20} />
           </button>
