@@ -37,9 +37,10 @@ const Proyect = () => {
 
   const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
 
+  // colaborativo = tiene al menos un colaborador (lo calcula el backend)
   const filteredProjects = mode === "propios"
-    ? proyectos.filter((p) => p.tipo === "privado" && p.propietario_id === usuario.id)
-    : proyectos.filter((p) => p.tipo === "colaborativo");
+    ? proyectos.filter((p) => !p.colaborativo && p.propietario_id === usuario.id)
+    : proyectos.filter((p) => p.colaborativo);
 
   return (
     <div className="flex h-full w-full flex-col gap-5">
@@ -198,6 +199,10 @@ const Proyect = () => {
       <UnirseModal
         isOpen={unirseOpen}
         onClose={() => setUnirseOpen(false)}
+        onUnido={(proyecto) => {
+          setProyectos((prev) => [proyecto, ...prev]);
+          setMode("colaborativos");
+        }}
       />
     </div>
   );

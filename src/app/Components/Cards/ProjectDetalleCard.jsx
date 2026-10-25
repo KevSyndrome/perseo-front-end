@@ -1,7 +1,16 @@
-import { User, FolderOpen, Calendar, Plus } from 'lucide-react';
+import { User, FolderOpen, Calendar, Plus, RefreshCw, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const ProjectDetalleCard = ({ project }) => {
+const ProjectDetalleCard = ({
+  project,
+  codigoInvitacion,
+  onRegenerarCodigo,
+  colaboradores = [],
+  esPropietario,
+  usuarioActualId,
+  onQuitarColaborador,
+  error,
+}) => {
 
   const formatFecha = (iso) => {
     if (!iso) return '—';
@@ -98,6 +107,65 @@ const ProjectDetalleCard = ({ project }) => {
       </div>
 
       {/* Divider */}
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }} />
+
+      {/* Invitación y colaboradores */}
+      <div className="flex flex-col gap-4">
+        {error && <p className="text-sm text-red-400">{error}</p>}
+
+        {codigoInvitacion && (
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-xs text-[var(--color-dark-grey)]">Código de invitación:</span>
+            <span className="rounded-lg bg-white/10 px-3 py-1 font-mono text-lg font-bold tracking-[0.3em] text-[var(--color-blanco)]">
+              {codigoInvitacion}
+            </span>
+            <button
+              onClick={onRegenerarCodigo}
+              title="El código anterior dejará de funcionar"
+              className="flex cursor-pointer items-center gap-1.5 rounded-full bg-transparent px-3 py-1 text-xs font-semibold text-[var(--color-terciario)] hover:bg-white/10"
+            >
+              <RefreshCw size={13} />
+              Generar nuevo código
+            </button>
+          </div>
+        )}
+
+        <div>
+          <h2 className="mb-2 text-xl font-bold text-[var(--color-blanco)]">
+            Colaboradores ({colaboradores.length})
+          </h2>
+          {colaboradores.length === 0 ? (
+            <p className="text-sm text-[var(--color-dark-grey)]">
+              {esPropietario ? 'Comparte el código para invitar colaboradores.' : 'Sin colaboradores.'}
+            </p>
+          ) : (
+            <ul className="flex flex-wrap gap-2">
+              {colaboradores.map(({ usuario }) => {
+                const esYo = usuario.id === usuarioActualId;
+                return (
+                  <li
+                    key={usuario.id}
+                    className="flex items-center gap-2 rounded-full bg-white/10 py-1 pl-3 pr-1 text-sm text-[var(--color-blanco)]"
+                  >
+                    {usuario.nombre}
+                    {(esPropietario || esYo) && (
+                      <button
+                        onClick={() => onQuitarColaborador(usuario.id)}
+                        title={esYo ? 'Salir del proyecto' : 'Quitar del proyecto'}
+                        className="flex cursor-pointer items-center gap-1 rounded-full bg-transparent px-2 py-0.5 text-xs text-red-300 hover:bg-white/10"
+                      >
+                        <X size={12} />
+                        {esYo ? 'Salir' : 'Quitar'}
+                      </button>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </div>
+
       <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }} />
 
       {/* Sprints */}

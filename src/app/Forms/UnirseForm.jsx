@@ -1,6 +1,11 @@
 import React, { useRef } from 'react';
 
-const UnirseForm = ({ onConfirm, onCancel, code, onChange }) => {
+// Código de invitación del backend: 8 caracteres A-Z / 2-9
+const LARGO = 8;
+
+const UnirseForm = ({ onConfirm, onCancel, code, onChange, error, loading }) => {
+  const completo = code.length === LARGO;
+
   const inputs = useRef([]);
 
   const handleKeyDown = (e, index) => {
@@ -18,17 +23,17 @@ const UnirseForm = ({ onConfirm, onCancel, code, onChange }) => {
   const handleChange = (e, index) => {
     const val = e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(-1);
     if (!val) return;
-    const newCode = code.split('').concat(Array(6).fill('')).slice(0, 6);
+    const newCode = code.split('').concat(Array(LARGO).fill('')).slice(0, LARGO);
     newCode[index] = val;
     onChange(newCode.join(''));
-    if (index < 5) inputs.current[index + 1].focus();
+    if (index < LARGO - 1) inputs.current[index + 1].focus();
   };
 
   const handlePaste = (e) => {
     e.preventDefault();
-    const pasted = e.clipboardData.getData('text').replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 6);
-    onChange(pasted.padEnd(6, '').slice(0, 6));
-    const focusIndex = Math.min(pasted.length, 5);
+    const pasted = e.clipboardData.getData('text').replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, LARGO);
+    onChange(pasted);
+    const focusIndex = Math.min(pasted.length, LARGO - 1);
     inputs.current[focusIndex].focus();
   };
 
@@ -50,7 +55,7 @@ const UnirseForm = ({ onConfirm, onCancel, code, onChange }) => {
 
         {/* Cajas con input dentro de cada una */}
         <div className="flex justify-center items-center gap-3 mb-2">
-          {[0, 1, 2].map((i) => (
+          {[0, 1, 2, 3].map((i) => (
             <input
               key={i}
               ref={(el) => (inputs.current[i] = el)}
@@ -68,7 +73,7 @@ const UnirseForm = ({ onConfirm, onCancel, code, onChange }) => {
 
           <span className="text-slate-400 text-2xl font-light mx-1">—</span>
 
-          {[3, 4, 5].map((i) => (
+          {[4, 5, 6, 7].map((i) => (
             <input
               key={i}
               ref={(el) => (inputs.current[i] = el)}
@@ -84,8 +89,10 @@ const UnirseForm = ({ onConfirm, onCancel, code, onChange }) => {
           ))}
         </div>
 
+        {error && <p className="text-red-500 text-sm text-center mb-2">{error}</p>}
+
         <p className="text-slate-400 text-xs text-center mb-8">
-          Utiliza el codigo de 6 digitos dados por el administrador del proyecto
+          Utiliza el código de 8 caracteres que te compartió el dueño del proyecto
         </p>
 
         <div className="flex gap-4">
@@ -97,14 +104,14 @@ const UnirseForm = ({ onConfirm, onCancel, code, onChange }) => {
           </button>
           <button
             onClick={() => onConfirm(code)}
-            disabled={code.length !== 6 || code.includes('')}
+            disabled={!completo || loading}
             className="flex-1 py-3 rounded-xl font-semibold text-white transition"
             style={{
-              backgroundColor: code.length === 6 && !code.includes('') ? '#0d3b4a' : '#94a3b8',
-              cursor: code.length === 6 && !code.includes('') ? 'pointer' : 'not-allowed'
+              backgroundColor: completo && !loading ? '#0d3b4a' : '#94a3b8',
+              cursor: completo && !loading ? 'pointer' : 'not-allowed'
             }}
           >
-            Unirse al proyecto
+            {loading ? 'Uniendo...' : 'Unirse al proyecto'}
           </button>
         </div>
 

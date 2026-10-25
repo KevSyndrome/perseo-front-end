@@ -4,23 +4,16 @@ import FormField from '../Components/UI/FormField';
 import InputText from '../Components/UI/InputText';
 import InputDate from '../Components/UI/InputDate';
 import TextArea from '../Components/UI/TextArea';
-import ToggleGroup from '../Components/UI/ToggleGroup';
 import ImageUpload from '../Components/UI/ImageUpload';
 import FormActions from '../Components/UI/FormActions';
-import { crearProyecto, getStatusProyectos } from '../../services/proyectoService';
-
-const tipoOptions = [
-  { value: 'privado', label: 'Propio', icon: '👤' },
-  { value: 'colaborativo', label: 'Colaborativo', icon: '👥' },
-];
+import { crearProyecto, getStatusProyectos, subirLogoProyecto } from '../../services/proyectoService';
 
 export default function ProyectoForm({ isOpen, onClose, onProyectoCreado }) {
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [fechaFin, setFechaFin] = useState('');
-  const [tipo, setTipo] = useState('privado');
   const [logoPreview, setLogoPreview] = useState(null);
-  const [logoBase64, setLogoBase64] = useState('');
+  const [logoFile, setLogoFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [statusId, setStatusId] = useState('');
@@ -46,18 +39,15 @@ export default function ProyectoForm({ isOpen, onClose, onProyectoCreado }) {
   const handleFile = (file) => {
     if (!file) return;
     setLogoPreview(URL.createObjectURL(file));
-    const reader = new FileReader();
-    reader.onloadend = () => setLogoBase64 (reader.result);
-    reader.readAsDataURL(file);
+    setLogoFile(file);
   };
 
   const handleClose = () => {
     setNombre('');
     setDescripcion('');
     setFechaFin('');
-    setTipo('privado');
     setLogoPreview(null);
-    setLogoBase64('');
+    setLogoFile(null);
     setError('');
     onClose();
   };
@@ -68,33 +58,36 @@ export default function ProyectoForm({ isOpen, onClose, onProyectoCreado }) {
     setLoading(true);
 
     try {
-      const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-
-      console.log('statusId en submit:', statusId); 
-
+      // El propietario lo toma el backend del token; el logo se sube aparte
       const payload = {
         nombre,
         descripcion,
-        logo: logoBase64 || 'https://via.placeholder.com/150/default',
-        tipo,
         fecha_inicial: new Date().toISOString(),
         fecha_final: fechaFin
           ? new Date(fechaFin).toISOString()
           : new Date().toISOString(),
         status_id: statusId,
-        propietario_id: usuario.id,
       };
 
-      console.log('Payload enviado:', JSON.stringify(payload, null, 2));
       const resultado = await crearProyecto(payload);
-      console.log('Respuesta backend:', resultado);
+      let proyecto = resultado?.data;
 
-      if (resultado?.id || resultado?.data?.id) {
-        onProyectoCreado?.(resultado?.data || resultado);
-        handleClose();
-      } else {
-        setError('No se pudo crear el proyecto. Intenta de nuevo.');
+      if (!proyecto?.id) {
+        setError(typeof resultado?.detail === 'string' ? resultado.detail : 'No se pudo crear el proyecto. Intenta de nuevo.');
+        return;
       }
+      if (logoFile) {
+        try {
+          proyecto = (await subirLogoProyecto(proyecto.id, logoFile)).data;
+        } catch (err) {
+          // El proyecto ya existe: se agrega a la lista y se avisa en el modal
+          onProyectoCreado?.(proyecto);
+          setError(`Proyecto creado, pero no se pudo subir el logo: ${err.message}`);
+          return;
+        }
+      }
+      onProyectoCreado?.(proyecto);
+      handleClose();
     } catch (err) {
       console.error('Error submit:', err);
       setError('Error al conectar con el servidor.');
@@ -120,17 +113,15 @@ export default function ProyectoForm({ isOpen, onClose, onProyectoCreado }) {
           />
         </FormField>
 
-        <FormField label="Tipo de proyecto" required>
-          <ToggleGroup options={tipoOptions} value={tipo} onChange={setTipo} />
-        </FormField>
-
         <div className="grid grid-cols-2 gap-4 items-stretch">
           <FormField label="Descripción" required stretch>
             <TextArea
               value={descripcion}
               onChange={(e) => setDescripcion(e.target.value)}
-              placeholder="Añada una breve descripción del proyecto..."
+              placeholder="Añada una breve descripción del proyecto (10 a 200 caracteres)..."
               required
+              minLength={10}
+              maxLength={200}
             />
           </FormField>
 
