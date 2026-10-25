@@ -5,6 +5,7 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { loginUsuario } from "../../services/authService";
+import { tomarRutaPendiente } from "../../services/api";
 
 const LoginModal = () => {
   const navigate = useNavigate();
@@ -23,7 +24,8 @@ const LoginModal = () => {
       if (!payload.access_token) {
         throw new Error("No se recibió token de autenticación");
       }
-      navigate("/dashboard");
+      // Si llegó desde un link de invitación, vuelve a él para completar la unión
+      navigate(tomarRutaPendiente() || "/dashboard", { replace: true });
     } catch (err) {
       setError(err.message || "Credenciales incorrectas");
     } finally {
@@ -150,6 +152,13 @@ const LoginModal = () => {
               sx={{ color: "var(--color-blanco)" }}
             >
               ¿Olvidaste tu contraseña?
+            </Button>
+            <Button
+              variant="text"
+              onClick={() => navigate("/registro")}
+              sx={{ color: "var(--color-terciario)", display: "block", mx: "auto" }}
+            >
+              ¿No tienes cuenta? Regístrate
             </Button>
           </Box>
         </CardContent>
