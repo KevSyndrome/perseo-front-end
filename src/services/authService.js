@@ -16,6 +16,26 @@ export const loginUsuario = async (correo, contraseña) => {
   return payload;
 };
 
+// Registro público: el backend asigna el cargo "Usuario Básico" (no se manda cargo_id).
+// Lanza Error con el mensaje del backend; en 422 junta los mensajes de validación.
+export const registrarUsuario = async (datos) => {
+  const response = await fetch(`${BASE_URL}/usuarios/registro`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(datos),
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    const detail = data.detail;
+    throw new Error(
+      Array.isArray(detail)
+        ? detail.map((d) => d.msg.replace(/^Value error, /, "")).join(". ")
+        : detail || "Error al registrarse"
+    );
+  }
+  return data;
+};
+
 export const logoutUsuario = () => {
   localStorage.clear();
   sessionStorage.clear();

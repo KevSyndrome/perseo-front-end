@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./app/Layouts/Layout";
 import Dashboard from "./app/Pages/Dashboard";
 import Login from "./app/Pages/Login";
+import Registro from "./app/Pages/Registro";
+import UnirsePorLink from "./app/Pages/UnirsePorLink";
 import Proyect from "./app/Pages/Proyect";
 import Sprint from "./app/Pages/Sprint";
 import Calendar from "./app/Pages/Calendar";
@@ -25,6 +27,9 @@ function App() {
       <Routes>
         {/* Login SIN layout */}
         <Route path="/login" element={<Login />} />
+        <Route path="/registro" element={<Registro />} />
+        {/* Link de invitación: maneja la sesión por su cuenta (sin sesión → login y vuelve) */}
+        <Route path="/unirse/:tipo/:codigo" element={<UnirsePorLink />} />
 
         {/* Rutas protegidas CON layout */}
         <Route

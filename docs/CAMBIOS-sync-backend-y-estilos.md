@@ -11,6 +11,8 @@ Ramas (ya mergeadas, en este orden):
 5. `feature/chat-salas`: chat por salas estilo Discord, fondos, no leídos y avisos en tiempo real (sección 9).
 6. `fix/scroll-chat`: el scroll del chat no dejaba ver los mensajes anteriores (sección 9).
 7. `feature/fondos-y-responsivo`: fondos con más animación y diseño responsivo en móvil y tablet (sección 10).
+8. `fix/chat-movil-pantalla-completa`: el chat en celular ocupa toda la pantalla (sección 10).
+9. `feature/invitacion-por-link`: links de invitación para salas y proyectos, y pantalla de registro (sección 11).
 
 Backend correspondiente: repo `backend-tasks`, desplegado desde la rama `supabase`. El contrato completo está en `docs/CAMBIOS-API.md` de ese repo.
 
@@ -206,9 +208,29 @@ Puntos de corte de Tailwind: `sm` 640px, `md` 768px, `lg` 1024px.
 | `Pages/Dashboard.jsx` | Tarjetas de acciones: 1 columna en móvil, 3 desde `sm`. |
 | `Pages/Profile.jsx` | Grids que estaban en estilos en línea pasados a Tailwind: avatar arriba en móvil, estadísticas en 1, 2 o 3 columnas, e información en 1 o 2 columnas. |
 | `Cards/ProjectDetalleCard.jsx` | Logo y título más chicos en móvil; fechas y descripción apiladas. |
-| `Pages/Mensajes.jsx` | El alto del chat se ajusta al padding del `main` en cada tamaño (`100dvh`). |
+| `Pages/Mensajes.jsx` | **Celular (<640px): pantalla completa** debajo del Navbar (`fixed` con `top`/`bottom`, sin márgenes ni bordes). Así no hay doble scroll (página + chat) y no depende de `dvh`, que algunos navegadores no soportan. Se quedan el encabezado de la sala y la caja de mensaje. La caja usa letra de 16 px en celular porque con menos iOS hace zoom al tocarla, y respeta la barra de inicio del iPhone (`safe-area-inset-bottom`; `viewport-fit=cover` en `index.html`). **Tablet y escritorio:** tarjeta como antes. |
 
 Revisado en 390 px (celular) y 820 px (tablet): Dashboard, Proyectos, detalle de proyecto, Perfil, Configuración (la tabla hace scroll horizontal dentro de su tarjeta), panel de salas, chat, menú lateral y modales. No hay scroll horizontal de página.
+
+## 11. Invitación por link y registro
+
+### Links de invitación
+- Formato: `<origen>/unirse/sala/<CODIGO>` y `<origen>/unirse/proyecto/<CODIGO>`. Si se regenera el código, el link viejo deja de funcionar.
+- **"Copiar link de invitación"** (`Components/CopiarLink.jsx`) aparece junto al código en el menú ⋮ del proyecto y en "Código de invitación" de las salas. Si el portapapeles no está disponible o no responde en 1.5 s, muestra el link en un campo seleccionado para copiarlo a mano.
+- **`Pages/UnirsePorLink.jsx`** (ruta `/unirse/:tipo/:codigo`, fuera de `PrivateRoute`):
+  - **Con sesión:** llama a `POST /salas/unirse` o `/proyectos/unirse` y navega a la sala o al proyecto. El backend es **idempotente**: si ya eras miembro también responde 200 con el recurso, así que entras directo.
+  - **Sin sesión:** guarda la ruta pendiente (`sessionStorage`) y manda a `/login`. Después del login o del registro se vuelve al link y se completa la unión.
+  - **404:** "El link de invitación no es válido o fue regenerado".
+  - Se hace una sola petición aunque `StrictMode` ejecute el efecto dos veces en desarrollo.
+- `services/api.js`: `guardarRutaPendiente` / `tomarRutaPendiente`. Si la sesión vence (401) mientras se abre un link `/unirse/...`, la ruta se conserva para retomarla después del login.
+
+### Registro (`Pages/Registro.jsx`, ruta `/registro`)
+- Campos: nombre, apellido paterno, apellido materno, correo, contraseña y confirmación. **No** se manda `cargo_id`: el backend asigna "Usuario Básico".
+- Se valida antes de enviar con las mismas reglas del backend: nombre de 3 a 45 caracteres, apellidos de 3 a 50, y contraseña de 8 o más con mayúscula, minúscula, número y carácter especial, igual a la confirmación. Los errores de validación del backend (422) se muestran juntos.
+- Si responde 201, inicia sesión automáticamente y sigue con la ruta pendiente si la hay (si no, `/dashboard`).
+- "El correo ya está registrado" → la alerta ofrece el botón "Iniciar sesión".
+- Links: "¿No tienes cuenta? Regístrate" en Login y "¿Ya tienes cuenta? Inicia sesión" en Registro.
+- El rewrite de Vercel (`vercel.json`) ya cubre `/registro` y `/unirse/...`.
 
 ---
 
@@ -231,6 +253,9 @@ Front local (`VITE_API_URL=http://127.0.0.1:8765 npx vite`) contra el backend lo
 - ✅ Fondos animados aurora, estrellas y ondas aplicados y guardados; la tarjeta muestra el fondo elegido.
 - ✅ Crear una sala privada → abre la sala; código de invitación visible; enviar un mensaje; otro usuario se une con el código en minúsculas.
 - ✅ Scroll del chat con 46 mensajes: abre abajo; al subir carga las páginas anteriores sin saltar hasta "No hay más mensajes"; al enviar baja al fondo.
+- ✅ Link de sala sin sesión → login → entra directo a la sala. Con sesión y ya miembro → entra directo. Código inválido → mensaje de error.
+- ✅ Link de proyecto sin cuenta → Regístrate → registro + login automático → queda como colaborador en el detalle del proyecto.
+- ✅ "Copiar link" genera `/unirse/proyecto/<CODIGO>` (en el Chrome automatizado el portapapeles no responde, así que se probó el campo de respaldo).
 - ⚠️ Fondo con imagen (Cloudinary) sin probar en el navegador: requiere elegir un archivo local.
 - ⚠️ **No probado en el navegador:** subir o quitar el logo y la foto de perfil (requieren elegir un archivo local), quitar a un colaborador desde el propietario y cambiar la contraseña.
 

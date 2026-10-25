@@ -264,7 +264,9 @@ const Mensajes = () => {
   };
 
   return (
-    <div className="relative flex h-[calc(100dvh-var(--navbar-height)-1.5rem)] sm:h-[calc(100dvh-var(--navbar-height)-3rem)] w-full flex-col overflow-hidden rounded-xl bg-white">
+    // Celular: pantalla completa bajo el Navbar (top/bottom fijos, sin depender de dvh);
+    // desde sm: tarjeta dentro del layout
+    <div className="fixed inset-x-0 bottom-0 top-[var(--navbar-height)] z-[90] flex flex-col overflow-hidden bg-white sm:relative sm:inset-auto sm:z-auto sm:h-[calc(100dvh-var(--navbar-height)-3rem)] sm:w-full sm:rounded-xl">
       <SalaFondo fondoTipo={sala?.fondo_tipo} fondo={sala?.fondo} />
 
       {/* Encabezado de la sala */}
@@ -383,7 +385,7 @@ const Mensajes = () => {
         </div>
 
         {/* Input */}
-        <div className="relative z-10 flex items-end gap-2 border-t border-slate-200/50 bg-white/80 backdrop-blur-sm p-3">
+        <div className="relative z-10 flex items-end gap-2 border-t border-slate-200/50 bg-white/80 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-sm">
           <div className="relative">
             <button
               onClick={() => setAttachOpen(!attachOpen)}
@@ -401,7 +403,7 @@ const Mensajes = () => {
             placeholder={wsConnected ? 'Escribe un mensaje...' : 'Chat desconectado...'}
             rows={1}
             disabled={!wsConnected}
-            className="flex-1 resize-none rounded-xl border-0 bg-slate-100 px-4 py-2.5 text-sm text-slate-800 outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50"
+            className="flex-1 resize-none rounded-xl border-0 bg-slate-100 px-4 py-2.5 text-base text-slate-800 outline-none focus:ring-2 focus:ring-primary/30 sm:text-sm disabled:opacity-50"
           />
 
           <button

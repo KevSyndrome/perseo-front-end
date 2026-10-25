@@ -1,6 +1,7 @@
 import { User, FolderOpen, Calendar, Plus, RefreshCw, X, MoreVertical, KeyRound, ImageUp, ImageOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useRef, useState } from 'react';
+import CopiarLink from '../CopiarLink';
 
 const ProjectDetalleCard = ({
   project,
@@ -181,6 +182,7 @@ const ProjectDetalleCard = ({
               <RefreshCw size={13} />
               Generar nuevo
             </button>
+            <CopiarLink tipo="proyecto" codigo={codigoInvitacion} oscuro />
             <button
               onClick={() => setMostrarCodigo(false)}
               title="Ocultar código"
