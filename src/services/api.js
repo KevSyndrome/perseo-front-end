@@ -11,3 +11,14 @@ export const getHeaders = (contentType = true) => {
   }
   return headers;
 };
+
+// 401 = token inválido, expirado o sesión revocada: se fuerza nuevo login
+export const apiFetch = async (url, options) => {
+  const response = await fetch(url, options);
+  if (response.status === 401) {
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.replace('/login');
+  }
+  return response;
+};

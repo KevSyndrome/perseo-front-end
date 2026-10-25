@@ -1,21 +1,21 @@
-import { BASE_URL, getHeaders } from "./api";
+import { BASE_URL, getHeaders, apiFetch } from "./api";
 
 export const getCargos = async (page = 1, limit = 10) => {
-  const response = await fetch(`${BASE_URL}/cargos/?page=${page}&limit=${limit}`, {
+  const response = await apiFetch(`${BASE_URL}/cargos/?page=${page}&limit=${limit}`, {
     headers: getHeaders(),
   });
   return await response.json();
 };
 
 export const getCargoPorId = async (id) => {
-  const response = await fetch(`${BASE_URL}/cargos/${id}`, {
+  const response = await apiFetch(`${BASE_URL}/cargos/${id}`, {
     headers: getHeaders(),
   });
   return await response.json();
 };
 
 export const crearCargo = async (nombre) => {
-  const response = await fetch(`${BASE_URL}/cargos/`, {
+  const response = await apiFetch(`${BASE_URL}/cargos/`, {
     method: "POST",
     headers: getHeaders(),
     body: JSON.stringify({ nombre }),
@@ -24,7 +24,7 @@ export const crearCargo = async (nombre) => {
 };
 
 export const actualizarCargo = async (id, nombre) => {
-  const response = await fetch(`${BASE_URL}/cargos/${id}`, {
+  const response = await apiFetch(`${BASE_URL}/cargos/${id}`, {
     method: "PUT",
     headers: getHeaders(),
     body: JSON.stringify({ nombre }),
@@ -33,7 +33,7 @@ export const actualizarCargo = async (id, nombre) => {
 };
 
 export const eliminarCargo = async (id) => {
-  const response = await fetch(`${BASE_URL}/cargos/${id}`, {
+  const response = await apiFetch(`${BASE_URL}/cargos/${id}`, {
     method: "DELETE",
     headers: getHeaders(),
   });

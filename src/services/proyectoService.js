@@ -1,21 +1,21 @@
-import { BASE_URL, getHeaders } from "./api";
+import { BASE_URL, getHeaders, apiFetch } from "./api";
 
 export const getProyectos = async (page = 1, limit = 10) => {
-  const response = await fetch(`${BASE_URL}/proyectos/?page=${page}&limit=${limit}`, {
+  const response = await apiFetch(`${BASE_URL}/proyectos/?page=${page}&limit=${limit}`, {
     headers: getHeaders(),
   });
   return await response.json();
 };
 
 export const getProyectoPorId = async (id) => {
-  const response = await fetch(`${BASE_URL}/proyectos/${id}`, {
+  const response = await apiFetch(`${BASE_URL}/proyectos/${id}`, {
     headers: getHeaders(),
   });
   return await response.json();
 };
 
 export const crearProyecto = async (proyecto) => {
-  const response = await fetch(`${BASE_URL}/proyectos/`, {
+  const response = await apiFetch(`${BASE_URL}/proyectos/`, {
     method: "POST",
     headers: getHeaders(),
     body: JSON.stringify(proyecto),
@@ -28,7 +28,7 @@ export const crearProyecto = async (proyecto) => {
 };
 
 export const actualizarProyecto = async (id, datos) => {
-  const response = await fetch(`${BASE_URL}/proyectos/${id}`, {
+  const response = await apiFetch(`${BASE_URL}/proyectos/${id}`, {
     method: "PUT",
     headers: getHeaders(),
     body: JSON.stringify(datos),
@@ -37,7 +37,7 @@ export const actualizarProyecto = async (id, datos) => {
 };
 
 export const eliminarProyecto = async (id) => {
-  const response = await fetch(`${BASE_URL}/proyectos/${id}`, {
+  const response = await apiFetch(`${BASE_URL}/proyectos/${id}`, {
     method: "DELETE",
     headers: getHeaders(),
   });
@@ -45,7 +45,7 @@ export const eliminarProyecto = async (id) => {
 };
 
 export const getStatusProyectos = async () => {
-  const response = await fetch(`${BASE_URL}/tipo-status/?page=1&limit=10`, {
+  const response = await apiFetch(`${BASE_URL}/tipo-status/?page=1&limit=10`, {
     headers: getHeaders(),
   });
   return await response.json();

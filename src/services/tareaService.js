@@ -1,21 +1,21 @@
-import { BASE_URL, getHeaders } from "./api";
+import { BASE_URL, getHeaders, apiFetch } from "./api";
 
 export const getTareas = async (page = 1, limit = 10) => {
-  const response = await fetch(`${BASE_URL}/tareas/?page=${page}&limit=${limit}`, {
+  const response = await apiFetch(`${BASE_URL}/tareas/?page=${page}&limit=${limit}`, {
     headers: getHeaders(),
   });
   return await response.json();
 };
 
 export const getTareaPorId = async (id) => {
-  const response = await fetch(`${BASE_URL}/tareas/${id}`, {
+  const response = await apiFetch(`${BASE_URL}/tareas/${id}`, {
     headers: getHeaders(),
   });
   return await response.json();
 };
 
 export const crearTarea = async (tarea) => {
-  const response = await fetch(`${BASE_URL}/tareas/`, {
+  const response = await apiFetch(`${BASE_URL}/tareas/`, {
     method: "POST",
     headers: getHeaders(),
     body: JSON.stringify(tarea),
@@ -24,7 +24,7 @@ export const crearTarea = async (tarea) => {
 };
 
 export const actualizarTarea = async (id, datos) => {
-  const response = await fetch(`${BASE_URL}/tareas/${id}`, {
+  const response = await apiFetch(`${BASE_URL}/tareas/${id}`, {
     method: "PUT",
     headers: getHeaders(),
     body: JSON.stringify(datos),
@@ -33,7 +33,7 @@ export const actualizarTarea = async (id, datos) => {
 };
 
 export const eliminarTarea = async (id) => {
-  const response = await fetch(`${BASE_URL}/tareas/${id}`, {
+  const response = await apiFetch(`${BASE_URL}/tareas/${id}`, {
     method: "DELETE",
     headers: getHeaders(),
   });
@@ -41,21 +41,21 @@ export const eliminarTarea = async (id) => {
 };
 
 export const getTareaDetalles = async (id) => {
-  const response = await fetch(`${BASE_URL}/tareas/detalles/${id}`, {
+  const response = await apiFetch(`${BASE_URL}/tareas/detalles/${id}`, {
     headers: getHeaders(),
   });
   return await response.json();
 };
 
 export const getTareaEstadisticas = async (faseId) => {
-  const response = await fetch(`${BASE_URL}/tareas/estadisticas/${faseId}`, {
+  const response = await apiFetch(`${BASE_URL}/tareas/estadisticas/${faseId}`, {
     headers: getHeaders(),
   });
   return await response.json();
 };
 
 export const moverTarea = async (id, faseId) => {
-  const response = await fetch(`${BASE_URL}/tareas/mover/${id}`, {
+  const response = await apiFetch(`${BASE_URL}/tareas/mover/${id}`, {
     method: "PUT",
     headers: getHeaders(),
     body: JSON.stringify({ fase_id: faseId }),
@@ -64,7 +64,7 @@ export const moverTarea = async (id, faseId) => {
 };
 
 export const bulkCreateTareas = async (tareas) => {
-  const response = await fetch(`${BASE_URL}/tareas/bulk`, {
+  const response = await apiFetch(`${BASE_URL}/tareas/bulk`, {
     method: "POST",
     headers: getHeaders(),
     body: JSON.stringify({ tareas }),

@@ -1,21 +1,21 @@
-import { BASE_URL, getHeaders } from "./api";
+import { BASE_URL, getHeaders, apiFetch } from "./api";
 
 export const getComentarios = async (page = 1, limit = 10) => {
-  const response = await fetch(`${BASE_URL}/comentarios/?page=${page}&limit=${limit}`, {
+  const response = await apiFetch(`${BASE_URL}/comentarios/?page=${page}&limit=${limit}`, {
     headers: getHeaders(),
   });
   return await response.json();
 };
 
 export const getComentarioPorId = async (id) => {
-  const response = await fetch(`${BASE_URL}/comentarios/${id}`, {
+  const response = await apiFetch(`${BASE_URL}/comentarios/${id}`, {
     headers: getHeaders(),
   });
   return await response.json();
 };
 
 export const crearComentario = async (comentario) => {
-  const response = await fetch(`${BASE_URL}/comentarios/`, {
+  const response = await apiFetch(`${BASE_URL}/comentarios/`, {
     method: "POST",
     headers: getHeaders(),
     body: JSON.stringify(comentario),
@@ -24,7 +24,7 @@ export const crearComentario = async (comentario) => {
 };
 
 export const actualizarComentario = async (id, datos) => {
-  const response = await fetch(`${BASE_URL}/comentarios/${id}`, {
+  const response = await apiFetch(`${BASE_URL}/comentarios/${id}`, {
     method: "PUT",
     headers: getHeaders(),
     body: JSON.stringify(datos),
@@ -33,7 +33,7 @@ export const actualizarComentario = async (id, datos) => {
 };
 
 export const eliminarComentario = async (id) => {
-  const response = await fetch(`${BASE_URL}/comentarios/${id}`, {
+  const response = await apiFetch(`${BASE_URL}/comentarios/${id}`, {
     method: "DELETE",
     headers: getHeaders(),
   });
