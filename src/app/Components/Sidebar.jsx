@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Home, Settings, LogOut, MessageCircleMoreIcon, FolderKanban, Calendar, Menu } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import LogoutModal from '../Modals/LogoutModal';
+import { usePermisosStore, tieneModulo } from './PermisosStore';
 
 const menuItems = [
   { icon: Home, label: 'Dashboard', path: '/dashboard' },
@@ -16,6 +17,14 @@ const Sidebar = ({ isCollapsed, onToggleSidebar }) => {
   const location = useLocation();
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const { permisos, cargar } = usePermisosStore();
+
+  useEffect(() => { cargar(); }, [cargar]);
+
+  // Configuración solo si el cargo tiene algo de usuarios o configuracion
+  const items = menuItems.filter((item) =>
+    item.path !== '/configuration' || tieneModulo(permisos, 'usuarios') || tieneModulo(permisos, 'configuracion')
+  );
 
   useEffect(() => {
     const updateUnread = () => {
@@ -62,7 +71,7 @@ const Sidebar = ({ isCollapsed, onToggleSidebar }) => {
         </div>
 
         <nav className="mt-6 flex flex-1 flex-col gap-2">
-          {menuItems.map((item, index) => {
+          {items.map((item, index) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
             return (

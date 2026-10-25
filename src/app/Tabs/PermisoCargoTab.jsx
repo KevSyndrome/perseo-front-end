@@ -6,6 +6,9 @@ import { getPermisosCargos, crearPermisoCargo, actualizarPermisoCargo, eliminarP
 
 const ACCIONES_DEFAULT = { ver: false, crear: false, editar: false, eliminar: false };
 
+// Nombres exactos que reconoce el backend (minúsculas)
+const MODULOS = ["dashboard", "proyectos", "fases", "tareas", "comentarios", "archivos", "mensajes", "usuarios", "configuracion"];
+
 export default function PermisoCargoTab() {
   const [cargos, setCargos] = useState([]);
   const [cargoSeleccionado, setCargoSeleccionado] = useState("");
@@ -58,10 +61,12 @@ export default function PermisoCargoTab() {
     setError("");
     setCreando(true);
     try {
+      // ver_todas solo aplica a "tareas" (false = solo ve sus tareas, caso Tester)
+      const { ver_todas, ...base } = nuevasAcciones;
       const resultado = await crearPermisoCargo({
         cargo_id: cargoSeleccionado,
-        modulo: nuevoModulo.trim(),
-        acciones: nuevasAcciones,
+        modulo: nuevoModulo,
+        acciones: nuevoModulo === "tareas" ? { ...base, ver_todas: Boolean(ver_todas) } : base,
       });
       if (resultado.detail) {
         setError(typeof resultado.detail === 'string' ? resultado.detail : "Error al crear el permiso");
@@ -79,7 +84,11 @@ export default function PermisoCargoTab() {
 
   const iniciarEdicion = (permiso) => {
     setEditandoId(permiso.id);
-    setEditAcciones({ ...ACCIONES_DEFAULT, ...permiso.acciones });
+    setEditAcciones({
+      ...ACCIONES_DEFAULT,
+      ...(permiso.modulo === "tareas" && { ver_todas: false }),
+      ...permiso.acciones,
+    });
     setError("");
   };
 
@@ -156,13 +165,14 @@ export default function PermisoCargoTab() {
             Agregar módulo para "{nombreCargoActual}"
           </h3>
           <div className="flex flex-wrap items-center gap-4">
-            <input
-              type="text"
-              placeholder="Nombre del módulo (ej. proyectos, tareas)"
+            <select
               value={nuevoModulo}
               onChange={(e) => setNuevoModulo(e.target.value)}
               className="rounded-lg border border-slate-200 px-3 py-2 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-slate-300"
-            />
+            >
+              <option value="">Selecciona un módulo</option>
+              {MODULOS.map((m) => <option key={m} value={m}>{m}</option>)}
+            </select>
             {Object.keys(ACCIONES_DEFAULT).map((accion) => (
               <label key={accion} className="flex items-center gap-1.5 text-sm text-slate-600 capitalize">
                 <input
@@ -173,6 +183,16 @@ export default function PermisoCargoTab() {
                 {accion}
               </label>
             ))}
+            {nuevoModulo === "tareas" && (
+              <label className="flex items-center gap-1.5 text-sm text-slate-600" title="Sin esto, solo ve las tareas asignadas a él o creadas por él">
+                <input
+                  type="checkbox"
+                  checked={Boolean(nuevasAcciones.ver_todas)}
+                  onChange={(e) => setNuevasAcciones((prev) => ({ ...prev, ver_todas: e.target.checked }))}
+                />
+                Ver todas las tareas
+              </label>
+            )}
             <button
               onClick={handleCrear}
               disabled={creando || !nuevoModulo.trim()}
@@ -202,13 +222,14 @@ export default function PermisoCargoTab() {
                 <th className="px-4 py-3 font-semibold text-slate-600">Crear</th>
                 <th className="px-4 py-3 font-semibold text-slate-600">Editar</th>
                 <th className="px-4 py-3 font-semibold text-slate-600">Eliminar</th>
+                <th className="px-4 py-3 font-semibold text-slate-600" title="Solo módulo tareas">Ver todas</th>
                 <th className="px-4 py-3 font-semibold text-slate-600">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {permisos.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-slate-400">
+                  <td colSpan={7} className="px-4 py-6 text-center text-slate-400">
                     Este cargo no tiene módulos configurados todavía.
                   </td>
                 </tr>
@@ -216,12 +237,12 @@ export default function PermisoCargoTab() {
               {permisos.map((item) => (
                 <tr key={item.id} className="border-b border-slate-50 hover:bg-slate-50/50">
                   <td className="px-4 py-3 font-medium text-slate-800">{item.modulo}</td>
-                  {["ver", "crear", "editar", "eliminar"].map((accion) => (
+                  {["ver", "crear", "editar", "eliminar", "ver_todas"].map((accion) => (
                     <td key={accion} className="px-4 py-3">
-                      {editandoId === item.id ? (
+                      {accion === "ver_todas" && item.modulo !== "tareas" ? null : editandoId === item.id ? (
                         <input
                           type="checkbox"
-                          checked={editAcciones[accion]}
+                          checked={Boolean(editAcciones[accion])}
                           onChange={(e) => setEditAcciones((prev) => ({ ...prev, [accion]: e.target.checked }))}
                         />
                       ) : (

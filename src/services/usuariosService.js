@@ -71,3 +71,13 @@ export const subirImagenPerfil = async (file) => {
   if (!response.ok) throw new Error(data.detail || "Error al subir la imagen");
   return data;
 };
+
+// { cargo, modulos, permisos: { modulo: { ver, crear, editar, eliminar, ... } } }
+export const getMisPermisos = async () => {
+  const response = await apiFetch(`${BASE_URL}/usuarios/me/permisos`, {
+    headers: getHeaders(),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.detail || "Error al obtener permisos");
+  return data.data;
+};
