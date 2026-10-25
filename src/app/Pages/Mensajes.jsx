@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Paperclip, ArrowLeft, Globe, FolderKanban, Lock } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -38,6 +38,8 @@ const Mensajes = () => {
   const wsRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const messagesContainerRef = useRef(null);
+  // Alto del scroll antes de anteponer mensajes viejos, para no perder la posición
+  const alturaPreviaRef = useRef(null);
   const isConnecting = useRef(false);
 
   const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
@@ -90,6 +92,7 @@ const Mensajes = () => {
       }));
       
       if (append) {
+        alturaPreviaRef.current = messagesContainerRef.current?.scrollHeight ?? null;
         setMessages((prev) => [...newMessages, ...prev]);
       } else {
         setMessages(newMessages);
@@ -204,15 +207,17 @@ const Mensajes = () => {
     };
   }, []);
 
-  // Auto-scroll al bottom solo cuando llegan mensajes nuevos (no al cargar histórico)
-  useEffect(() => {
-    if (messages.length > 0 && !loadingMore) {
-      const container = messagesContainerRef.current;
-      if (container) {
-        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
-      }
+  // Al cargar historial viejo se conserva la posición; si no (carga inicial o mensaje nuevo), al fondo
+  useLayoutEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container || messages.length === 0) return;
+    if (alturaPreviaRef.current !== null) {
+      container.scrollTop = container.scrollHeight - alturaPreviaRef.current;
+      alturaPreviaRef.current = null;
+    } else {
+      container.scrollTop = container.scrollHeight;
     }
-  }, [messages.length]);
+  }, [messages]);
 
   // Permiso de notificaciones del navegador
   useEffect(() => {
@@ -304,7 +309,7 @@ const Mensajes = () => {
         <div 
           ref={messagesContainerRef}
           onScroll={handleScroll}
-          className="flex flex-1 flex-col overflow-y-auto px-4 py-4"
+          className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-4"
         >
           {loadingMore && (
             <div className="flex justify-center py-2">
@@ -324,8 +329,8 @@ const Mensajes = () => {
               </div>
             </div>
           )}
-          {/* Los mensajes se alinean desde abajo con justify-end */}
-          <div className="flex flex-col justify-end min-h-0 flex-1">
+          {/* mt-auto los pega abajo; justify-end dejaba los viejos fuera del alcance del scroll */}
+          <div className="mt-auto flex flex-col">
             {messages.map((msg, i) => (
               <motion.div
                 key={msg.id}

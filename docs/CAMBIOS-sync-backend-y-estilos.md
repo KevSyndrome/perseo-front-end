@@ -9,6 +9,7 @@ Ramas (ya mergeadas, en este orden):
 3. `feature/modal-unirse-y-avatar`: modal de resultado al unirse y foto del Navbar (secciones 5 y 6).
 4. `fix/vercel-spa-rewrites`: `vercel.json` para que recargar una ruta no dé 404.
 5. `feature/chat-salas`: chat por salas estilo Discord, fondos, no leídos y avisos en tiempo real (sección 9).
+6. `fix/scroll-chat`: el scroll del chat no dejaba ver los mensajes anteriores (sección 9).
 
 Backend correspondiente: repo `backend-tasks`, desplegado desde la rama `supabase`. El contrato completo está en `docs/CAMBIOS-API.md` de ese repo.
 
@@ -169,6 +170,12 @@ Backend: sección 9 de `docs/CAMBIOS-API.md`. Tipos de sala: **libre** (Global y
 | `src/app/Modals/CreateProyectoModal.jsx` | Ahora se dibuja con un **portal** en `body`. Dentro del encabezado del chat (que tiene `backdrop-blur`) el `position: fixed` quedaba relativo al encabezado y el modal salía cortado. También se corrigió la clase rota `z|-40` → `z-40`. |
 | `src/app/Components/Sidebar.jsx` | El ítem queda activo también en subrutas (`/mensajes/...`, `/proyectos/...`). |
 
+### Scroll del chat (fix)
+El scroll no permitía subir a los mensajes anteriores por tres causas en `Mensajes.jsx`:
+1. Al contenedor con `overflow-y-auto` le faltaba `min-h-0`. En un flex en columna, sin eso crece al tamaño de su contenido y nunca hace scroll.
+2. Los mensajes se pegaban abajo con `justify-end`, que empuja lo que sobra **hacia arriba, fuera del área de scroll**. Se cambió por `mt-auto`.
+3. Al cargar la página anterior, el auto-scroll mandaba otra vez al fondo. Ahora un `useLayoutEffect` conserva la posición al anteponer el historial y solo baja al fondo en la carga inicial o con mensajes nuevos.
+
 ### No leídos y avisos en tiempo real
 - `src/app/Components/NotificacionesStore.js` (nuevo, zustand) abre **una sola conexión** a `/mensajes/ws/notificaciones` mientras hay sesión (la inicia el Sidebar) y reintenta cada 5 s si se cae, salvo con el código 1008, que significa sesión inválida.
 - Los no leídos iniciales salen de `no_leidos` de `GET /salas/`. Cada aviso `nuevo_mensaje` suma +1 a su sala, **excepto si es la sala abierta**, porque ese mensaje ya llega por el WS del chat.
@@ -197,6 +204,7 @@ Front local (`VITE_API_URL=http://127.0.0.1:8765 npx vite`) contra el backend lo
 - ✅ Chat por salas: el panel muestra Global y las salas de proyecto creadas solas; un mensaje de otro usuario sube la tarjeta, aparece la insignia en la tarjeta y en el Sidebar, y al abrir la sala el contador baja.
 - ✅ Fondos animados aurora, estrellas y ondas aplicados y guardados; la tarjeta muestra el fondo elegido.
 - ✅ Crear una sala privada → abre la sala; código de invitación visible; enviar un mensaje; otro usuario se une con el código en minúsculas.
+- ✅ Scroll del chat con 46 mensajes: abre abajo; al subir carga las páginas anteriores sin saltar hasta "No hay más mensajes"; al enviar baja al fondo.
 - ⚠️ Fondo con imagen (Cloudinary) sin probar en el navegador: requiere elegir un archivo local.
 - ⚠️ **No probado en el navegador:** subir o quitar el logo y la foto de perfil (requieren elegir un archivo local), quitar a un colaborador desde el propietario y cambiar la contraseña.
 
