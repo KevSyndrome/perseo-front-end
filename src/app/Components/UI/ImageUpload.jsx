@@ -1,7 +1,6 @@
 // Components/UI/ImageUpload.jsx
 import React, { useState } from 'react';
 import { Upload } from 'lucide-react';
-import "../../../styles/branding.css";
 
 export default function ImageUpload({ onFile, preview }) {
   const [dragOver, setDragOver] = useState(false);

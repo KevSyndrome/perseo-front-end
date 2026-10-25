@@ -1,27 +1,35 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useBreadcrumb } from '../Components/Breadcrumb';
 import Breadcrumb from '../Components/Breadcrumb';
 import UsuariosTab from '../Tabs/UsuariosTab';
 import CargosTab from '../Tabs/CargosTab';
-import PermisosTab from '../Tabs/PermisosTab';
 import PermisoCargoTab from '../Tabs/PermisoCargoTab';
+import { usePermisosStore, tieneModulo } from '../Components/PermisosStore';
 
-const ADMIN_PERMISO_CARGO_ID = "c7a1e832-1633-4b99-9265-2e2b0837823e";
-
-const tabs = ["Usuarios", "Cargos", "Permisos", "Asignar Permisos (Matriz)"];
+// Usuarios depende del módulo "usuarios"; los catálogos, de "configuracion"
+const TABS = [
+  { nombre: "Usuarios", modulo: "usuarios" },
+  { nombre: "Cargos", modulo: "configuracion" },
+  { nombre: "Permisos por Cargo", modulo: "configuracion" },
+];
 
 export default function Configuration() {
-  const [activeTab, setActiveTab] = useState("Usuarios");
+  const [activeTab, setActiveTab] = useState(null);
+  const { permisos, cargar } = usePermisosStore();
 
-  const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
-  const esAdmin = usuario.permiso_cargo_id === ADMIN_PERMISO_CARGO_ID;
+  useEffect(() => { cargar(); }, [cargar]);
+
+  const tabs = TABS.filter((t) => tieneModulo(permisos, t.modulo)).map((t) => t.nombre);
+  const tabActiva = tabs.includes(activeTab) ? activeTab : tabs[0];
 
   useBreadcrumb([
     { label: 'Dashboard', path: '/dashboard' },
     { label: 'Configuración' },
   ]);
 
-  if (!esAdmin) {
+  if (permisos === null) return null;
+
+  if (tabs.length === 0) {
     return (
       <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-slate-500">
         <p className="text-lg font-semibold">No tienes permisos para acceder a esta sección.</p>
@@ -33,7 +41,6 @@ export default function Configuration() {
     <div className="flex h-full w-full flex-col gap-5">
       <Breadcrumb />
 
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Configuración de Sistema: Gestión de Usuarios</h1>
@@ -41,14 +48,13 @@ export default function Configuration() {
         </div>
       </div>
 
-      {/* Tabs */}
       <div className="flex border-b border-slate-200 gap-6">
         {tabs.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`pb-2 text-sm font-medium transition border-b-2 cursor-pointer ${
-              activeTab === tab
+              tabActiva === tab
                 ? "border-slate-800 text-slate-800"
                 : "border-transparent text-slate-400 hover:text-slate-600"
             }`}
@@ -58,11 +64,9 @@ export default function Configuration() {
         ))}
       </div>
 
-      {/* Contenido del tab activo */}
-      {activeTab === "Usuarios" && <UsuariosTab />}
-      {activeTab === "Cargos" && <CargosTab />}
-      {activeTab === "Permisos" && <PermisosTab />}
-      {activeTab === "Asignar Permisos (Matriz)" && <PermisoCargoTab />}
+      {tabActiva === "Usuarios" && <UsuariosTab />}
+      {tabActiva === "Cargos" && <CargosTab />}
+      {tabActiva === "Permisos por Cargo" && <PermisoCargoTab />}
     </div>
   );
 }

@@ -1,32 +1,25 @@
-import { BASE_URL, getHeaders } from "./api";
+import { BASE_URL, getHeaders, apiFetch } from "./api";
 
 export const getUsuarios = async (page = 1, limit = 10, nombre = null, correo = null, status = null) => {
   let url = `${BASE_URL}/usuarios/?page=${page}&limit=${limit}`;
   if (nombre) url += `&nombre=${nombre}`;
   if (correo) url += `&correo=${correo}`;
   if (status !== null) url += `&status_logico=${status}`;
-  const response = await fetch(url, {
+  const response = await apiFetch(url, {
     headers: getHeaders(),
   });
   return await response.json();
 };
 
 export const getUsuarioPorId = async (id) => {
-  const response = await fetch(`${BASE_URL}/usuarios/${id}`, {
-    headers: getHeaders(),
-  });
-  return await response.json();
-};
-
-export const getUsuarioPublico = async (id) => {
-  const response = await fetch(`${BASE_URL}/usuarios/publico/${id}`, {
+  const response = await apiFetch(`${BASE_URL}/usuarios/${id}`, {
     headers: getHeaders(),
   });
   return await response.json();
 };
 
 export const crearUsuario = async (usuario) => {
-  const response = await fetch(`${BASE_URL}/usuarios/`, {
+  const response = await apiFetch(`${BASE_URL}/usuarios/`, {
     method: "POST",
     headers: getHeaders(),
     body: JSON.stringify(usuario),
@@ -35,7 +28,7 @@ export const crearUsuario = async (usuario) => {
 };
 
 export const actualizarUsuario = async (id, datos) => {
-  const response = await fetch(`${BASE_URL}/usuarios/${id}`, {
+  const response = await apiFetch(`${BASE_URL}/usuarios/${id}`, {
     method: "PUT",
     headers: getHeaders(),
     body: JSON.stringify(datos),
@@ -44,7 +37,7 @@ export const actualizarUsuario = async (id, datos) => {
 };
 
 export const desactivarUsuario = async (id) => {
-  const response = await fetch(`${BASE_URL}/usuarios/desactivar/${id}`, {
+  const response = await apiFetch(`${BASE_URL}/usuarios/desactivar/${id}`, {
     method: "PUT",
     headers: getHeaders(),
   });
@@ -52,10 +45,39 @@ export const desactivarUsuario = async (id) => {
 };
 
 export const cambiarContraseña = async (datos) => {
-  const response = await fetch(`${BASE_URL}/usuarios/cambiar-contraseña`, {
+  const response = await apiFetch(`${BASE_URL}/usuarios/cambiar-contraseña`, {
     method: "PUT",
     headers: getHeaders(),
     body: JSON.stringify(datos),
   });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "Error al cambiar contraseña");
+  }
+  
   return await response.json();
+};
+
+export const subirImagenPerfil = async (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await apiFetch(`${BASE_URL}/usuarios/me/imagen`, {
+    method: "POST",
+    headers: getHeaders(false),
+    body: formData,
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.detail || "Error al subir la imagen");
+  return data;
+};
+
+// { cargo, modulos, permisos: { modulo: { ver, crear, editar, eliminar, ... } } }
+export const getMisPermisos = async () => {
+  const response = await apiFetch(`${BASE_URL}/usuarios/me/permisos`, {
+    headers: getHeaders(),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.detail || "Error al obtener permisos");
+  return data.data;
 };

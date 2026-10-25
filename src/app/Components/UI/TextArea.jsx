@@ -1,10 +1,12 @@
 // Components/UI/TextArea.jsx
 import React from 'react';
 
-export default function TextArea({ value, onChange, placeholder, rows = 4, required = false }) {
+export default function TextArea({ value, onChange, placeholder, rows = 4, required = false, minLength, maxLength }) {
   return (
     <textarea
       required={required}
+      minLength={minLength}
+      maxLength={maxLength}
       rows={rows}
       value={value}
       onChange={onChange}

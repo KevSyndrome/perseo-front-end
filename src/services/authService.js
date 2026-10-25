@@ -1,5 +1,7 @@
 import { BASE_URL } from "./api";
 
+console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
+
 export const loginUsuario = async (correo, contraseña) => {
   const response = await fetch(`${BASE_URL}/usuarios/login`, {
     method: "POST",

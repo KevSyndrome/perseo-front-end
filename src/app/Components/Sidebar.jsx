@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Home, Settings, LogOut, MessageCircleMoreIcon, FolderKanban, Calendar, Menu } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import "../../styles/branding.css"
 import LogoutModal from '../Modals/LogoutModal';
+import { usePermisosStore, tieneModulo } from './PermisosStore';
 
 const menuItems = [
   { icon: Home, label: 'Dashboard', path: '/dashboard' },
@@ -12,15 +12,20 @@ const menuItems = [
   { icon: Settings, label: 'Configuración', path: '/configuration' },
 ];
 
-
-
 const Sidebar = ({ isCollapsed, onToggleSidebar }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const { permisos, cargar } = usePermisosStore();
 
-  // Escuchar cambios en mensajes no leídos
+  useEffect(() => { cargar(); }, [cargar]);
+
+  // Configuración solo si el cargo tiene algo de usuarios o configuracion
+  const items = menuItems.filter((item) =>
+    item.path !== '/configuration' || tieneModulo(permisos, 'usuarios') || tieneModulo(permisos, 'configuracion')
+  );
+
   useEffect(() => {
     const updateUnread = () => {
       const count = parseInt(localStorage.getItem('unread_messages') || '0');
@@ -28,7 +33,6 @@ const Sidebar = ({ isCollapsed, onToggleSidebar }) => {
     };
     updateUnread();
     window.addEventListener('storage', updateUnread);
-    // También actualizar cada 5 segundos como fallback
     const interval = setInterval(updateUnread, 5000);
     return () => {
       window.removeEventListener('storage', updateUnread);
@@ -36,7 +40,6 @@ const Sidebar = ({ isCollapsed, onToggleSidebar }) => {
     };
   }, []);
 
-  // Resetear contador al entrar a mensajes
   useEffect(() => {
     if (location.pathname === '/mensajes') {
       localStorage.setItem('unread_messages', '0');
@@ -47,34 +50,41 @@ const Sidebar = ({ isCollapsed, onToggleSidebar }) => {
   return (
     <>
       <aside
-        style={{ backgroundColor: "var(--color-primary)" }}
-        className={`app-sidebar ${isCollapsed ? 'collapsed' : ''}`}
+        className={`fixed top-0 left-0 bottom-0 z-[110] flex flex-col overflow-hidden border-r border-[var(--border-color)] bg-[var(--color-primary)] p-4 shadow-[var(--shadow-lg)] transition-[width] duration-300 ease-[var(--transition-slow)] ${
+          isCollapsed ? 'w-[var(--sidebar-collapsed)]' : 'w-[var(--sidebar-width)]'
+        }`}
       >
-        <div className="app-sidebar__header" style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 12px" }}>
-            <img
+        <div
+          className="flex items-center gap-2.5 px-3 py-2"
+          style={{ height: 'var(--navbar-height)' }}
+        >
+          <img
             src="/IsotipoPrometeoColoresOscuros.png"
             alt="Logo Prometeo"
-            style={{ width: 45, height: 45, objectFit: "contain", flexShrink: 0 }}
+            className="h-11 w-11 object-contain shrink-0"
           />
           {!isCollapsed && (
-            <span style={{ color: "var(--color-blanco)", fontWeight: "bold", fontSize: 25, whiteSpace: "nowrap" }}>
+            <span className="whitespace-nowrap text-2xl font-bold text-[var(--color-blanco)]">
               Prometeo
             </span>
           )}
         </div>
 
-        <nav className="app-sidebar__nav">
-          {menuItems.map((item, index) => {
+        <nav className="mt-6 flex flex-1 flex-col gap-2">
+          {items.map((item, index) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
             return (
               <button
                 key={index}
-                className={`app-sidebar__item ${isActive ? 'active' : ''}`}
                 onClick={() => navigate(item.path)}
-                style={{ color: "var(--color-blanco)" }}
+                className={`group relative flex w-full items-center gap-3.5 rounded-xl border-none bg-transparent px-3 py-3 text-left text-[0.9375rem] font-medium text-[var(--color-blanco)] transition-all duration-150 cursor-pointer whitespace-nowrap ${
+                  isActive
+                    ? 'bg-white/15 font-semibold'
+                    : 'hover:bg-white/10'
+                }`}
               >
-                <span className="app-sidebar__item-icon">
+                <span className="relative flex h-[22px] w-[22px] shrink-0 items-center justify-center transition-transform duration-150 group-hover:scale-110">
                   <Icon size={22} />
                   {item.label === 'Chat' && unreadCount > 0 && (
                     <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
@@ -82,39 +92,44 @@ const Sidebar = ({ isCollapsed, onToggleSidebar }) => {
                     </span>
                   )}
                 </span>
-                <span className="app-sidebar__item-text">{item.label}</span>
-                <span className="app-sidebar__item-tooltip">{item.label}</span>
+                <span className={`transition-opacity duration-200 ${isCollapsed ? 'opacity-0 w-0 overflow-hidden' : ''}`}>
+                  {item.label}
+                </span>
+                {isCollapsed && (
+                  <span className="pointer-events-none absolute left-[calc(100%+12px)] z-[100] whitespace-nowrap rounded-md bg-slate-800 px-3 py-2 text-sm font-medium text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+                    {item.label}
+                  </span>
+                )}
               </button>
             );
           })}
         </nav>
 
-        {/* ← Cambiado: ya no navega directo, abre el modal */}
-        <div className="app-sidebar__footer">
+        <div className="border-t border-white/20 pt-4">
           <button
-            className="app-sidebar__logout"
             onClick={() => setLogoutOpen(true)}
+            className="group flex w-full items-center gap-3.5 rounded-xl border-none bg-transparent px-3 py-3 text-left text-[0.9375rem] font-medium text-[var(--color-blanco)]/70 transition-all duration-150 cursor-pointer whitespace-nowrap hover:bg-white/10 hover:text-[var(--color-blanco)]"
           >
-            <span className="app-sidebar__item-icon">
+            <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center">
               <LogOut size={22} />
             </span>
-            <span className="app-sidebar__logout-text">Cerrar sesion</span>
+            <span className={`transition-opacity duration-200 ${isCollapsed ? 'opacity-0 w-0 overflow-hidden' : ''}`}>
+              Cerrar sesion
+            </span>
           </button>
         </div>
       </aside>
 
       <button
-        className={`app-sidebar__hamburger ${isCollapsed ? 'collapsed' : ''}`}
         onClick={onToggleSidebar}
+        className={`fixed top-4 z-[120] flex items-center justify-center rounded-r-lg bg-white p-2 text-[var(--color-negro)] shadow-[var(--shadow-md)] transition-[left] duration-300 ease-[var(--transition-slow)] cursor-pointer ${
+          isCollapsed ? 'left-[var(--sidebar-collapsed)]' : 'left-[var(--sidebar-width)]'
+        }`}
       >
         <Menu size={22} />
       </button>
 
-      {/* ← Agregado: modal fuera del aside para que el overlay cubra toda la pantalla */}
-      <LogoutModal
-        isOpen={logoutOpen}
-        onClose={() => setLogoutOpen(false)}
-      />
+      <LogoutModal isOpen={logoutOpen} onClose={() => setLogoutOpen(false)} />
     </>
   );
 };

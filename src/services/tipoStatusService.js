@@ -1,28 +1,21 @@
-import { BASE_URL, getHeaders } from "./api";
+import { BASE_URL, getHeaders, apiFetch } from "./api";
 
 export const getTiposStatus = async (page = 1, limit = 10) => {
-  const response = await fetch(`${BASE_URL}/tipos-status/?page=${page}&limit=${limit}`, {
-    headers: getHeaders(),
-  });
-  return await response.json();
-};
-
-export const getTiposStatusOpciones = async () => {
-  const response = await fetch(`${BASE_URL}/tipos-status/opciones`, {
+  const response = await apiFetch(`${BASE_URL}/tipo-status/?page=${page}&limit=${limit}`, {
     headers: getHeaders(),
   });
   return await response.json();
 };
 
 export const getTipoStatusPorId = async (id) => {
-  const response = await fetch(`${BASE_URL}/tipos-status/${id}`, {
+  const response = await apiFetch(`${BASE_URL}/tipo-status/${id}`, {
     headers: getHeaders(),
   });
   return await response.json();
 };
 
 export const crearTipoStatus = async (tipoStatus) => {
-  const response = await fetch(`${BASE_URL}/tipos-status/`, {
+  const response = await apiFetch(`${BASE_URL}/tipo-status/`, {
     method: "POST",
     headers: getHeaders(),
     body: JSON.stringify(tipoStatus),
@@ -31,7 +24,7 @@ export const crearTipoStatus = async (tipoStatus) => {
 };
 
 export const actualizarTipoStatus = async (id, datos) => {
-  const response = await fetch(`${BASE_URL}/tipos-status/${id}`, {
+  const response = await apiFetch(`${BASE_URL}/tipo-status/${id}`, {
     method: "PUT",
     headers: getHeaders(),
     body: JSON.stringify(datos),
@@ -40,7 +33,7 @@ export const actualizarTipoStatus = async (id, datos) => {
 };
 
 export const eliminarTipoStatus = async (id) => {
-  const response = await fetch(`${BASE_URL}/tipos-status/${id}`, {
+  const response = await apiFetch(`${BASE_URL}/tipo-status/${id}`, {
     method: "DELETE",
     headers: getHeaders(),
   });
