@@ -264,7 +264,7 @@ const Mensajes = () => {
   };
 
   return (
-    <div className="relative flex h-[calc(100vh-var(--navbar-height)-3rem)] w-full flex-col overflow-hidden rounded-xl bg-white">
+    <div className="relative flex h-[calc(100dvh-var(--navbar-height)-1.5rem)] sm:h-[calc(100dvh-var(--navbar-height)-3rem)] w-full flex-col overflow-hidden rounded-xl bg-white">
       <SalaFondo fondoTipo={sala?.fondo_tipo} fondo={sala?.fondo} />
 
       {/* Encabezado de la sala */}

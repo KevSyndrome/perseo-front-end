@@ -1,46 +1,101 @@
 import { useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, MotionConfig } from 'framer-motion';
 import FloatingBg from './FloatingBg';
 import { FONDO_DEFAULT } from './fondosSala';
 
 const random = (min, max) => Math.random() * (max - min) + min;
 
+// Aurora: manchas grandes y difuminadas que se desplazan y cambian de tamaño
+const MANCHAS_AURORA = [
+  { color: '#14b8a6', size: '70%', x: ['-10%', '35%', '5%', '-10%'], y: ['-10%', '15%', '40%', '-10%'], duration: 14 },
+  { color: '#8b5cf6', size: '65%', x: ['50%', '10%', '45%', '50%'], y: ['30%', '-5%', '5%', '30%'], duration: 17 },
+  { color: '#ec4899', size: '55%', x: ['30%', '60%', '0%', '30%'], y: ['60%', '35%', '15%', '60%'], duration: 12 },
+  { color: '#0ea5e9', size: '60%', x: ['60%', '20%', '55%', '60%'], y: ['-15%', '45%', '55%', '-15%'], duration: 19 },
+];
+
 function Aurora() {
   return (
-    <motion.div
-      className="absolute inset-0"
-      style={{
-        background: 'linear-gradient(120deg, #0f766e, #6d28d9, #db2777, #0ea5e9, #0f766e)',
-        backgroundSize: '400% 400%',
-        opacity: 0.35,
-      }}
-      animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
-      transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-    />
+    <div className="absolute inset-0 overflow-hidden" style={{ background: 'linear-gradient(160deg, #f0fdfa, #f5f3ff 50%, #fdf2f8)' }}>
+      {MANCHAS_AURORA.map((m, i) => (
+        <motion.div
+          key={i}
+          className="absolute rounded-full"
+          style={{
+            width: m.size,
+            aspectRatio: '1',
+            background: `radial-gradient(circle, ${m.color} 0%, transparent 65%)`,
+            filter: 'blur(40px)',
+            opacity: 0.55,
+          }}
+          animate={{ left: m.x, top: m.y, scale: [1, 1.25, 0.9, 1] }}
+          transition={{ duration: m.duration, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      ))}
+    </div>
   );
 }
 
-function Estrellas({ count = 70 }) {
+// Estrellas: parpadeo, cielo que gira lento y estrellas fugaces de vez en cuando
+function Estrellas({ count = 220, fugaces = 3 }) {
   const estrellas = useMemo(
     () => Array.from({ length: count }, (_, i) => ({
       id: i,
       x: random(0, 100),
       y: random(0, 100),
-      size: random(1.5, 3.5),
-      duration: random(2, 5),
-      delay: random(0, 4),
+      size: random(1.5, 4),
+      duration: random(1.2, 3.5),
+      delay: random(0, 3),
     })),
     [count]
   );
+  const lluvia = useMemo(
+    () => Array.from({ length: fugaces }, (_, i) => ({
+      id: i,
+      x: random(5, 60),
+      y: random(0, 35),
+      delay: random(0.5, 5),
+      pausa: random(4, 9),
+    })),
+    [fugaces]
+  );
   return (
-    <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at 30% 30%, #1e293b, #020617)' }}>
-      {estrellas.map((e) => (
+    <div className="absolute inset-0 overflow-hidden" style={{ background: 'radial-gradient(ellipse at 30% 20%, #1e293b, #020617 70%)' }}>
+      {/* El cielo es más grande que la sala para que al girar no se vean bordes */}
+      <motion.div
+        className="absolute -inset-1/4"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 240, repeat: Infinity, ease: 'linear' }}
+      >
+        {estrellas.map((e) => (
+          <motion.span
+            key={e.id}
+            className="absolute rounded-full bg-white"
+            style={{
+              left: `${e.x}%`,
+              top: `${e.y}%`,
+              width: e.size,
+              height: e.size,
+              boxShadow: e.size > 2.5 ? '0 0 6px 1px rgba(255,255,255,0.7)' : 'none',
+            }}
+            animate={{ opacity: [0.25, 1, 0.25], scale: [0.8, 1.3, 0.8] }}
+            transition={{ duration: e.duration, delay: e.delay, repeat: Infinity, ease: 'easeInOut' }}
+          />
+        ))}
+      </motion.div>
+
+      {lluvia.map((f) => (
         <motion.span
-          key={e.id}
-          className="absolute rounded-full bg-white"
-          style={{ left: `${e.x}%`, top: `${e.y}%`, width: e.size, height: e.size }}
-          animate={{ opacity: [0.15, 1, 0.15] }}
-          transition={{ duration: e.duration, delay: e.delay, repeat: Infinity, ease: 'easeInOut' }}
+          key={`f${f.id}`}
+          className="absolute h-[2px] w-32 rounded-full"
+          style={{
+            left: `${f.x}%`,
+            top: `${f.y}%`,
+            rotate: 30,
+            transformOrigin: 'right center',
+            background: 'linear-gradient(90deg, transparent, #fff)',
+          }}
+          animate={{ x: [0, 420], y: [0, 240], opacity: [0, 1, 0] }}
+          transition={{ duration: 1.1, delay: f.delay, repeat: Infinity, repeatDelay: f.pausa, ease: 'easeIn' }}
         />
       ))}
     </div>
@@ -86,5 +141,10 @@ export default function SalaFondo({ fondoTipo, fondo }) {
     );
   }
   const Componente = COMPONENTES[fondo] ?? COMPONENTES[FONDO_DEFAULT];
-  return <Componente />;
+  // Si el usuario pidió "reducir movimiento" en su sistema, los fondos quedan quietos
+  return (
+    <MotionConfig reducedMotion="user">
+      <Componente />
+    </MotionConfig>
+  );
 }

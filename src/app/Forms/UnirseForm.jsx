@@ -43,7 +43,7 @@ const UnirseForm = ({ onConfirm, onCancel, code, onChange, loading, entidad = 'p
       className="fixed inset-0 z-50 flex items-center justify-center"
       style={{ backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)' }}
     >
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4" style={{ padding: '2.5rem' }}>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 p-5 sm:p-10">
 
         <h2 className="text-2xl font-bold text-slate-800 text-center tracking-wide uppercase mb-2">
           {esSala ? 'Unirse a una sala' : 'Unirse a Proyecto'}
@@ -55,7 +55,7 @@ const UnirseForm = ({ onConfirm, onCancel, code, onChange, loading, entidad = 'p
         </p>
 
         {/* Cajas con input dentro de cada una */}
-        <div className="flex justify-center items-center gap-2 mb-2">
+        <div className="flex justify-center items-center gap-1 sm:gap-2 mb-2">
           {[0, 1, 2, 3].map((i) => (
             <input
               key={i}
@@ -67,12 +67,12 @@ const UnirseForm = ({ onConfirm, onCancel, code, onChange, loading, entidad = 'p
               onKeyDown={(e) => handleKeyDown(e, i)}
               onPaste={handlePaste}
               autoFocus={i === 0}
-              className="w-11 h-14 rounded-lg text-center text-xl font-bold text-slate-700 border-2 focus:outline-none focus:border-teal-500"
+              className="w-8 h-11 sm:w-11 sm:h-14 rounded-lg text-center text-lg sm:text-xl font-bold text-slate-700 border-2 focus:outline-none focus:border-teal-500"
               style={{ backgroundColor: '#8ecdd4', borderColor: code[i] ? '#0d3b4a' : '#8ecdd4' }}
             />
           ))}
 
-          <span className="text-slate-400 text-2xl font-light mx-1">—</span>
+          <span className="text-slate-400 text-xl sm:text-2xl font-light sm:mx-1">—</span>
 
           {[4, 5, 6, 7].map((i) => (
             <input
@@ -84,7 +84,7 @@ const UnirseForm = ({ onConfirm, onCancel, code, onChange, loading, entidad = 'p
               onChange={(e) => handleChange(e, i)}
               onKeyDown={(e) => handleKeyDown(e, i)}
               onPaste={handlePaste}
-              className="w-11 h-14 rounded-lg text-center text-xl font-bold text-slate-700 border-2 focus:outline-none focus:border-teal-500"
+              className="w-8 h-11 sm:w-11 sm:h-14 rounded-lg text-center text-lg sm:text-xl font-bold text-slate-700 border-2 focus:outline-none focus:border-teal-500"
               style={{ backgroundColor: '#8ecdd4', borderColor: code[i] ? '#0d3b4a' : '#8ecdd4' }}
             />
           ))}

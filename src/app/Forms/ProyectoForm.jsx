@@ -99,7 +99,7 @@ export default function ProyectoForm({ isOpen, onClose, onProyectoCreado }) {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Crear Nuevo Proyecto" width="w-[680px]" height="h-[490px]">
+    <Modal isOpen={isOpen} onClose={handleClose} title="Crear Nuevo Proyecto" width="w-[680px]" height="h-auto">
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
         {error && (
@@ -115,7 +115,7 @@ export default function ProyectoForm({ isOpen, onClose, onProyectoCreado }) {
           />
         </FormField>
 
-        <div className="grid grid-cols-2 gap-4 items-stretch">
+        <div className="grid grid-cols-1 gap-4 items-stretch sm:grid-cols-2">
           <FormField label="Descripción" required stretch>
             <TextArea
               value={descripcion}
