@@ -14,6 +14,7 @@ Ramas (ya mergeadas, en este orden):
 8. `fix/chat-movil-pantalla-completa`: el chat en celular ocupa toda la pantalla (sección 10).
 9. `feature/invitacion-por-link`: links de invitación para salas y proyectos, y pantalla de registro (sección 11).
 10. `feature/chat-pantalla-completa`: chat a pantalla completa en todos los tamaños, menú ⋮ en Safari y modales encima del chat (sección 10).
+11. `feature/recuperar-contrasena`: recuperación de contraseña por correo (sección 12).
 
 Backend correspondiente: repo `backend-tasks`, desplegado desde la rama `supabase`. El contrato completo está en `docs/CAMBIOS-API.md` de ese repo.
 
@@ -236,6 +237,18 @@ Revisado en 390 px (celular) y 820 px (tablet): Dashboard, Proyectos, detalle de
 - Links: "¿No tienes cuenta? Regístrate" en Login y "¿Ya tienes cuenta? Inicia sesión" en Registro.
 - El rewrite de Vercel (`vercel.json`) ya cubre `/registro` y `/unirse/...`.
 
+## 12. Recuperar contraseña por correo
+
+El backend envía el correo con Brevo; el link vence en **15 minutos** y se puede usar **una sola vez**.
+
+| Archivo | Cambio |
+|---|---|
+| `Pages/RecuperarContrasena.jsx` (ruta `/recuperar-contrasena`, sin sesión) | Pide el correo → `POST /usuarios/recuperar-contraseña`. Siempre muestra el mismo mensaje genérico, exista o no el correo, para no revelar qué cuentas existen. "¿Olvidaste tu contraseña?" del Login ahora lleva aquí (antes iba a `/recuperarpass`, que no existía). |
+| `Pages/RestablecerContrasena.jsx` (ruta `/restablecer-contrasena?token=...`, **sin ñ**: es la que va en el correo) | Nueva contraseña + confirmación → `POST /usuarios/restablecer-contraseña` con `{token, nueva_contraseña}`. Si sale bien: "Contraseña restablecida", se limpia la sesión local (el backend cierra todas) y manda a `/login`. Si el token es inválido, ya se usó o venció: muestra el mensaje del backend y el botón **"Pedir otro"**. |
+| `services/authService.js` | `solicitarRecuperacion(correo)` y `restablecerContrasena(token, nueva)` (con `fetch` normal; no hay sesión). |
+| `utils/password.js` (nuevo) | `errorContrasena(contraseña, confirmación)`: las reglas del backend (8 o más caracteres, mayúscula, minúscula, número y carácter especial). Lo usan Registro y Restablecer. |
+| `Components/AuthCard.jsx` + `estiloCampoAuth.js` (nuevos) | Tarjeta y estilo de campos de las pantallas sin sesión. |
+
 ---
 
 ## Cómo se probó
@@ -264,7 +277,8 @@ Front local (`VITE_API_URL=http://127.0.0.1:8765 npx vite`) contra el backend lo
 - ✅ El propietario quita a un colaborador desde el detalle (el backend confirma 0 colaboradores).
 - ✅ Registro con un correo existente → "El correo ya está registrado" + botón "Iniciar sesión".
 - ✅ Cambiar contraseña → cierra la sesión y manda a login; la contraseña vieja da 401 y la nueva entra.
-- ⚠️ Subir imagen (foto de perfil, logo, fondo de sala): el front envía bien el archivo, pero el **backend local responde 500** en todas las subidas (probable configuración de Cloudinary en local). Reportado al backend; falta probarlo en Railway.
+- ✅ Recuperar contraseña: "¿Olvidaste tu contraseña?" → correo → mensaje genérico. Con un link válido → nueva contraseña → manda a login; la contraseña vieja da 401 y la nueva entra. Reusar el link → "Este token de recuperación ya fue utilizado" + "Pedir otro". Token inventado → "Token de recuperación inválido". Contraseña débil → validación del front antes de enviar.
+- ⚠️ Subir imagen (foto de perfil, logo, fondo de sala): el front envía bien el archivo, pero en local las credenciales de Cloudinary son de ejemplo. Ahora el backend responde **502** "No se pudo subir el archivo al servicio de almacenamiento" y el front muestra ese mensaje. Falta probarlo en Railway con las credenciales reales.
 - ⚠️ "¡Link copiado!" no se pudo ver: en el Chrome automatizado el portapapeles no responde; se probó el campo de respaldo con el link.
 - ⚠️ **No probado en el navegador:** subir o quitar el logo y la foto de perfil (requieren elegir un archivo local), quitar a un colaborador desde el propietario y cambiar la contraseña.
 

@@ -6,6 +6,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { registrarUsuario, loginUsuario } from "../../services/authService";
 import { tomarRutaPendiente } from "../../services/api";
+import { errorContrasena } from "../../utils/password";
 
 const CAMPOS = [
   { key: "nombre", label: "NOMBRE", type: "text", min: 3, max: 45 },
@@ -34,12 +35,7 @@ const validar = (form) => {
       return `${c.label.charAt(0) + c.label.slice(1).toLowerCase()} debe tener entre ${c.min} y ${c.max} caracteres.`;
     }
   }
-  const p = form.contraseña;
-  if (p.length < 8 || !/[A-Z]/.test(p) || !/[a-z]/.test(p) || !/\d/.test(p) || !/[^A-Za-z0-9]/.test(p)) {
-    return "La contraseña debe tener al menos 8 caracteres, con mayúscula, minúscula, número y carácter especial.";
-  }
-  if (p !== form.confirmar_contraseña) return "Las contraseñas no coinciden.";
-  return null;
+  return errorContrasena(form.contraseña, form.confirmar_contraseña);
 };
 
 const Registro = () => {

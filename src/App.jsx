@@ -3,6 +3,8 @@ import Layout from "./app/Layouts/Layout";
 import Dashboard from "./app/Pages/Dashboard";
 import Login from "./app/Pages/Login";
 import Registro from "./app/Pages/Registro";
+import RecuperarContrasena from "./app/Pages/RecuperarContrasena";
+import RestablecerContrasena from "./app/Pages/RestablecerContrasena";
 import UnirsePorLink from "./app/Pages/UnirsePorLink";
 import Proyect from "./app/Pages/Proyect";
 import Sprint from "./app/Pages/Sprint";
@@ -28,6 +30,9 @@ function App() {
         {/* Login SIN layout */}
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
+        <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
+        {/* Link del correo de recuperación (sin ñ en la ruta) */}
+        <Route path="/restablecer-contrasena" element={<RestablecerContrasena />} />
         {/* Link de invitación: maneja la sesión por su cuenta (sin sesión → login y vuelve) */}
         <Route path="/unirse/:tipo/:codigo" element={<UnirsePorLink />} />
 
