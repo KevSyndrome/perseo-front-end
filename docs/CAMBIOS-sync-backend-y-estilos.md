@@ -15,6 +15,7 @@ Ramas (ya mergeadas, en este orden):
 9. `feature/invitacion-por-link`: links de invitación para salas y proyectos, y pantalla de registro (sección 11).
 10. `feature/chat-pantalla-completa`: chat a pantalla completa en todos los tamaños, menú ⋮ en Safari y modales encima del chat (sección 10).
 11. `feature/recuperar-contrasena`: recuperación de contraseña por correo (sección 12).
+12. `fix/sesion-persistente`: la sesión dura lo que dice el backend (renovación con refresh token) y la raíz respeta la sesión (sección 1).
 
 Backend correspondiente: repo `backend-tasks`, desplegado desde la rama `supabase`. El contrato completo está en `docs/CAMBIOS-API.md` de ese repo.
 
@@ -42,6 +43,17 @@ Backend correspondiente: repo `backend-tasks`, desplegado desde la rama `supabas
   - El login sigue usando `fetch` normal a propósito: ahí un 401 significa "credenciales inválidas" y no debe redirigir.
 
 > ⚠️ Al desplegar, **todos los usuarios tendrán que volver a iniciar sesión una vez**.
+
+### Sesión persistente (refresh token)
+- **Antes:** el front guardaba solo el *access token*, que dura **15 min** (`EXPIRE_TIME` del backend). Al vencer, el primer 401 mandaba a login, aunque el backend da un *refresh token* de **7 días**.
+- **Ahora:**
+  - `loginUsuario` guarda también `refresh_token` en `localStorage`.
+  - `services/api.js` tiene `refrescarSesion()`: llama a `POST /usuarios/me/refresh`, guarda el par nuevo (el backend **rota** ambos tokens) y comparte **una sola renovación** entre peticiones simultáneas; una segunda renovación con el refresh viejo cerraría la sesión.
+  - `apiFetch`: ante un 401 renueva una vez y **repite la petición**. Solo si no se puede renovar limpia la sesión y manda a login (`cerrarSesionYIrALogin`).
+  - Canal de avisos (WebSocket): si el backend rechaza el token en el handshake, el navegador ve **1006** (no 1008). Si la conexión no llegó a abrir y el token está vencido (`exp` del JWT), renueva y reconecta.
+- **Rutas:** `/` y cualquier ruta desconocida llevan a `/dashboard` si hay sesión, si no a `/login` (antes `/` mandaba siempre a login). El Login con sesión guardada redirige solo.
+- Probado: con el access token vencido el dashboard carga sin pedir login; 5 peticiones simultáneas → 1 renovación → las 5 responden 200; los avisos se reconectan; con el refresh token inválido → login.
+- Quien inició sesión antes de este cambio no tiene `refresh_token` guardado: al vencer su token entrará una vez más y desde ahí se mantiene.
 
 ### Cambiar contraseña
 - **Archivo:** `src/app/Modals/ChangePasswordModal.jsx`

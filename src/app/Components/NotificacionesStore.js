@@ -1,6 +1,14 @@
 import { create } from 'zustand';
 import { crearConexionAvisos } from '../../services/mensajesServices';
 import { getSalas } from '../../services/salaService';
+import { refrescarSesion, cerrarSesionYIrALogin } from '../../services/api';
+import { getTokenPayload } from '../../services/authService';
+
+// Vencido o ilegible (con 10 s de margen)
+const tokenVencido = () => {
+  const exp = getTokenPayload()?.exp;
+  return !exp || exp * 1000 < Date.now() + 10000;
+};
 
 let ws = null;
 let reintento = null;
@@ -16,7 +24,7 @@ export const useNotificacionesStore = create((set, get) => ({
 
   // Idempotente: solo reconecta si cambió el token (otro login)
   conectar: () => {
-    const token = localStorage.getItem('token');
+    let token = localStorage.getItem('token');
     if (!token || get().token === token) return;
     clearTimeout(reintento);
     ws?.close();
@@ -27,6 +35,8 @@ export const useNotificacionesStore = create((set, get) => ({
       .catch(() => {});
 
     const abrir = () => {
+      let abierto = false;
+      const tokenUsado = localStorage.getItem('token');
       ws = crearConexionAvisos(
         (aviso) => {
           const { salaAbierta, noLeidos } = get();
@@ -46,11 +56,28 @@ export const useNotificacionesStore = create((set, get) => ({
         },
         (event) => {
           set({ conectado: false });
-          // 1008 = sesión inválida (apiFetch ya manda a login); otro cierre → reintentar
-          if (event.code !== 1008 && get().token === token) reintento = setTimeout(abrir, 5000);
+          if (get().token !== token) return;
+          // Si el backend rechaza el token en el handshake, el navegador solo ve 1006 (no 1008).
+          // Rechazada sin abrir y con el token vencido → renovar y reconectar (o ir a login).
+          if (event.code === 1008 || (!abierto && tokenVencido())) {
+            refrescarSesion().then((ok) => {
+              if (!ok) return cerrarSesionYIrALogin();
+              token = localStorage.getItem('token');
+              set({ token });
+              abrir();
+            });
+          } else if (!abierto && localStorage.getItem('token') !== tokenUsado) {
+            // Otra petición ya renovó la sesión mientras se conectaba: reintentar ya
+            abrir();
+          } else {
+            reintento = setTimeout(abrir, 5000);
+          }
         }
       );
-      ws.onopen = () => set({ conectado: true });
+      ws.onopen = () => {
+        abierto = true;
+        set({ conectado: true });
+      };
     };
     abrir();
   },

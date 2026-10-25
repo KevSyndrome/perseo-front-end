@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box, Card, CardContent, TextField, Button,
   Typography, Divider, Alert, CircularProgress
@@ -13,6 +13,11 @@ const LoginModal = () => {
   const [contraseña, setContraseña] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Con sesión guardada no hace falta volver a entrar
+  useEffect(() => {
+    if (localStorage.getItem("token")) navigate(tomarRutaPendiente() || "/dashboard", { replace: true });
+  }, [navigate]);
 
   const handleLogin = async () => {
     if (!correo || !contraseña) return;

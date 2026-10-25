@@ -138,7 +138,9 @@ function App() {
         />
 
         {/* Redirección */}
-        <Route path="" element={<Navigate to="/login" />} />
+        {/* Raíz y rutas desconocidas: al dashboard si hay sesión, si no a login */}
+        <Route path="/" element={<Navigate to={localStorage.getItem('token') ? '/dashboard' : '/login'} replace />} />
+        <Route path="*" element={<Navigate to={localStorage.getItem('token') ? '/dashboard' : '/login'} replace />} />
       </Routes>
     </BrowserRouter>
   );
