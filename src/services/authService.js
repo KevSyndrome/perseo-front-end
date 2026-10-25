@@ -12,6 +12,8 @@ export const loginUsuario = async (correo, contraseña) => {
   if (!response.ok) throw new Error(data.detail || "Error al iniciar sesión");
   const payload = data.data;
   localStorage.setItem("token", payload.access_token);
+  // Para renovar la sesión cuando venza el access token (ver refrescarSesion en api.js)
+  localStorage.setItem("refresh_token", payload.refresh_token);
   localStorage.setItem("usuario", JSON.stringify(payload.usuario));
   return payload;
 };
