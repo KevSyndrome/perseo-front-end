@@ -17,6 +17,7 @@ Ramas (ya mergeadas, en este orden):
 11. `feature/recuperar-contrasena`: recuperación de contraseña por correo (sección 12).
 12. `fix/sesion-persistente`: la sesión dura lo que dice el backend (renovación con refresh token) y la raíz respeta la sesión (sección 1).
 13. `feature/logout-revoca-sesion`: cerrar sesión revoca la sesión en el backend; los WebSocket reaccionan al motivo del 1008 (sección 1).
+14. `chore/email-logo`: logo chico para los correos (sección 12).
 
 Backend correspondiente: repo `backend-tasks`, desplegado desde la rama `supabase`. El contrato completo está en `docs/CAMBIOS-API.md` de ese repo.
 
@@ -268,6 +269,10 @@ El backend envía el correo con Brevo; el link vence en **15 minutos** y se pued
 | `services/authService.js` | `solicitarRecuperacion(correo)` y `restablecerContrasena(token, nueva)` (con `fetch` normal; no hay sesión). |
 | `utils/password.js` (nuevo) | `errorContrasena(contraseña, confirmación)`: las reglas del backend (8 o más caracteres, mayúscula, minúscula, número y carácter especial). Lo usan Registro y Restablecer. |
 | `Components/AuthCard.jsx` + `estiloCampoAuth.js` (nuevos) | Tarjeta y estilo de campos de las pantallas sin sesión. |
+
+### Logo de los correos
+- Los correos del backend (por ejemplo, el de recuperación de contraseña) cargan el logo desde el front: `{FRONTEND_URL}/email-logo.png` (`public/email-logo.png`, 112×102 px, 12 KB; el original de 741×672 pesa 228 KB).
+- ⚠️ **No renombrar ni mover** `public/email-logo.png` ni `public/IsotipoPrometeoColoresOscuros.png`: los correos se quedarían sin logo. Si cambian, avisar al backend la ruta nueva.
 
 ---
 
