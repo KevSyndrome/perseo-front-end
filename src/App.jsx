@@ -9,6 +9,7 @@ import Profile from "./app/Pages/Profile";
 import Configuration from "./app/Pages/Configuration";
 import Task from "./app/Pages/Task";
 import Mensajes from "./app/Pages/Mensajes";
+import Salas from "./app/Pages/Salas";
 import ProyectDetalle from "./app/Pages/ProyectDetalle";
 import ConfigurationAdmin from "./app/Pages/ConfigurationAdmin";
 
@@ -111,6 +112,14 @@ function App() {
 
         <Route
           path="/mensajes"
+          element={
+            <PrivateRoute>
+              <Layout><Salas /></Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/mensajes/:salaId"
           element={
             <PrivateRoute>
               <Layout><Mensajes /></Layout>

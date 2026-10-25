@@ -66,6 +66,19 @@ export const crearConexionWS = (sala_id = null, onMessage, onError, onClose) => 
   return ws;
 };
 
+// Canal de avisos: solo escucha. Llega {type:"nuevo_mensaje", sala_id, sala_nombre, data}
+// por cada mensaje nuevo de otros usuarios en cualquier sala visible. 1008 = token inválido.
+export const crearConexionAvisos = (onAviso, onClose) => {
+  const token = localStorage.getItem('token');
+  const ws = new WebSocket(`${WS_URL}/mensajes/ws/notificaciones?token=${token}`);
+  ws.onmessage = (event) => {
+    const msg = JSON.parse(event.data);
+    if (msg.type === 'nuevo_mensaje') onAviso(msg);
+  };
+  ws.onclose = onClose;
+  return ws;
+};
+
 // Enviar mensaje por WebSocket
 export const enviarMensajeWS = (ws, mensaje) => {
   if (ws && ws.readyState === WebSocket.OPEN) {
