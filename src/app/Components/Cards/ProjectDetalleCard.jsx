@@ -13,11 +13,12 @@ const ProjectDetalleCard = ({
   onQuitarColaborador,
   onLogo,
   error,
+  mostrarCodigoInicial = false,
 }) => {
   const logoInputRef = useRef(null);
   const [menuAbierto, setMenuAbierto] = useState(false);
   // El código existe desde que se crea el proyecto; solo se muestra a petición
-  const [mostrarCodigo, setMostrarCodigo] = useState(false);
+  const [mostrarCodigo, setMostrarCodigo] = useState(mostrarCodigoInicial);
 
   const formatFecha = (iso) => {
     if (!iso) return '—';

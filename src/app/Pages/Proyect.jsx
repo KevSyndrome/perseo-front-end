@@ -74,7 +74,7 @@ const Proyect = () => {
       <div className="flex items-center justify-between">
         <div style={{
           display: "flex",
-          backgroundColor: "var(--color-blanco)",
+          backgroundColor: "var(--bg-card)",
           borderRadius: "999px",
           padding: "4px",
           gap: "2px",
@@ -101,10 +101,10 @@ const Proyect = () => {
                 flex: 1,
                 transition: "all var(--transition-fast)",
                 backgroundColor: mode === value ? "var(--color-selection)" : "transparent",
-                color: mode === value ? "var(--color-blanco)" : "var(--color-negro)",
+                color: mode === value ? "var(--color-blanco)" : "var(--text-primary)",
               }}
             >
-              <Icon size={15} color={mode === value ? "var(--color-blanco)" : "var(--color-negro)"} />
+              <Icon size={15} color={mode === value ? "var(--color-blanco)" : "var(--text-primary)"} />
               {label}
             </button>
           ))}

@@ -68,7 +68,7 @@ const UnirseForm = ({ onConfirm, onCancel, code, onChange, loading, entidad = 'p
               onPaste={handlePaste}
               autoFocus={i === 0}
               className="w-8 h-11 sm:w-11 sm:h-14 rounded-lg text-center text-lg sm:text-xl font-bold text-slate-700 border-2 focus:outline-none focus:border-teal-500"
-              style={{ backgroundColor: '#8ecdd4', borderColor: code[i] ? '#0d3b4a' : '#8ecdd4' }}
+              style={{ backgroundColor: 'var(--caja-codigo)', borderColor: code[i] ? 'var(--color-boton)' : 'var(--caja-codigo)' }}
             />
           ))}
 
@@ -85,7 +85,7 @@ const UnirseForm = ({ onConfirm, onCancel, code, onChange, loading, entidad = 'p
               onKeyDown={(e) => handleKeyDown(e, i)}
               onPaste={handlePaste}
               className="w-8 h-11 sm:w-11 sm:h-14 rounded-lg text-center text-lg sm:text-xl font-bold text-slate-700 border-2 focus:outline-none focus:border-teal-500"
-              style={{ backgroundColor: '#8ecdd4', borderColor: code[i] ? '#0d3b4a' : '#8ecdd4' }}
+              style={{ backgroundColor: 'var(--caja-codigo)', borderColor: code[i] ? 'var(--color-boton)' : 'var(--caja-codigo)' }}
             />
           ))}
         </div>
@@ -106,7 +106,7 @@ const UnirseForm = ({ onConfirm, onCancel, code, onChange, loading, entidad = 'p
             disabled={!completo || loading}
             className="flex-1 py-3 rounded-xl font-semibold text-white transition"
             style={{
-              backgroundColor: completo && !loading ? '#0d3b4a' : '#94a3b8',
+              backgroundColor: completo && !loading ? 'var(--color-boton)' : '#94a3b8',
               cursor: completo && !loading ? 'pointer' : 'not-allowed'
             }}
           >

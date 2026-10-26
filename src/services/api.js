@@ -48,7 +48,10 @@ export const refrescarSesion = () => {
 };
 
 export const cerrarSesionYIrALogin = () => {
+  // El tema es preferencia del navegador, no de la sesión: sobrevive al logout
+  const tema = localStorage.getItem('tema');
   localStorage.clear();
+  if (tema) localStorage.setItem('tema', tema);
   sessionStorage.clear();
   // Si la sesión venció al abrir un link de invitación, se retoma después del login
   if (window.location.pathname.startsWith('/unirse/')) guardarRutaPendiente(window.location.pathname);

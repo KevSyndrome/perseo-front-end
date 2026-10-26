@@ -108,7 +108,7 @@ const Profile = () => {
       </div>
 
       {/* ── BOTTOM INFO ── */}
-      <div className="grid grid-cols-1 overflow-hidden rounded-xl border border-[#e0e0e0] bg-white md:grid-cols-2">
+      <div className="grid grid-cols-1 overflow-hidden rounded-xl border border-[var(--border-color)] bg-white md:grid-cols-2">
         <InfoSection
           title="Información personal"
           fields={[
@@ -169,7 +169,7 @@ const styles = {
   },
   breadcrumb: {
     fontSize: "0.8rem",
-    color: "#888",
+    color: "var(--text-secondary)",
     marginBottom: "1.25rem",
   },
   changePassBtn: {
@@ -191,7 +191,7 @@ const styles = {
   spinner: {
     width: "36px",
     height: "36px",
-    border: "3px solid #e0e0e0",
+    border: "3px solid var(--border-color)",
     borderTop: "3px solid #1F8A8B",
     borderRadius: "50%",
     animation: "spin 0.8s linear infinite",

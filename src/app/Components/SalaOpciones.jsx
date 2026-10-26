@@ -1,4 +1,6 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { generarSlugProyecto } from '../../utils/slug';
 import { MoreVertical, Palette, KeyRound, Users, LogOut, Trash2, RefreshCw, ImageUp, X, Check } from 'lucide-react';
 import Modal from '../Modals/CreateProyectoModal';
 import CopiarLink from './CopiarLink';
@@ -16,6 +18,7 @@ import {
 // Menú ⋮ de una sala abierta. Lo que se muestra depende de lo que el backend
 // dice que puede hacer el usuario (puede_administrar, codigo_invitacion, tipo).
 export default function SalaOpciones({ sala, usuarioId, onSalaActualizada, onSalir }) {
+  const navigate = useNavigate();
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [modal, setModal] = useState(null); // 'fondo' | 'invitar' | 'miembros' | 'eliminar'
   const [miembros, setMiembros] = useState([]);
@@ -54,9 +57,17 @@ export default function SalaOpciones({ sala, usuarioId, onSalaActualizada, onSal
 
   const items = [
     sala.puede_administrar && { id: 'fondo', label: 'Cambiar fondo', Icon: Palette },
-    sala.codigo_invitacion && { id: 'invitar', label: 'Código de invitación', Icon: KeyRound },
+    sala.codigo_invitacion && { id: 'invitar', label: 'Invitar (código o link)', Icon: KeyRound },
+    // Las salas de proyecto no tienen código propio: se invita al proyecto (solo su dueño)
+    sala.tipo === 'proyecto' && sala.puede_administrar && sala.proyecto && {
+      id: 'invitarProyecto', label: 'Invitar al proyecto', Icon: KeyRound,
+      accion: () => navigate(`/proyectos/${generarSlugProyecto(sala.proyecto)}?invitar=1`),
+    },
     { id: 'miembros', label: 'Miembros', Icon: Users },
-    esPrivada && !esCreador && { id: 'salir', label: 'Salir de la sala', Icon: LogOut, peligro: true },
+    esPrivada && !esCreador && {
+      id: 'salir', label: 'Salir de la sala', Icon: LogOut, peligro: true,
+      accion: () => ejecutar(async () => { await eliminarMiembroSala(sala.id, usuarioId); onSalir(); }),
+    },
     puedeBorrar && { id: 'eliminar', label: 'Eliminar sala', Icon: Trash2, peligro: true },
   ].filter(Boolean);
 
@@ -74,12 +85,14 @@ export default function SalaOpciones({ sala, usuarioId, onSalaActualizada, onSal
         <>
           <div className="fixed inset-0 z-20" onClick={() => setMenuAbierto(false)} />
           <div className="absolute right-0 z-30 mt-1 flex w-56 flex-col overflow-hidden rounded-lg bg-white py-1 text-sm text-slate-700 shadow-[var(--shadow-lg)]">
-            {items.map(({ id, label, Icon, peligro }) => (
+            {items.map(({ id, label, Icon, peligro, accion }) => (
               <button
                 key={id}
-                onClick={() => (id === 'salir'
-                  ? (setMenuAbierto(false), ejecutar(async () => { await eliminarMiembroSala(sala.id, usuarioId); onSalir(); }))
-                  : abrir(id))}
+                onClick={() => {
+                  if (!accion) return abrir(id);
+                  setMenuAbierto(false);
+                  accion();
+                }}
                 className={`flex cursor-pointer items-center gap-2 bg-transparent px-4 py-2 text-left ${peligro ? 'text-red-500 hover:bg-red-50' : 'hover:bg-slate-100'}`}
               >
                 <Icon size={15} /> {label}

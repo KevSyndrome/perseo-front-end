@@ -5,6 +5,14 @@
     <link rel="icon" type="image/png" href="/TaskboardIsotipoOscuro.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Prometeo</title>
+    <script>
+      // Tema antes del primer render (sin parpadeo): elección guardada o la del sistema
+      try {
+        var tema = localStorage.getItem('tema') ||
+          (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.dataset.theme = tema;
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

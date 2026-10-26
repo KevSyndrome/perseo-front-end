@@ -127,7 +127,7 @@ const styles = {
     zIndex: 1000,
   },
   modal: {
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-card)",
     borderRadius: "16px",
     padding: "2rem",
     width: "100%",
@@ -137,12 +137,12 @@ const styles = {
   title: {
     fontSize: "1.1rem",
     fontWeight: "bold",
-    color: "#1a1a1a",
+    color: "var(--text-primary)",
     margin: "0 0 0.25rem 0",
   },
   subtitle: {
     fontSize: "0.82rem",
-    color: "#aaa",
+    color: "var(--text-muted)",
     margin: "0 0 1.5rem 0",
   },
   field: {
@@ -151,18 +151,18 @@ const styles = {
   label: {
     display: "block",
     fontSize: "0.75rem",
-    color: "#aaa",
+    color: "var(--text-muted)",
     marginBottom: "0.3rem",
   },
   input: {
     width: "100%",
     padding: "0.6rem 0.75rem",
     fontSize: "0.95rem",
-    border: "1.5px solid #e0e0e0",
+    border: "1.5px solid var(--border-color)",
     borderRadius: "8px",
     outline: "none",
     boxSizing: "border-box",
-    color: "#1a1a1a",
+    color: "var(--text-primary)",
     transition: "border-color 0.2s",
   },
   error: {
@@ -184,8 +184,8 @@ const styles = {
   },
   cancelBtn: {
     background: "none",
-    border: "1px solid #ccc",
-    color: "#777",
+    border: "1px solid var(--border-color)",
+    color: "var(--text-secondary)",
     borderRadius: "8px",
     padding: "0.5rem 1.25rem",
     fontSize: "0.85rem",

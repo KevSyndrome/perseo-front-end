@@ -27,10 +27,10 @@ export default function ImageUpload({ onFile, preview }) {
         src={preview} alt="preview" className="h-full w-full object-cover rounded-lg" />
         : <>
             <Upload size={28} 
-            style={{color: "var(--color-negro)"}}
+            style={{color: "var(--text-primary)"}}
             className="text-slate-500" />
             <span 
-            style={{color: "var(--color-negro)"}}
+            style={{color: "var(--text-primary)"}}
             className="text-xs text-slate-500 text-center px-2">
               Haz clic o arrastra para subir una imagen
             </span>

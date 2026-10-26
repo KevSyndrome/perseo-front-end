@@ -16,3 +16,41 @@
   --color-tertiary-disabled: #94a3b8;
   --color-tertiary-disabled-bg: #f1f5f9;
 }
+
+/* ── Modo oscuro sobre las clases de Tailwind ─────────────────────────────
+   Las utilidades usan var(--color-slate-*), así que redefinir la gama cambia
+   textos, bordes y fondos de toda la app sin tocar cada componente. */
+:root[data-theme="dark"] {
+  --color-slate-50: #163039;
+  --color-slate-100: #1A3841;
+  --color-slate-200: #24464F;
+  --color-slate-300: #2F5662;
+  --color-slate-400: #7499A0;
+  --color-slate-500: #88AAAE;
+  --color-slate-600: #A9C6C9;
+  --color-slate-700: #CCE0E2;
+  --color-slate-800: #E4F0F1;
+  --color-slate-900: #EEF6F7;
+  --color-gray-600: #A9C6C9;
+
+  /* Tintes claros de hover/chips → tintes oscuros del mismo color */
+  --color-red-50: #3A1E24;
+  --color-red-100: #4A2329;
+  --color-green-50: #13302A;
+  --color-green-100: #173A30;
+  --color-green-700: #86EFAC;
+  --color-blue-50: #14283A;
+  --color-teal-50: #12312F;
+}
+
+/* bg-white no se puede remapear por variable: text-white usa la misma */
+:root[data-theme="dark"] .bg-white { background-color: var(--bg-card); }
+:root[data-theme="dark"] .bg-white\/95 { background-color: color-mix(in srgb, var(--bg-card) 95%, transparent); }
+:root[data-theme="dark"] .bg-white\/80 { background-color: color-mix(in srgb, var(--bg-card) 80%, transparent); }
+/* El navy de marca se pierde sobre el fondo oscuro: los botones/burbujas pasan a teal */
+:root[data-theme="dark"] .bg-primary { background-color: var(--color-selection); }
+:root[data-theme="dark"] .hover\:bg-primary-hover:hover { background-color: #1BA3AB; }
+:root[data-theme="dark"] .hover\:text-primary:hover { color: var(--color-terciario); }
+/* rojo-500 como texto queda en 4.3:1 sobre la superficie; uno más claro */
+:root[data-theme="dark"] .text-red-500 { color: #f87171; }
+
