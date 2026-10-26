@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Paperclip, ArrowLeft, Globe, FolderKanban, Lock, X, FileText, Loader2 } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useBreadcrumb } from '../Components/Breadcrumb';
@@ -63,7 +63,10 @@ const Mensajes = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const bottomRef = useRef(null);
   const wsRef = useRef(null);
-  const typingTimeoutRef = useRef(null);
+  // Un temporizador por usuario: se reinicia con cada aviso (antes cada aviso ponía el suyo
+  // y el primero que vencía borraba el indicador aunque siguiera escribiendo → parpadeo)
+  const typingTimersRef = useRef({});
+  const ultimoTypingRef = useRef(0);
   const messagesContainerRef = useRef(null);
   // Alto del scroll antes de anteponer mensajes viejos, para no perder la posición
   const alturaPreviaRef = useRef(null);
@@ -127,6 +130,16 @@ const Mensajes = () => {
     }
   };
 
+  const quitarEscribiendo = (id) => {
+    if (!id) return;
+    clearTimeout(typingTimersRef.current[id]);
+    delete typingTimersRef.current[id];
+    setTypingUsers((prev) => prev.filter((u) => u.id !== id));
+  };
+
+  // Al salir de la sala no deben quedar temporizadores vivos
+  useEffect(() => () => Object.values(typingTimersRef.current).forEach(clearTimeout), []);
+
   // Conectar WebSocket al montar (solo una vez)
   useEffect(() => {
     // Evitar conexión duplicada por StrictMode
@@ -146,17 +159,15 @@ const Mensajes = () => {
           (msg) => {
             if (msg.type === 'typing') {
               const typingId = msg.usuario_id;
-              const typingName = msg.usuario_nombre;
-              setTypingUsers((prev) => {
-                const exists = prev.find((u) => u.id === typingId);
-                if (exists) return prev;
-                return [...prev, { id: typingId, nombre: typingName }];
-              });
-              setTimeout(() => {
-                setTypingUsers((prev) => prev.filter((u) => u.id !== typingId));
-              }, 3000);
+              setTypingUsers((prev) => (
+                prev.some((u) => u.id === typingId) ? prev : [...prev, { id: typingId, nombre: msg.usuario_nombre }]
+              ));
+              clearTimeout(typingTimersRef.current[typingId]);
+              typingTimersRef.current[typingId] = setTimeout(() => quitarEscribiendo(typingId), 4000);
               return;
             }
+            // Si mandó su mensaje, ya terminó de escribir
+            quitarEscribiendo(msg.usuario?.id);
             // Nuevo mensaje recibido — solo agregar si no existe ya
             setMessages((prev) => {
               const exists = prev.find((m) => m.id === msg.id);
@@ -295,8 +306,10 @@ const Mensajes = () => {
 
   const handleTyping = (e) => {
     setMessage(e.target.value);
-    // Enviar evento de typing cada vez que se escribe
-    if (wsRef.current && wsConnected) {
+    // Un aviso cada 2 s como máximo (antes, uno por tecla); el receptor lo mantiene 4 s
+    const ahora = Date.now();
+    if (wsRef.current && wsConnected && ahora - ultimoTypingRef.current > 2000) {
+      ultimoTypingRef.current = ahora;
       enviarTypingWS(wsRef.current);
     }
   };
@@ -404,23 +417,37 @@ const Mensajes = () => {
                 </div>
               </motion.div>
             ))}
-            {/* Typing indicator */}
-            {typingUsers.length > 0 && (
-              <div className="flex items-center gap-2 px-4 py-2 text-xs text-slate-500 mb-3">
-                <div className="flex gap-1">
-                  <span className="animate-bounce">.</span>
-                  <span className="animate-bounce delay-100">.</span>
-                  <span className="animate-bounce delay-200">.</span>
-                </div>
-                <span>
-                  {typingUsers.length === 1
-                    ? `${typingUsers[0].nombre} está escribiendo`
-                    : `${typingUsers.map(u => u.nombre).join(', ')} están escribiendo`}
-                </span>
-              </div>
-            )}
             <div ref={bottomRef} />
           </div>
+        </div>
+
+        {/* "Escribiendo…" flota sobre la caja de mensaje: no cambia el alto de la lista */}
+        <div className="relative z-20">
+          <AnimatePresence>
+            {typingUsers.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 6 }}
+                transition={{ duration: 0.2 }}
+                className="absolute bottom-full left-4 mb-2 flex items-center gap-2 rounded-full bg-white/95 px-3 py-1.5 text-xs text-slate-500 shadow-sm"
+              >
+                <span className="flex gap-0.5">
+                  {[0, 1, 2].map((i) => (
+                    <motion.span
+                      key={i}
+                      className="h-1.5 w-1.5 rounded-full bg-slate-400"
+                      animate={{ y: [0, -3, 0] }}
+                      transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.15 }}
+                    />
+                  ))}
+                </span>
+                {typingUsers.length === 1
+                  ? `${typingUsers[0].nombre} está escribiendo`
+                  : `${typingUsers.map((u) => u.nombre).join(', ')} están escribiendo`}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Vista previa del archivo elegido, antes de enviarlo */}
