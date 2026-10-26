@@ -20,6 +20,7 @@ Ramas (ya mergeadas, en este orden):
 14. `chore/email-logo`: logo chico para los correos (sección 12).
 15. `feature/modo-oscuro`: modo oscuro "petróleo profundo" con botón en el Navbar (sección 13).
 16. `feature/adjuntos-chat`: imágenes y archivos en el chat, cámara y links clickeables (sección 15). **Requiere** la rama `feature/chat-adjuntos` del backend desplegada.
+17. `fix/indicador-escribiendo`: "está escribiendo" sin parpadeo (sección 15).
 
 Backend correspondiente: repo `backend-tasks`, desplegado desde la rama `supabase`. El contrato completo está en `docs/CAMBIOS-API.md` de ese repo.
 
@@ -332,6 +333,11 @@ Backend: `POST /mensajes/` multipart (`file` obligatorio, `mensaje` opcional, `s
 | `Pages/Salas.jsx`, `NotificacionesStore.js` | Un mensaje que solo trae archivo se muestra como "📎 Archivo" / "Envió un archivo". |
 
 En local, el backend guarda los archivos en disco (`STORAGE_LOCAL_URL`); en Railway usa Cloudinary.
+
+### "Está escribiendo…" sin parpadeo
+- **Antes:** se mandaba un aviso por cada tecla, cada aviso programaba su propio temporizador de 3 s (el primero que vencía borraba el indicador aunque la persona siguiera escribiendo, y el siguiente aviso lo volvía a mostrar) y el indicador estaba dentro de la lista, así que al aparecer y desaparecer hacía saltar los mensajes.
+- **Ahora:** el emisor manda como máximo un aviso cada 2 s. El receptor tiene un temporizador por persona que se reinicia con cada aviso (4 s) y se quita en cuanto llega su mensaje. El indicador flota sobre la caja de mensaje con un fundido, sin mover la lista, y los tres puntos rebotan en secuencia.
+- Probado: escribir, pausar 1.5 s y volver a escribir → el indicador aparece una sola vez, sin huecos, y se va 4 s después de la última tecla.
 
 ---
 
