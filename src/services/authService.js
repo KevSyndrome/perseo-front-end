@@ -84,7 +84,10 @@ export const logoutUsuario = async ({ revocar = true } = {}) => {
       // Sin red: la sesión vence sola en el backend
     }
   }
+  // El tema es preferencia del navegador, no de la sesión: sobrevive al logout
+  const tema = localStorage.getItem('tema');
   localStorage.clear();
+  if (tema) localStorage.setItem('tema', tema);
   sessionStorage.clear();
 };
 

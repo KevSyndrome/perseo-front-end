@@ -60,7 +60,7 @@ const UnirsePorLink = () => {
             <button
               onClick={() => navigate('/dashboard', { replace: true })}
               className="mt-3 w-full cursor-pointer rounded-xl py-3 font-semibold text-white"
-              style={{ backgroundColor: '#0d3b4a' }}
+              style={{ backgroundColor: 'var(--color-boton)' }}
             >
               Ir al inicio
             </button>

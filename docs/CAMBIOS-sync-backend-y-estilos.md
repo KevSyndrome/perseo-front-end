@@ -18,6 +18,7 @@ Ramas (ya mergeadas, en este orden):
 12. `fix/sesion-persistente`: la sesión dura lo que dice el backend (renovación con refresh token) y la raíz respeta la sesión (sección 1).
 13. `feature/logout-revoca-sesion`: cerrar sesión revoca la sesión en el backend; los WebSocket reaccionan al motivo del 1008 (sección 1).
 14. `chore/email-logo`: logo chico para los correos (sección 12).
+15. `feature/modo-oscuro`: modo oscuro "petróleo profundo" con botón en el Navbar (sección 13).
 
 Backend correspondiente: repo `backend-tasks`, desplegado desde la rama `supabase`. El contrato completo está en `docs/CAMBIOS-API.md` de ese repo.
 
@@ -273,6 +274,39 @@ El backend envía el correo con Brevo; el link vence en **15 minutos** y se pued
 ### Logo de los correos
 - Los correos del backend (por ejemplo, el de recuperación de contraseña) cargan el logo desde el front: `{FRONTEND_URL}/email-logo.png` (`public/email-logo.png`, 112×102 px, 12 KB; el original de 741×672 pesa 228 KB).
 - ⚠️ **No renombrar ni mover** `public/email-logo.png` ni `public/IsotipoPrometeoColoresOscuros.png`: los correos se quedarían sin logo. Si cambian, avisar al backend la ruta nueva.
+
+## 13. Modo oscuro
+
+### Paleta: "petróleo profundo"
+En vez de gris o slate, el oscuro sale del mismo rango de tono que la marca (~184°–211°: navy `#131C26`, teal `#15878E`, verde agua `#8DBFC4`).
+
+| Token | Claro | Oscuro |
+|---|---|---|
+| Fondo de la app (`--bg-main`) | `#f1f5f9` | `#0B1A1F` |
+| Superficie / tarjetas (`--bg-card`, `bg-white`) | `#ffffff` | `#10242B` |
+| Navbar (`--bg-navbar`) | `#ffffff` | `#0F2128` |
+| Inputs / rellenos (`--bg-input`, `slate-100`) | `#f9fffe` / `#f1f5f9` | `#1A3841` |
+| Bordes (`--border-color`, `slate-200`) | `#e2e8f0` | `#24464F` |
+| Texto principal (`--text-primary`, `slate-800`) | `#1e293b` | `#E4F0F1` |
+| Texto secundario (`--text-secondary`, `slate-600`) | `#64748b` | `#A9C6C9` |
+| Texto tenue (`--text-muted`, `slate-400`) | `#94a3b8` | `#7499A0` |
+| Botón fuerte (`--color-boton`) | `#0d3b4a` | `#15878E` |
+
+Contraste del texto sobre la superficie oscura: principal 13.8:1, secundario 8.9:1, tenue 5.2:1.
+
+### Cómo funciona
+- `data-theme="dark"` en `<html>`. Un script en `index.html` lo pone **antes del primer render**, con la elección guardada (`localStorage.tema`) o, si no hay, la del sistema (`prefers-color-scheme`). Así no hay parpadeo blanco.
+- **Botón ☾/☀ en el Navbar** (`utils/tema.js`: `temaActual`, `aplicarTema`). La preferencia sobrevive al cerrar sesión.
+- `styles/branding.css`: tokens semánticos en claro y en oscuro, `color-scheme` (inputs, fechas y scrollbars nativos oscuros) y la base de los fondos de sala (`--fondo-burbujas`, `--fondo-aurora`, `--fondo-ondas`).
+- `index.css`: bajo `[data-theme="dark"]` se **redefine la gama `slate` de Tailwind** y los tintes 50/100 de rojo, verde, azul y teal. Como las utilidades usan `var(--color-slate-*)`, toda la app cambia sin tocar cada componente. Ajustes puntuales:
+  - `bg-white` (y `/95`, `/80`) → superficie. No se puede remapear por variable porque `text-white` usa la misma.
+  - `bg-primary` → teal: el navy de marca se pierde sobre el fondo oscuro (burbujas propias del chat, botón enviar).
+  - `text-red-500` → un rojo más claro (el original queda en 4.3:1).
+- Colores fijos que se pasaron a variables: Perfil (`AvatarCard`, `StatCard`, `InfoSection`, `Profile`), `ChangePasswordModal`, Navbar, Sidebar (botón ☰ y tooltip), `ImageUpload`, toggle de Proyectos, unirse por código y fondos de sala (burbujas, aurora y ondas tienen base oscura; estrellas ya era oscuro).
+
+### Para el equipo
+- Usar `bg-white`, la gama `slate` de Tailwind o las variables semánticas (`--bg-card`, `--text-primary`, `--border-color`…). **No** poner hex fijos (`#fff`, `#1a1a1a`, `#e0e0e0`) en estilos en línea, porque no cambian con el tema.
+- Login, Registro y Recuperar ya eran oscuros y no cambian.
 
 ---
 
