@@ -114,3 +114,13 @@ export const quitarFondoSala = async (id) => {
   });
   return jsonOrThrow(response);
 };
+
+// Lo compartido en una sala, del más reciente al más viejo.
+// tipo: "imagenes" | "archivos" | "enlaces" → { data, pagination }
+export const getCompartidoSala = async (id, tipo, page = 1, limit = 30) => {
+  const params = new URLSearchParams({ tipo, page, limit });
+  const response = await apiFetch(`${BASE_URL}/salas/${id}/compartido?${params}`, {
+    headers: getHeaders(),
+  });
+  return jsonOrThrow(response);
+};
