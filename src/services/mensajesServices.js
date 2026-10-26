@@ -1,4 +1,4 @@
-import { BASE_URL, apiFetch } from './api'
+import { BASE_URL, apiFetch, getHeaders } from './api'
 
 const WS_URL = BASE_URL.replace(/^http/, 'ws');
 
@@ -22,6 +22,23 @@ export const obtenerMensajes = async (sala_id = null, page = 1, limit = 20) => {
   }
   const data = await response.json();
   return data.data || [];
+};
+
+// Mensaje con archivo (multipart). El mensaje llega a todos (también al autor) por el
+// WS de la sala como new_message; aquí solo se manejan los errores (400, 404, 502).
+export const enviarMensajeConArchivo = async (sala_id, mensaje, file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  if (mensaje) formData.append('mensaje', mensaje);
+  if (sala_id) formData.append('sala_id', sala_id);
+  const response = await apiFetch(`${BASE_URL}/mensajes/`, {
+    method: 'POST',
+    headers: getHeaders(false),
+    body: formData,
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : 'No se pudo enviar el archivo');
+  return data.data;
 };
 
 // Crear conexión WebSocket

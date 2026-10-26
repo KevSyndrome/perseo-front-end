@@ -118,7 +118,7 @@ const Salas = () => {
                 )}
                 <p className="line-clamp-1 min-h-[1.25rem] text-sm text-slate-500">
                   {sala.ultimo_mensaje
-                    ? <><span className="font-semibold text-slate-600">{sala.ultimo_mensaje.usuario?.nombre}:</span> {sala.ultimo_mensaje.mensaje}</>
+                    ? <><span className="font-semibold text-slate-600">{sala.ultimo_mensaje.usuario?.nombre}:</span> {sala.ultimo_mensaje.mensaje || '📎 Archivo'}</>
                     : <span className="italic text-slate-400">Sin mensajes todavía</span>}
                 </p>
                 <div className="mt-auto flex items-center justify-between pt-1 text-xs text-slate-400">

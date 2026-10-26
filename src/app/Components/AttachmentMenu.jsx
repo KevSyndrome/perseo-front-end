@@ -1,12 +1,12 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Image, FileText, Folder, Link, Camera } from 'lucide-react';
+import { X, Image, FileText, Folder, Camera } from 'lucide-react';
 
+// id: lo que recibe onSelect (Mensajes decide qué selector abrir)
 const items = [
-  { icon: Image, label: 'Imagen', color: 'bg-pink-500' },
-  { icon: FileText, label: 'Documento', color: 'bg-blue-500' },
-  { icon: Folder, label: 'Archivo', color: 'bg-amber-500' },
-  { icon: Camera, label: 'Cámara', color: 'bg-purple-500' },
-  { icon: Link, label: 'Enlace', color: 'bg-green-500' },
+  { id: 'imagen', icon: Image, label: 'Imagen', color: 'bg-pink-500' },
+  { id: 'documento', icon: FileText, label: 'Documento', color: 'bg-blue-500' },
+  { id: 'archivo', icon: Folder, label: 'Archivo', color: 'bg-amber-500' },
+  { id: 'camara', icon: Camera, label: 'Cámara', color: 'bg-purple-500' },
 ];
 
 export default function AttachmentMenu({ isOpen, onClose, onSelect }) {
@@ -26,7 +26,7 @@ export default function AttachmentMenu({ isOpen, onClose, onSelect }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-            className="absolute bottom-16 left-4 z-50"
+            className="absolute bottom-16 left-0 z-50"
           >
             <div className="rounded-2xl bg-white p-4 shadow-2xl border border-slate-100">
               <div className="mb-3 flex items-center justify-between">
@@ -40,8 +40,8 @@ export default function AttachmentMenu({ isOpen, onClose, onSelect }) {
                   const Icon = item.icon;
                   return (
                     <button
-                      key={item.label}
-                      onClick={() => { onSelect?.(item.label); onClose(); }}
+                      key={item.id}
+                      onClick={() => { onSelect?.(item.id); onClose(); }}
                       className="group flex flex-col items-center gap-1.5 cursor-pointer"
                     >
                       <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${item.color} text-white transition group-hover:scale-110 shadow-sm`}>
