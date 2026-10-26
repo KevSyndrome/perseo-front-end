@@ -1,9 +1,12 @@
-import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Paperclip, ArrowLeft, Globe, FolderKanban, Lock } from 'lucide-react';
+import { Send, Paperclip, ArrowLeft, Globe, FolderKanban, Lock, X, FileText, Loader2 } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useBreadcrumb } from '../Components/Breadcrumb';
 import AttachmentMenu from '../Components/AttachmentMenu';
+import ContenidoMensaje from '../Components/ContenidoMensaje';
+import CamaraModal from '../Components/CamaraModal';
+import { validarArchivo, formatoTamano, esMovil, esImagen, EXT_IMAGEN, EXT_DOCUMENTO, EXT_PERMITIDAS } from '../../utils/archivos';
 import SalaFondo from '../Components/SalaFondo';
 import SalaOpciones from '../Components/SalaOpciones';
 import { getSalaPorId } from '../../services/salaService';
@@ -14,9 +17,29 @@ import {
   enviarTypingWS,
   cerrarConexionWS,
   obtenerMensajes,
+  enviarMensajeConArchivo,
 } from '../../services/mensajesServices';
 
 const ICONO_TIPO = { libre: Globe, proyecto: FolderKanban, privada: Lock };
+
+// Qué acepta el selector según la opción del menú del clip
+const ACEPTA = {
+  imagen: EXT_IMAGEN.join(','),
+  documento: EXT_DOCUMENTO.join(','),
+  archivo: EXT_PERMITIDAS.join(','),
+  camara: 'image/*',
+};
+
+// Mensaje del backend (historial o WS) → burbuja
+const aVista = (m, userId) => ({
+  id: m.id,
+  text: m.mensaje,
+  archivos: m.archivos || [],
+  sender: m.usuario?.nombre || 'Desconocido',
+  time: new Date(m.fechaC).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' }),
+  avatar: (m.usuario?.nombre || 'U').split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2),
+  self: m.usuario?.id === userId,
+});
 
 // Chat de una sala: /mensajes/:salaId (el panel de salas está en /mensajes)
 const Mensajes = () => {
@@ -28,6 +51,10 @@ const Mensajes = () => {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
   const [attachOpen, setAttachOpen] = useState(false);
+  const [adjunto, setAdjunto] = useState(null); // File elegido, aún sin enviar
+  const [enviando, setEnviando] = useState(false);
+  const [camaraOpen, setCamaraOpen] = useState(false);
+  const inputArchivoRef = useRef(null);
   const [wsConnected, setWsConnected] = useState(false);
   const [error, setError] = useState(null);
   const [typingUsers, setTypingUsers] = useState([]);
@@ -74,22 +101,7 @@ const Mensajes = () => {
         setHasMore(false);
         return;
       }
-      const newMessages = mensajesPrevios.map((m) => ({
-        id: m.id,
-        text: m.mensaje,
-        sender: m.usuario?.nombre || 'Desconocido',
-        time: new Date(m.fechaC).toLocaleTimeString('es', {
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
-        avatar: (m.usuario?.nombre || 'U')
-          .split(' ')
-          .map((n) => n[0])
-          .join('')
-          .toUpperCase()
-          .slice(0, 2),
-        self: m.usuario?.id === userId,
-      }));
+      const newMessages = mensajesPrevios.map((m) => aVista(m, userId));
       
       if (append) {
         alturaPreviaRef.current = messagesContainerRef.current?.scrollHeight ?? null;
@@ -149,30 +161,12 @@ const Mensajes = () => {
             setMessages((prev) => {
               const exists = prev.find((m) => m.id === msg.id);
               if (exists) return prev;
-              return [
-                ...prev,
-                {
-                  id: msg.id,
-                  text: msg.mensaje,
-                  sender: msg.usuario?.nombre || 'Desconocido',
-                  time: new Date(msg.fechaC).toLocaleTimeString('es', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  }),
-                  avatar: (msg.usuario?.nombre || 'U')
-                    .split(' ')
-                    .map((n) => n[0])
-                    .join('')
-                    .toUpperCase()
-                    .slice(0, 2),
-                  self: msg.usuario?.id === userId,
-                },
-              ];
+              return [...prev, aVista(msg, userId)];
             });
             // Notificación del navegador si la pestaña no está activa
             if (document.hidden && Notification.permission === 'granted') {
               new Notification('Nuevo mensaje', {
-                body: `${msg.usuario?.nombre || 'Alguien'}: ${msg.mensaje}`,
+                body: `${msg.usuario?.nombre || 'Alguien'}: ${msg.mensaje || 'Envió un archivo'}`,
                 icon: '/IsotipoPrometeoColoresOscuros.png',
               });
             }
@@ -236,7 +230,41 @@ const Mensajes = () => {
     return cerrarSala;
   }, [salaId, abrirSala, cerrarSala]);
 
-  const handleSend = () => {
+  const elegirArchivo = (file) => {
+    if (!file) return;
+    const problema = validarArchivo(file);
+    if (problema) return setError(problema);
+    setError(null);
+    setAdjunto(file);
+  };
+
+  // Opción del menú del clip. Cámara: en celular abre la nativa (capture); en
+  // computadora, el modal con el aviso y la webcam.
+  const handleAdjuntar = (opcion) => {
+    if (opcion === 'camara' && !esMovil()) return setCamaraOpen(true);
+    const input = inputArchivoRef.current;
+    input.accept = ACEPTA[opcion];
+    if (opcion === 'camara') input.setAttribute('capture', 'environment');
+    else input.removeAttribute('capture');
+    input.value = '';
+    input.click();
+  };
+
+  const handleSend = async () => {
+    if (adjunto) {
+      // Con archivo va por REST; el mensaje llega por el WS de la sala como cualquier otro
+      setEnviando(true);
+      try {
+        await enviarMensajeConArchivo(salaId, message.trim(), adjunto);
+        setAdjunto(null);
+        setMessage('');
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setEnviando(false);
+      }
+      return;
+    }
     if (!message.trim()) return;
     if (!wsRef.current || !wsConnected) {
       setError('Chat no conectado. Intenta recargar la página.');
@@ -251,6 +279,12 @@ const Mensajes = () => {
       setError('No se pudo enviar el mensaje');
     }
   };
+
+  // URL temporal de la miniatura; se libera al cambiar o quitar el archivo
+  const vistaPrevia = useMemo(() => (adjunto && esImagen(adjunto.name) ? URL.createObjectURL(adjunto) : null), [adjunto]);
+  useEffect(() => () => vistaPrevia && URL.revokeObjectURL(vistaPrevia), [vistaPrevia]);
+
+  const puedeEnviar = wsConnected && !enviando && (Boolean(message.trim()) || Boolean(adjunto));
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -363,7 +397,7 @@ const Mensajes = () => {
                       {msg.sender}
                     </span>
                   )}
-                  <p className="leading-relaxed">{msg.text}</p>
+                  <ContenidoMensaje texto={msg.text} archivos={msg.archivos} propio={msg.self} />
                   <span className={`mt-1 block text-right text-[10px] ${msg.self ? 'text-white/60' : 'text-slate-400'}`}>
                     {msg.time}
                   </span>
@@ -389,6 +423,29 @@ const Mensajes = () => {
           </div>
         </div>
 
+        {/* Vista previa del archivo elegido, antes de enviarlo */}
+        {adjunto && (
+          <div className="relative z-10 flex items-center gap-3 border-t border-slate-200/50 bg-white/95 px-4 py-2">
+            {vistaPrevia ? (
+              <img src={vistaPrevia} alt={adjunto.name} className="h-12 w-12 rounded-md object-cover" />
+            ) : (
+              <span className="flex h-12 w-12 items-center justify-center rounded-md bg-slate-100 text-slate-500"><FileText size={22} /></span>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-slate-700">{adjunto.name}</p>
+              <p className="text-xs text-slate-400">{formatoTamano(adjunto.size)} · puedes agregar un mensaje</p>
+            </div>
+            <button
+              onClick={() => setAdjunto(null)}
+              disabled={enviando}
+              title="Quitar archivo"
+              className="cursor-pointer rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        )}
+
         {/* Input */}
         <div className="relative z-10 flex items-end gap-2 border-t border-slate-200/50 bg-white/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <div className="relative">
@@ -398,7 +455,13 @@ const Mensajes = () => {
             >
               <Paperclip size={18} />
             </button>
-            <AttachmentMenu isOpen={attachOpen} onClose={() => setAttachOpen(false)} onSelect={() => {}} />
+            <AttachmentMenu isOpen={attachOpen} onClose={() => setAttachOpen(false)} onSelect={handleAdjuntar} />
+            <input
+              ref={inputArchivoRef}
+              type="file"
+              hidden
+              onChange={(e) => elegirArchivo(e.target.files[0])}
+            />
           </div>
 
           <textarea
@@ -413,17 +476,20 @@ const Mensajes = () => {
 
           <button
             onClick={handleSend}
-            disabled={!wsConnected || !message.trim()}
+            disabled={!puedeEnviar}
+            title={adjunto ? 'Enviar archivo' : 'Enviar'}
             className={`flex h-10 w-10 items-center justify-center rounded-xl transition cursor-pointer ${
-              message.trim() && wsConnected
+              puedeEnviar
                 ? 'bg-primary text-white hover:bg-primary-hover'
                 : 'bg-slate-100 text-slate-400'
             } disabled:cursor-not-allowed`}
           >
-            <Send size={18} />
+            {enviando ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
           </button>
         </div>
       </div>
+
+      <CamaraModal isOpen={camaraOpen} onClose={() => setCamaraOpen(false)} onFoto={elegirArchivo} />
     </div>
   );
 };

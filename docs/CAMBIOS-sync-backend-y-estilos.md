@@ -19,6 +19,7 @@ Ramas (ya mergeadas, en este orden):
 13. `feature/logout-revoca-sesion`: cerrar sesión revoca la sesión en el backend; los WebSocket reaccionan al motivo del 1008 (sección 1).
 14. `chore/email-logo`: logo chico para los correos (sección 12).
 15. `feature/modo-oscuro`: modo oscuro "petróleo profundo" con botón en el Navbar (sección 13).
+16. `feature/adjuntos-chat`: imágenes y archivos en el chat, cámara y links clickeables (sección 15). **Requiere** la rama `feature/chat-adjuntos` del backend desplegada.
 
 Backend correspondiente: repo `backend-tasks`, desplegado desde la rama `supabase`. El contrato completo está en `docs/CAMBIOS-API.md` de ese repo.
 
@@ -316,6 +317,22 @@ Contraste del texto sobre la superficie oscura: principal 13.8:1, secundario 8.9
 - En las salas **de proyecto**, el dueño del proyecto ve **"Invitar al proyecto"**, que lleva al detalle del proyecto con el código y "Copiar link de invitación" ya visibles (`?invitar=1`). Estas salas no tienen código propio porque sus miembros vienen del proyecto.
 - La sala Global no tiene invitación (la ven todos).
 
+## 15. Adjuntos en el chat
+
+Backend: `POST /mensajes/` multipart (`file` obligatorio, `mensaje` opcional, `sala_id` opcional). Cada mensaje (historial, `new_message`, `nuevo_mensaje`) trae `archivos: [{id, nombre_archivo, fileURL, extension}]`; `extension` va sin punto y en minúsculas. Máximo 10 MB; tipos: png, jpg, jpeg, gif, webp, pdf, doc, docx, xls, xlsx, txt y zip.
+
+| Archivo | Cambio |
+|---|---|
+| `Components/AttachmentMenu.jsx` | Opciones **Imagen**, **Documento**, **Archivo** y **Cámara**. Se quitó "Enlace": los links escritos en el mensaje se vuelven clickeables solos. Antes ninguna opción hacía nada (`onSelect={() => {}}`). |
+| `Pages/Mensajes.jsx` | Selector de archivo con el filtro de cada opción. Valida tipo y tamaño **antes** de enviar. Muestra una **vista previa** (miniatura o ícono, nombre y tamaño; se puede quitar y agregar un mensaje). Con archivo se envía por REST y el mensaje llega a todos, también al autor, por el WebSocket de la sala. Un solo `aVista()` convierte los mensajes del historial y del WebSocket (antes había dos copias). |
+| `Components/CamaraModal.jsx` (nuevo) | **Cámara en computadora:** primero avisa "Estás en una computadora… te recomendamos usar esta opción desde tu celular". Si el usuario sigue, usa la webcam (`getUserMedia`) para tomar la foto, y la apaga al cerrar. **En celular** se usa el selector con `capture="environment"`, que abre la cámara nativa. |
+| `Components/ContenidoMensaje.jsx` (nuevo) | Imágenes en línea (miniatura que se abre en una pestaña nueva), demás archivos como tarjeta con nombre, tipo y descarga, y texto con links `http(s)` clickeables (`target=_blank`, `rel=noopener noreferrer`). |
+| `utils/archivos.js`, `utils/enlaces.js` (nuevos) | Reglas de archivos iguales a las del backend, tamaño legible, detección de celular, y separación de texto y links (solo `http`/`https`; quita la puntuación final). |
+| `services/mensajesServices.js` | `enviarMensajeConArchivo(salaId, mensaje, file)`. |
+| `Pages/Salas.jsx`, `NotificacionesStore.js` | Un mensaje que solo trae archivo se muestra como "📎 Archivo" / "Envió un archivo". |
+
+En local, el backend guarda los archivos en disco (`STORAGE_LOCAL_URL`); en Railway usa Cloudinary.
+
 ---
 
 ## Cómo se probó
@@ -345,6 +362,7 @@ Front local (`VITE_API_URL=http://127.0.0.1:8765 npx vite`) contra el backend lo
 - ✅ Registro con un correo existente → "El correo ya está registrado" + botón "Iniciar sesión".
 - ✅ Cambiar contraseña → cierra la sesión y manda a login; la contraseña vieja da 401 y la nueva entra.
 - ✅ Recuperar contraseña: "¿Olvidaste tu contraseña?" → correo → mensaje genérico. Con un link válido → nueva contraseña → manda a login; la contraseña vieja da 401 y la nueva entra. Reusar el link → "Este token de recuperación ya fue utilizado" + "Pedir otro". Token inventado → "Token de recuperación inválido". Contraseña débil → validación del front antes de enviar.
+- ✅ Adjuntos: el menú sin "Enlace"; Cámara en computadora muestra el aviso; imagen + texto con link → se ve en línea y el link es clickeable (sin el punto final); `.txt` solo → tarjeta con descarga; `.exe` → rechazado antes de enviar; después de recargar siguen ahí y el otro usuario los recibe. La webcam no se probó (requiere el permiso del navegador).
 - ⚠️ Subir imagen (foto de perfil, logo, fondo de sala): el front envía bien el archivo, pero en local las credenciales de Cloudinary son de ejemplo. Ahora el backend responde **502** "No se pudo subir el archivo al servicio de almacenamiento" y el front muestra ese mensaje. Falta probarlo en Railway con las credenciales reales.
 - ⚠️ "¡Link copiado!" no se pudo ver: en el Chrome automatizado el portapapeles no responde; se probó el campo de respaldo con el link.
 - ⚠️ **No probado en el navegador:** subir o quitar el logo y la foto de perfil (requieren elegir un archivo local), quitar a un colaborador desde el propietario y cambiar la contraseña.
