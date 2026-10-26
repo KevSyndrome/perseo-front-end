@@ -15,7 +15,7 @@ const MANCHAS_AURORA = [
 
 function Aurora() {
   return (
-    <div className="absolute inset-0 overflow-hidden" style={{ background: 'linear-gradient(160deg, #f0fdfa, #f5f3ff 50%, #fdf2f8)' }}>
+    <div className="absolute inset-0 overflow-hidden" style={{ background: 'var(--fondo-aurora)' }}>
       {MANCHAS_AURORA.map((m, i) => (
         <motion.div
           key={i}
@@ -110,7 +110,7 @@ function Ondas() {
   ];
   const ola = 'M0 60 Q 150 0 300 60 T 600 60 T 900 60 T 1200 60 V 120 H 0 Z';
   return (
-    <div className="absolute inset-0 bg-gradient-to-b from-sky-50 to-sky-100">
+    <div className="absolute inset-0" style={{ background: 'var(--fondo-ondas)' }}>
       {capas.map((c, i) => (
         <motion.svg
           key={i}

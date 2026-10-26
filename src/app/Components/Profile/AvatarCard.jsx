@@ -36,10 +36,10 @@ const AvatarCard = ({ nombre, apellidoPaterno, apellidoMaterno, rol, estado, ima
 
 const styles = {
   card: {
-    border: "1px solid #e0e0e0",
+    border: "1px solid var(--border-color)",
     borderRadius: "12px",
     padding: "1.5rem",
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-card)",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -72,11 +72,11 @@ const styles = {
     fontWeight: "bold",
     fontSize: "0.95rem",
     margin: "0.25rem 0 0",
-    color: "#1a1a1a",
+    color: "var(--text-primary)",
   },
   rol: {
     fontSize: "0.82rem",
-    color: "#777",
+    color: "var(--text-secondary)",
     margin: 0,
   },
   badge: {
@@ -88,12 +88,12 @@ const styles = {
     border: "1.5px solid",
   },
   badgeActivo: {
-    backgroundColor: "#e0f2f1",
+    backgroundColor: "color-mix(in srgb, #1F8A8B 15%, transparent)",
     color: "#1F8A8B",
     borderColor: "#1F8A8B",
   },
   badgeInactivo: {
-    backgroundColor: "#fce4e4",
+    backgroundColor: "color-mix(in srgb, #e53935 15%, transparent)",
     color: "#e53935",
     borderColor: "#e53935",
   },

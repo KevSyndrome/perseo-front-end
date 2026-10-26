@@ -1,10 +1,10 @@
 // Fondos animados de las salas. La "clave" es lo que se guarda en el backend
 // (PUT /salas/{id}/fondo); "preview" es el degradado que se ve en las tarjetas.
 export const FONDOS_ANIMADOS = [
-  { clave: 'burbujas', nombre: 'Burbujas', preview: 'linear-gradient(135deg, #e0f2fe, #fce7f3, #ecfccb)' },
+  { clave: 'burbujas', nombre: 'Burbujas', preview: 'var(--preview-burbujas)' },
   { clave: 'aurora', nombre: 'Aurora', preview: 'linear-gradient(135deg, #0f766e, #6d28d9, #db2777)' },
   { clave: 'estrellas', nombre: 'Estrellas', preview: 'radial-gradient(circle at 30% 30%, #1e293b, #020617)' },
-  { clave: 'ondas', nombre: 'Ondas', preview: 'linear-gradient(180deg, #e0f2fe, #7dd3fc)' },
+  { clave: 'ondas', nombre: 'Ondas', preview: 'var(--preview-ondas)' },
 ];
 
 export const FONDO_DEFAULT = 'burbujas';

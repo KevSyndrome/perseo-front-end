@@ -1,14 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { Bell, CircleUserRound } from "lucide-react";
+import { Bell, CircleUserRound, Moon, Sun } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getUsuarioPorId } from "../../services/usuariosService";
 import { getTokenPayload } from "../../services/authService";
 import { useNotificacionesStore } from "./NotificacionesStore";
+import { temaActual, aplicarTema } from "../../utils/tema";
 
 const Navbar = () => {
   // Punto verde: canal de avisos del chat conectado
   const chatConnected = useNotificacionesStore((s) => s.conectado);
   const [imagen, setImagen] = useState(null);
+  const [tema, setTema] = useState(temaActual);
+
+  const cambiarTema = () => {
+    const nuevo = tema === 'dark' ? 'light' : 'dark';
+    aplicarTema(nuevo);
+    setTema(nuevo);
+  };
   const navigate = useNavigate();
 
   // Foto de perfil desde la API; Profile emite "imagen-perfil" al cambiarla
@@ -25,9 +33,17 @@ const Navbar = () => {
   }, []);
 
   return (
-    <nav className="fixed inset-x-0 top-0 z-[100] flex h-[var(--navbar-height)] items-center border-b border-[var(--border-color)] bg-[var(--color-blanco)] px-3 sm:px-6">
+    <nav className="fixed inset-x-0 top-0 z-[100] flex h-[var(--navbar-height)] items-center border-b border-[var(--border-color)] bg-[var(--bg-navbar)] px-3 sm:px-6">
       <div className="flex-1" />
-      <button className="relative flex cursor-pointer items-center justify-center rounded-[var(--radius-md)] bg-transparent p-2 text-[var(--color-negro)] transition-colors duration-150 hover:bg-blue-500/10">
+      <button
+        onClick={cambiarTema}
+        title={tema === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+        aria-label={tema === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+        className="mr-1 flex cursor-pointer items-center justify-center rounded-[var(--radius-md)] bg-transparent p-2 text-[var(--text-primary)] transition-colors duration-150 hover:bg-[var(--color-selection)]/15"
+      >
+        {tema === 'dark' ? <Sun size={24} /> : <Moon size={24} />}
+      </button>
+      <button className="relative flex cursor-pointer items-center justify-center rounded-[var(--radius-md)] bg-transparent p-2 text-[var(--text-primary)] transition-colors duration-150 hover:bg-blue-500/10">
         <Bell size={30} />
         {chatConnected && (
           <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-white" title="Chat conectado" />
@@ -36,7 +52,7 @@ const Navbar = () => {
       <button
         onClick={() => navigate("/profile")}
         title="Mi perfil"
-        className="ml-3 flex cursor-pointer items-center justify-center rounded-full bg-transparent text-[var(--color-primary)]"
+        className="ml-3 flex cursor-pointer items-center justify-center rounded-full bg-transparent text-[var(--text-primary)]"
       >
         {imagen ? (
           <img

@@ -86,7 +86,7 @@ const Sidebar = ({ isCollapsed, onToggleSidebar }) => {
                   {item.label}
                 </span>
                 {isCollapsed && (
-                  <span className="pointer-events-none absolute left-[calc(100%+12px)] z-[100] whitespace-nowrap rounded-md bg-slate-800 px-3 py-2 text-sm font-medium text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+                  <span className="pointer-events-none absolute left-[calc(100%+12px)] z-[100] whitespace-nowrap rounded-md bg-[var(--color-secondary)] px-3 py-2 text-sm font-medium text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100">
                     {item.label}
                   </span>
                 )}
@@ -112,7 +112,7 @@ const Sidebar = ({ isCollapsed, onToggleSidebar }) => {
 
       <button
         onClick={onToggleSidebar}
-        className={`fixed top-4 z-[120] flex items-center justify-center rounded-r-lg bg-white p-2 text-[var(--color-negro)] shadow-[var(--shadow-md)] transition-[left] duration-300 ease-[var(--transition-slow)] cursor-pointer ${
+        className={`fixed top-4 z-[120] flex items-center justify-center rounded-r-lg bg-white p-2 text-[var(--text-primary)] shadow-[var(--shadow-md)] transition-[left] duration-300 ease-[var(--transition-slow)] cursor-pointer ${
           isCollapsed ? 'left-0 md:left-[var(--sidebar-collapsed)]' : 'left-[var(--sidebar-width)]'
         }`}
       >

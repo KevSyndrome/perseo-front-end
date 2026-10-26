@@ -41,7 +41,7 @@ export const useNotificacionesStore = create((set, get) => ({
           // Notificación del navegador si la pestaña no está a la vista
           if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
             new Notification(aviso.sala_nombre, {
-              body: `${aviso.data?.usuario?.nombre || 'Alguien'}: ${aviso.data?.mensaje}`,
+              body: `${aviso.data?.usuario?.nombre || 'Alguien'}: ${aviso.data?.mensaje || 'Envió un archivo'}`,
               icon: '/IsotipoPrometeoColoresOscuros.png',
             });
           }

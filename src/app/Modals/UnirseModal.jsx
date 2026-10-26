@@ -90,7 +90,7 @@ const UnirseModal = ({ isOpen, onClose, onUnido, entidad = 'proyecto' }) => {
                   navigate(entidad === 'sala' ? `/mensajes/${item.id}` : `/proyectos/${generarSlugProyecto(item)}`);
                 }}
                 className="flex-1 cursor-pointer rounded-xl py-3 font-semibold text-white transition"
-                style={{ backgroundColor: '#0d3b4a' }}
+                style={{ backgroundColor: 'var(--color-boton)' }}
               >
                 {textos.ver}
               </button>
@@ -106,7 +106,7 @@ const UnirseModal = ({ isOpen, onClose, onUnido, entidad = 'proyecto' }) => {
               <button
                 onClick={() => { setCode(''); setResultado(null); }}
                 className="flex-1 cursor-pointer rounded-xl py-3 font-semibold text-white transition"
-                style={{ backgroundColor: '#0d3b4a' }}
+                style={{ backgroundColor: 'var(--color-boton)' }}
               >
                 Intentar de nuevo
               </button>

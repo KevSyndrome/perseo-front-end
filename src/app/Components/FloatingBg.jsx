@@ -58,7 +58,7 @@ export default function FloatingBg({ count = 16, rising = 14 }) {
         inset: 0,
         overflow: 'hidden',
         zIndex: 0,
-        background: 'linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%)',
+        background: 'var(--fondo-burbujas)',
       }}
     >
       {particles.map((p) => (

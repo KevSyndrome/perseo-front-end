@@ -27,6 +27,21 @@
   --text-inverse: #ffffff;
 
   --border-color: #e2e8f0;
+  --bg-input: #f9fffe;
+
+  /* Botón fuerte y casillas del código de invitación */
+  --color-boton: #0d3b4a;
+  --caja-codigo: #8ecdd4;
+
+  /* Base de los fondos animados de las salas */
+  --fondo-burbujas: linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%);
+  --fondo-aurora: linear-gradient(160deg, #f0fdfa, #f5f3ff 50%, #fdf2f8);
+  --fondo-ondas: linear-gradient(to bottom, #f0f9ff, #e0f2fe);
+  /* Vista previa en las tarjetas del panel de salas */
+  --preview-burbujas: linear-gradient(135deg, #e0f2fe, #fce7f3, #ecfccb);
+  --preview-ondas: linear-gradient(180deg, #e0f2fe, #7dd3fc);
+
+  color-scheme: light;
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
@@ -44,6 +59,39 @@
   --transition-fast: 150ms ease;
   --transition-normal: 250ms ease;
   --transition-slow: 350ms ease;
+}
+
+
+/* ── Modo oscuro: "petróleo profundo" ──────────────────────────────────────
+   Tono ~195°, el mismo rango que la marca (navy #131C26, teal #15878E,
+   verde agua #8DBFC4), en vez de gris/slate. Contraste del texto ≥ 5:1.
+   Se activa con data-theme="dark" en <html> (botón en el Navbar). */
+:root[data-theme="dark"] {
+  --bg-main: #0B1A1F;
+  --bg-card: #10242B;
+  --bg-navbar: #0F2128;
+  --bg-input: #1A3841;
+
+  --text-primary: #E4F0F1;
+  --text-secondary: #A9C6C9;
+  --text-muted: #7499A0;
+
+  --border-color: #24464F;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.45);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.5);
+
+  --color-boton: #15878E;
+  --caja-codigo: #1A3841;
+
+  --fondo-burbujas: linear-gradient(135deg, #0B1A1F 0%, #10242B 100%);
+  --fondo-aurora: linear-gradient(160deg, #0B1F22, #141A2E 50%, #21142A);
+  --fondo-ondas: linear-gradient(to bottom, #0B1A1F, #0E2A36);
+  --preview-burbujas: linear-gradient(135deg, #10242B, #1D3A4A, #2A2440);
+  --preview-ondas: linear-gradient(180deg, #0E2A36, #0E7490);
+
+  color-scheme: dark;
 }
 
 body {

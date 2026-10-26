@@ -18,6 +18,8 @@ Ramas (ya mergeadas, en este orden):
 12. `fix/sesion-persistente`: la sesión dura lo que dice el backend (renovación con refresh token) y la raíz respeta la sesión (sección 1).
 13. `feature/logout-revoca-sesion`: cerrar sesión revoca la sesión en el backend; los WebSocket reaccionan al motivo del 1008 (sección 1).
 14. `chore/email-logo`: logo chico para los correos (sección 12).
+15. `feature/modo-oscuro`: modo oscuro "petróleo profundo" con botón en el Navbar (sección 13).
+16. `feature/adjuntos-chat`: imágenes y archivos en el chat, cámara y links clickeables (sección 15). **Requiere** la rama `feature/chat-adjuntos` del backend desplegada.
 
 Backend correspondiente: repo `backend-tasks`, desplegado desde la rama `supabase`. El contrato completo está en `docs/CAMBIOS-API.md` de ese repo.
 
@@ -274,6 +276,63 @@ El backend envía el correo con Brevo; el link vence en **15 minutos** y se pued
 - Los correos del backend (por ejemplo, el de recuperación de contraseña) cargan el logo desde el front: `{FRONTEND_URL}/email-logo.png` (`public/email-logo.png`, 112×102 px, 12 KB; el original de 741×672 pesa 228 KB).
 - ⚠️ **No renombrar ni mover** `public/email-logo.png` ni `public/IsotipoPrometeoColoresOscuros.png`: los correos se quedarían sin logo. Si cambian, avisar al backend la ruta nueva.
 
+## 13. Modo oscuro
+
+### Paleta: "petróleo profundo"
+En vez de gris o slate, el oscuro sale del mismo rango de tono que la marca (~184°–211°: navy `#131C26`, teal `#15878E`, verde agua `#8DBFC4`).
+
+| Token | Claro | Oscuro |
+|---|---|---|
+| Fondo de la app (`--bg-main`) | `#f1f5f9` | `#0B1A1F` |
+| Superficie / tarjetas (`--bg-card`, `bg-white`) | `#ffffff` | `#10242B` |
+| Navbar (`--bg-navbar`) | `#ffffff` | `#0F2128` |
+| Inputs / rellenos (`--bg-input`, `slate-100`) | `#f9fffe` / `#f1f5f9` | `#1A3841` |
+| Bordes (`--border-color`, `slate-200`) | `#e2e8f0` | `#24464F` |
+| Texto principal (`--text-primary`, `slate-800`) | `#1e293b` | `#E4F0F1` |
+| Texto secundario (`--text-secondary`, `slate-600`) | `#64748b` | `#A9C6C9` |
+| Texto tenue (`--text-muted`, `slate-400`) | `#94a3b8` | `#7499A0` |
+| Botón fuerte (`--color-boton`) | `#0d3b4a` | `#15878E` |
+
+Contraste del texto sobre la superficie oscura: principal 13.8:1, secundario 8.9:1, tenue 5.2:1.
+
+### Cómo funciona
+- `data-theme="dark"` en `<html>`. Un script en `index.html` lo pone **antes del primer render**, con la elección guardada (`localStorage.tema`) o, si no hay, la del sistema (`prefers-color-scheme`). Así no hay parpadeo blanco.
+- **Botón ☾/☀ en el Navbar** (`utils/tema.js`: `temaActual`, `aplicarTema`). La preferencia sobrevive al cerrar sesión.
+- `styles/branding.css`: tokens semánticos en claro y en oscuro, `color-scheme` (inputs, fechas y scrollbars nativos oscuros) y la base de los fondos de sala (`--fondo-burbujas`, `--fondo-aurora`, `--fondo-ondas`).
+- `index.css`: bajo `[data-theme="dark"]` se **redefine la gama `slate` de Tailwind** y los tintes 50/100 de rojo, verde, azul y teal. Como las utilidades usan `var(--color-slate-*)`, toda la app cambia sin tocar cada componente. Ajustes puntuales:
+  - `bg-white` (y `/95`, `/80`) → superficie. No se puede remapear por variable porque `text-white` usa la misma.
+  - `bg-primary` → teal: el navy de marca se pierde sobre el fondo oscuro (burbujas propias del chat, botón enviar).
+  - `text-red-500` → un rojo más claro (el original queda en 4.3:1).
+- Las vistas previas de las tarjetas de salas (burbujas, ondas) también cambian con el tema (`--preview-*`).
+- Colores fijos que se pasaron a variables: Perfil (`AvatarCard`, `StatCard`, `InfoSection`, `Profile`), `ChangePasswordModal`, Navbar, Sidebar (botón ☰ y tooltip), `ImageUpload`, toggle de Proyectos, unirse por código y fondos de sala (burbujas, aurora y ondas tienen base oscura; estrellas ya era oscuro).
+
+- Probado en el navegador: Dashboard, Proyectos, detalle, panel de salas, chat (burbujas recibidas sobre la superficie, propias en teal), menús y modales, Configuración y Perfil en oscuro; el modo claro sin cambios; la preferencia se mantiene al recargar.
+
+### Para el equipo
+- Usar `bg-white`, la gama `slate` de Tailwind o las variables semánticas (`--bg-card`, `--text-primary`, `--border-color`…). **No** poner hex fijos (`#fff`, `#1a1a1a`, `#e0e0e0`) en estilos en línea, porque no cambian con el tema.
+- Login, Registro y Recuperar ya eran oscuros y no cambian.
+
+## 14. Invitar desde el chat
+- En las salas **privadas**, la opción del menú ⋮ se llama ahora **"Invitar (código o link)"** (antes "Código de invitación"). Solo la ve quien creó la sala.
+- En las salas **de proyecto**, el dueño del proyecto ve **"Invitar al proyecto"**, que lleva al detalle del proyecto con el código y "Copiar link de invitación" ya visibles (`?invitar=1`). Estas salas no tienen código propio porque sus miembros vienen del proyecto.
+- La sala Global no tiene invitación (la ven todos).
+
+## 15. Adjuntos en el chat
+
+Backend: `POST /mensajes/` multipart (`file` obligatorio, `mensaje` opcional, `sala_id` opcional). Cada mensaje (historial, `new_message`, `nuevo_mensaje`) trae `archivos: [{id, nombre_archivo, fileURL, extension}]`; `extension` va sin punto y en minúsculas. Máximo 10 MB; tipos: png, jpg, jpeg, gif, webp, pdf, doc, docx, xls, xlsx, txt y zip.
+
+| Archivo | Cambio |
+|---|---|
+| `Components/AttachmentMenu.jsx` | Opciones **Imagen**, **Documento**, **Archivo** y **Cámara**. Se quitó "Enlace": los links escritos en el mensaje se vuelven clickeables solos. Antes ninguna opción hacía nada (`onSelect={() => {}}`). |
+| `Pages/Mensajes.jsx` | Selector de archivo con el filtro de cada opción. Valida tipo y tamaño **antes** de enviar. Muestra una **vista previa** (miniatura o ícono, nombre y tamaño; se puede quitar y agregar un mensaje). Con archivo se envía por REST y el mensaje llega a todos, también al autor, por el WebSocket de la sala. Un solo `aVista()` convierte los mensajes del historial y del WebSocket (antes había dos copias). |
+| `Components/CamaraModal.jsx` (nuevo) | **Cámara en computadora:** primero avisa "Estás en una computadora… te recomendamos usar esta opción desde tu celular". Si el usuario sigue, usa la webcam (`getUserMedia`) para tomar la foto, y la apaga al cerrar. **En celular** se usa el selector con `capture="environment"`, que abre la cámara nativa. |
+| `Components/ContenidoMensaje.jsx` (nuevo) | Imágenes en línea (miniatura que se abre en una pestaña nueva), demás archivos como tarjeta con nombre, tipo y descarga, y texto con links `http(s)` clickeables (`target=_blank`, `rel=noopener noreferrer`). |
+| `utils/archivos.js`, `utils/enlaces.js` (nuevos) | Reglas de archivos iguales a las del backend, tamaño legible, detección de celular, y separación de texto y links (solo `http`/`https`; quita la puntuación final). |
+| `services/mensajesServices.js` | `enviarMensajeConArchivo(salaId, mensaje, file)`. |
+| `Pages/Salas.jsx`, `NotificacionesStore.js` | Un mensaje que solo trae archivo se muestra como "📎 Archivo" / "Envió un archivo". |
+
+En local, el backend guarda los archivos en disco (`STORAGE_LOCAL_URL`); en Railway usa Cloudinary.
+
 ---
 
 ## Cómo se probó
@@ -303,6 +362,7 @@ Front local (`VITE_API_URL=http://127.0.0.1:8765 npx vite`) contra el backend lo
 - ✅ Registro con un correo existente → "El correo ya está registrado" + botón "Iniciar sesión".
 - ✅ Cambiar contraseña → cierra la sesión y manda a login; la contraseña vieja da 401 y la nueva entra.
 - ✅ Recuperar contraseña: "¿Olvidaste tu contraseña?" → correo → mensaje genérico. Con un link válido → nueva contraseña → manda a login; la contraseña vieja da 401 y la nueva entra. Reusar el link → "Este token de recuperación ya fue utilizado" + "Pedir otro". Token inventado → "Token de recuperación inválido". Contraseña débil → validación del front antes de enviar.
+- ✅ Adjuntos: el menú sin "Enlace"; Cámara en computadora muestra el aviso; imagen + texto con link → se ve en línea y el link es clickeable (sin el punto final); `.txt` solo → tarjeta con descarga; `.exe` → rechazado antes de enviar; después de recargar siguen ahí y el otro usuario los recibe. La webcam no se probó (requiere el permiso del navegador).
 - ⚠️ Subir imagen (foto de perfil, logo, fondo de sala): el front envía bien el archivo, pero en local las credenciales de Cloudinary son de ejemplo. Ahora el backend responde **502** "No se pudo subir el archivo al servicio de almacenamiento" y el front muestra ese mensaje. Falta probarlo en Railway con las credenciales reales.
 - ⚠️ "¡Link copiado!" no se pudo ver: en el Chrome automatizado el portapapeles no responde; se probó el campo de respaldo con el link.
 - ⚠️ **No probado en el navegador:** subir o quitar el logo y la foto de perfil (requieren elegir un archivo local), quitar a un colaborador desde el propietario y cambiar la contraseña.

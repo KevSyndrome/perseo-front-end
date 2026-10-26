@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import ProjectDetalleCard from '../Components/Cards/ProjectDetalleCard';
 import {
@@ -15,6 +15,8 @@ import Breadcrumb, { useBreadcrumb } from '../Components/Breadcrumb';
 
 const ProyectDetalle = () => {
   const { slug } = useParams();
+  // ?invitar=1 (desde el menú de la sala del proyecto): abre el código ya visible
+  const [params] = useSearchParams();
   const [proyecto, setProyecto] = useState(null);
   const [loading, setLoading] = useState(true);
   const [colaboradores, setColaboradores] = useState([]);
@@ -107,6 +109,7 @@ const ProyectDetalle = () => {
     >
       <Breadcrumb />
       <ProjectDetalleCard
+        mostrarCodigoInicial={params.has('invitar')}
         project={{
           id: proyecto.id,
           name: proyecto.nombre,
