@@ -20,6 +20,8 @@ Ramas (ya mergeadas, en este orden):
 14. `chore/email-logo`: logo chico para los correos (sección 12).
 15. `feature/modo-oscuro`: modo oscuro "petróleo profundo" con botón en el Navbar (sección 13).
 16. `feature/adjuntos-chat`: imágenes y archivos en el chat, cámara y links clickeables (sección 15). **Requiere** la rama `feature/chat-adjuntos` del backend desplegada.
+17. `fix/indicador-escribiendo`: "está escribiendo" sin parpadeo (sección 15).
+18. `feature/chat-responder-editar`: responder, editar y eliminar mensajes, y panel de fotos, archivos y enlaces (sección 16). **Requiere** la rama `feature/chat-whatsapp` del backend desplegada.
 
 Backend correspondiente: repo `backend-tasks`, desplegado desde la rama `supabase`. El contrato completo está en `docs/CAMBIOS-API.md` de ese repo.
 
@@ -333,6 +335,25 @@ Backend: `POST /mensajes/` multipart (`file` obligatorio, `mensaje` opcional, `s
 
 En local, el backend guarda los archivos en disco (`STORAGE_LOCAL_URL`); en Railway usa Cloudinary.
 
+### "Está escribiendo…" sin parpadeo
+- **Antes:** se mandaba un aviso por cada tecla, cada aviso programaba su propio temporizador de 3 s (el primero que vencía borraba el indicador aunque la persona siguiera escribiendo, y el siguiente aviso lo volvía a mostrar) y el indicador estaba dentro de la lista, así que al aparecer y desaparecer hacía saltar los mensajes.
+- **Ahora:** el emisor manda como máximo un aviso cada 2 s. El receptor tiene un temporizador por persona que se reinicia con cada aviso (4 s) y se quita en cuanto llega su mensaje. El indicador flota sobre la caja de mensaje con un fundido, sin mover la lista, y los tres puntos rebotan en secuencia.
+- Probado: escribir, pausar 1.5 s y volver a escribir → el indicador aparece una sola vez, sin huecos, y se va 4 s después de la última tecla.
+
+## 16. Responder, editar, eliminar y lo compartido (estilo WhatsApp)
+
+Backend (`feature/chat-whatsapp`): `PUT`/`DELETE /mensajes/{id}` (solo el autor) se transmiten a la sala como `mensaje_editado` / `mensaje_eliminado`; cada mensaje trae `editado`, `respuesta_a_id` y `respuesta_a: {id, mensaje, usuario, tiene_archivo}`; `GET /salas/{id}/compartido?tipo=imagenes|archivos|enlaces`.
+
+| Archivo | Cambio |
+|---|---|
+| `Components/BurbujaMensaje.jsx` (nuevo) | La burbuja del chat. **Menú por mensaje** con Responder, Copiar texto, Editar (propio, con texto) y Eliminar (propio). Se abre con la flechita al pasar el cursor, con **clic derecho** o **manteniendo presionado** en celular. **Deslizar a la derecha responde** (solo en pantallas táctiles). Muestra la **cita** del mensaje respondido: al tocarla salta al original y lo resalta; si se borró, "Mensaje eliminado". Etiqueta "editado". |
+| `Pages/Mensajes.jsx` | Barra **"Respondiendo a…"** / **"Editando mensaje"** sobre la caja (X o Esc para cancelar). Editar guarda con `PUT`. Eliminar pide confirmación. Escucha `mensaje_editado` / `mensaje_eliminado` y los aplica en vivo. Muestra los errores del WebSocket (por ejemplo, responder a un mensaje de otra sala). Botón **🖼 Fotos, archivos y enlaces** en el encabezado. |
+| `Components/PanelCompartido.jsx` (nuevo) | Panel lateral (pantalla completa en celular) con pestañas **Fotos** (cuadrícula), **Archivos** (descarga) y **Enlaces** ("Ver en el chat" salta al mensaje). Paginado con "Cargar más". |
+| `services/mensajesServices.js` | `editarMensaje`, `eliminarMensaje`; `enviarMensajeWS` y `enviarMensajeConArchivo` aceptan `respuestaAId`. |
+| `services/salaService.js` | `getCompartidoSala(id, tipo, page)`. |
+
+- "Ver en el chat" y la cita solo pueden saltar a mensajes ya cargados; si el mensaje es más viejo, se avisa que hay que subir en el chat para cargarlo.
+
 ---
 
 ## Cómo se probó
@@ -363,6 +384,7 @@ Front local (`VITE_API_URL=http://127.0.0.1:8765 npx vite`) contra el backend lo
 - ✅ Cambiar contraseña → cierra la sesión y manda a login; la contraseña vieja da 401 y la nueva entra.
 - ✅ Recuperar contraseña: "¿Olvidaste tu contraseña?" → correo → mensaje genérico. Con un link válido → nueva contraseña → manda a login; la contraseña vieja da 401 y la nueva entra. Reusar el link → "Este token de recuperación ya fue utilizado" + "Pedir otro". Token inventado → "Token de recuperación inválido". Contraseña débil → validación del front antes de enviar.
 - ✅ Adjuntos: el menú sin "Enlace"; Cámara en computadora muestra el aviso; imagen + texto con link → se ve en línea y el link es clickeable (sin el punto final); `.txt` solo → tarjeta con descarga; `.exe` → rechazado antes de enviar; después de recargar siguen ahí y el otro usuario los recibe. La webcam no se probó (requiere el permiso del navegador).
+- ✅ Chat estilo WhatsApp: menú por mensaje (clic derecho), editar → "editado", eliminar con confirmación, responder → cita en la burbuja, y al tocarla salta al original. Ediciones y borrados de otro usuario se ven en vivo. Panel: fotos, enlaces y "Ver en el chat". **Deslizar para responder no se probó** (requiere pantalla táctil).
 - ⚠️ Subir imagen (foto de perfil, logo, fondo de sala): el front envía bien el archivo, pero en local las credenciales de Cloudinary son de ejemplo. Ahora el backend responde **502** "No se pudo subir el archivo al servicio de almacenamiento" y el front muestra ese mensaje. Falta probarlo en Railway con las credenciales reales.
 - ⚠️ "¡Link copiado!" no se pudo ver: en el Chrome automatizado el portapapeles no responde; se probó el campo de respaldo con el link.
 - ⚠️ **No probado en el navegador:** subir o quitar el logo y la foto de perfil (requieren elegir un archivo local), quitar a un colaborador desde el propietario y cambiar la contraseña.
