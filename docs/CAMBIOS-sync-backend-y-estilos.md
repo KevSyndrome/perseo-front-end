@@ -302,11 +302,19 @@ Contraste del texto sobre la superficie oscura: principal 13.8:1, secundario 8.9
   - `bg-white` (y `/95`, `/80`) → superficie. No se puede remapear por variable porque `text-white` usa la misma.
   - `bg-primary` → teal: el navy de marca se pierde sobre el fondo oscuro (burbujas propias del chat, botón enviar).
   - `text-red-500` → un rojo más claro (el original queda en 4.3:1).
+- Las vistas previas de las tarjetas de salas (burbujas, ondas) también cambian con el tema (`--preview-*`).
 - Colores fijos que se pasaron a variables: Perfil (`AvatarCard`, `StatCard`, `InfoSection`, `Profile`), `ChangePasswordModal`, Navbar, Sidebar (botón ☰ y tooltip), `ImageUpload`, toggle de Proyectos, unirse por código y fondos de sala (burbujas, aurora y ondas tienen base oscura; estrellas ya era oscuro).
+
+- Probado en el navegador: Dashboard, Proyectos, detalle, panel de salas, chat (burbujas recibidas sobre la superficie, propias en teal), menús y modales, Configuración y Perfil en oscuro; el modo claro sin cambios; la preferencia se mantiene al recargar.
 
 ### Para el equipo
 - Usar `bg-white`, la gama `slate` de Tailwind o las variables semánticas (`--bg-card`, `--text-primary`, `--border-color`…). **No** poner hex fijos (`#fff`, `#1a1a1a`, `#e0e0e0`) en estilos en línea, porque no cambian con el tema.
 - Login, Registro y Recuperar ya eran oscuros y no cambian.
+
+## 14. Invitar desde el chat
+- En las salas **privadas**, la opción del menú ⋮ se llama ahora **"Invitar (código o link)"** (antes "Código de invitación"). Solo la ve quien creó la sala.
+- En las salas **de proyecto**, el dueño del proyecto ve **"Invitar al proyecto"**, que lleva al detalle del proyecto con el código y "Copiar link de invitación" ya visibles (`?invitar=1`). Estas salas no tienen código propio porque sus miembros vienen del proyecto.
+- La sala Global no tiene invitación (la ven todos).
 
 ---
 

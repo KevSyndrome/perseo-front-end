@@ -50,6 +50,7 @@
 /* El navy de marca se pierde sobre el fondo oscuro: los botones/burbujas pasan a teal */
 :root[data-theme="dark"] .bg-primary { background-color: var(--color-selection); }
 :root[data-theme="dark"] .hover\:bg-primary-hover:hover { background-color: #1BA3AB; }
+:root[data-theme="dark"] .hover\:text-primary:hover { color: var(--color-terciario); }
 /* rojo-500 como texto queda en 4.3:1 sobre la superficie; uno más claro */
 :root[data-theme="dark"] .text-red-500 { color: #f87171; }
 
