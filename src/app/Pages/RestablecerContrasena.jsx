@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { TextField, Button, Typography, Alert, CircularProgress, Box } from "@mui/material";
+import { Button, Typography, Alert, CircularProgress, Box } from "@mui/material";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import AuthCard from "../Components/AuthCard";
 import { estiloCampoAuth } from "../Components/estiloCampoAuth";
 import { restablecerContrasena, logoutUsuario } from "../../services/authService";
 import { errorContrasena } from "../../utils/password";
+import CampoContrasena from "../Components/CampoContrasena";
 
 // /restablecer-contrasena?token=XXX (link del correo). Al terminar se cierran todas las
 // sesiones de la cuenta, así que también se limpia la de este navegador.
@@ -46,7 +47,7 @@ const RestablecerContrasena = () => {
   const campo = (label, value, onChange) => (
     <Box>
       <Typography variant="caption" color="var(--color-terciario)">{label}</Typography>
-      <TextField type="password" fullWidth size="small" value={value} onChange={(e) => onChange(e.target.value)} sx={estiloCampoAuth} />
+      <CampoContrasena fullWidth size="small" value={value} onChange={(e) => onChange(e.target.value)} sx={estiloCampoAuth} />
     </Box>
   );
 

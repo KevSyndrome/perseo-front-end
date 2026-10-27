@@ -22,6 +22,7 @@ Ramas (ya mergeadas, en este orden):
 16. `feature/adjuntos-chat`: imágenes y archivos en el chat, cámara y links clickeables (sección 15). **Requiere** la rama `feature/chat-adjuntos` del backend desplegada.
 17. `fix/indicador-escribiendo`: "está escribiendo" sin parpadeo (sección 15).
 18. `feature/chat-responder-editar`: responder, editar y eliminar mensajes, y panel de fotos, archivos y enlaces (sección 16). **Requiere** la rama `feature/chat-whatsapp` del backend desplegada.
+19. `feature/ver-contrasena`: botón para mostrar u ocultar la contraseña (sección 12).
 
 Backend correspondiente: repo `backend-tasks`, desplegado desde la rama `supabase`. El contrato completo está en `docs/CAMBIOS-API.md` de ese repo.
 
@@ -273,6 +274,7 @@ El backend envía el correo con Brevo; el link vence en **15 minutos** y se pued
 | `services/authService.js` | `solicitarRecuperacion(correo)` y `restablecerContrasena(token, nueva)` (con `fetch` normal; no hay sesión). |
 | `utils/password.js` (nuevo) | `errorContrasena(contraseña, confirmación)`: las reglas del backend (8 o más caracteres, mayúscula, minúscula, número y carácter especial). Lo usan Registro y Restablecer. |
 | `Components/AuthCard.jsx` + `estiloCampoAuth.js` (nuevos) | Tarjeta y estilo de campos de las pantallas sin sesión. |
+| `Components/CampoContrasena.jsx` (nuevo) | `TextField` de contraseña con el **ojito** para mostrarla u ocultarla (`aria-label` "Mostrar/Ocultar contraseña" y `aria-pressed`; el clic no le quita el foco al campo). Se usa en **Login**, **Registro** (contraseña y confirmación) y **Nueva contraseña** (`/restablecer-contrasena`). Cada campo se muestra por separado. |
 
 ### Logo de los correos
 - Los correos del backend (por ejemplo, el de recuperación de contraseña) cargan el logo desde el front: `{FRONTEND_URL}/email-logo.png` (`public/email-logo.png`, 112×102 px, 12 KB; el original de 741×672 pesa 228 KB).
