@@ -53,4 +53,6 @@
 :root[data-theme="dark"] .hover\:text-primary:hover { color: var(--color-terciario); }
 /* rojo-500 como texto queda en 4.3:1 sobre la superficie; uno más claro */
 :root[data-theme="dark"] .text-red-500 { color: #f87171; }
+/* teal-700 como texto (chips) se pierde sobre el fondo oscuro; no se remapea la variable porque también es fondo de botones */
+:root[data-theme="dark"] .text-teal-700 { color: #5EEAD4; }
 
