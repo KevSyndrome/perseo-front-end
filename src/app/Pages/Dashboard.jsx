@@ -53,13 +53,14 @@ const Dashboard = () => {
 
   return (
     <div className="flex h-full w-full flex-col">
-      <Breadcrumb />
+      {/* En celular se oculta para que el Dashboard quepa en una pantalla */}
+      <div className="hidden sm:block"><Breadcrumb /></div>
 
-      <h1 className="text-2xl font-bold text-slate-800">
+      <h1 className="truncate text-lg font-bold text-slate-800 sm:text-2xl">
         Bienvenido, {usuario.nombre} {usuario.apellido_paterno} {usuario.apellido_materno}
       </h1>
 
-      <div className="flex flex-1 flex-col gap-8 pt-6">
+      <div className="flex flex-1 flex-col gap-4 pt-3 sm:gap-8 sm:pt-6">
         <div className="grid grid-cols-3 gap-2 sm:gap-4">
           <Card
             icon={<BarChart3 size={32} />}
@@ -86,7 +87,7 @@ const Dashboard = () => {
 
         {/* Proyectos con su avance, mis tareas y su chat */}
         <section>
-          <h2 className="mb-3 text-lg font-bold text-slate-800">Mis proyectos</h2>
+          <h2 className="mb-2 text-base font-bold text-slate-800 sm:mb-3 sm:text-lg">Mis proyectos</h2>
           {resumen
             ? <ProjectCarousel projects={proyectos} misTareas={resumen.mis_tareas} salaDe={salaDe} noLeidos={noLeidos} />
             : !error && <div className="flex justify-center py-8 text-slate-400"><Loader2 className="animate-spin" /></div>}
