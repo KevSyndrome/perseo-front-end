@@ -24,6 +24,9 @@ Ramas (ya mergeadas, en este orden):
 18. `feature/chat-responder-editar`: responder, editar y eliminar mensajes, y panel de fotos, archivos y enlaces (sección 16). **Requiere** la rama `feature/chat-whatsapp` del backend desplegada.
 19. `feature/ver-contrasena`: botón para mostrar u ocultar la contraseña (sección 12).
 20. `feature/dashboard-resumen`: Dashboard con carrusel de proyectos con avance y resumen personal (sección 17). **Requiere** la rama `feature/resumen-dashboard` del backend desplegada.
+21. `feature/carrusel-anuncio`: el carrusel del Dashboard pasa a banner tipo anuncio que rota solo (sección 17).
+22. `feature/carrusel-metricas`: el banner de cada proyecto incluye métricas, mis tareas y el chat del proyecto (sección 17). **Requiere** la rama `feature/resumen-metricas` del backend desplegada.
+23. `feature/banner-widgets`: "Tus tareas" y "Chat del proyecto" como columnas altas con scroll dentro del banner (sección 17).
 
 Backend correspondiente: repo `backend-tasks`, desplegado desde la rama `supabase`. El contrato completo está en `docs/CAMBIOS-API.md` de ese repo.
 
@@ -360,13 +363,13 @@ Backend (`feature/chat-whatsapp`): `PUT`/`DELETE /mensajes/{id}` (solo el autor)
 ## 17. Dashboard: proyectos con avance y resumen personal
 
 - **Antes:** la tarjeta "Proyectos activos" no hacía nada y no mostraba el número (`Card` ignoraba `value`), y el carrusel decía siempre "No hay proyectos para mostrar" porque recibía una lista vacía fija (`projects={[]}`).
-- Backend: `GET /usuarios/me/resumen` → `{proyectos, mis_tareas, total_mis_tareas}`. Cada proyecto trae `total_tareas`, `tareas_completadas`, `porcentaje` (`null` si no tiene tareas) y `mis_tareas_pendientes`. Respeta los permisos `tareas.ver` / `tareas.ver_todas`.
+- Backend: `GET /usuarios/me/resumen` → `{proyectos, mis_tareas, total_mis_tareas}`. Cada proyecto trae además `tareas_por_estado`, `tareas_vencidas`, `total_fases`, `fase_actual`, `mis_tareas` (hasta 10 de ese proyecto) y `chat: {sala_id, no_leidos, ultimos_mensajes}` (8 más recientes de la sala principal). El resumen **no marca la sala como leída**; por eso el Dashboard no usa `GET /mensajes/`, que sí la marca. Cada proyecto trae `total_tareas`, `tareas_completadas`, `porcentaje` (`null` si no tiene tareas) y `mis_tareas_pendientes`. Respeta los permisos `tareas.ver` / `tareas.ver_todas`.
 
 | Archivo | Cambio |
 |---|---|
-| `Pages/Dashboard.jsx` | Tarjetas: **"Proyectos activos"** muestra el número y lleva a Proyectos. **Mis proyectos** (carrusel general). **Mis tareas pendientes** (las asignadas a mí, sin completar, de todos los proyectos; primero las que vencen antes; tocar → el proyecto). **Actividad reciente** (último mensaje de mis salas, con no leídos; se actualiza en vivo con el canal de avisos). Crear o unirse a un proyecto refresca el resumen. |
-| `Components/ProjectCarousel.jsx` | Tarjeta por proyecto: logo, estado, colaboradores, **barra de avance** ("40% · 2/5" o "Sin tareas aún"), "N tareas mías" y **"vence en X días"** (en rojo si ya venció). Tocar → abre el proyecto. Se desliza en táctil; flechas junto al título en pantallas grandes. |
-| `Components/Cards/Card.jsx` | Muestra `value` (número grande) si se lo pasan. |
+| `Pages/Dashboard.jsx` | Tarjetas: **"Proyectos activos"** muestra el número y lleva a Proyectos. **Mis proyectos**: el carrusel recibe el resumen, la sala de chat de cada proyecto (de `GET /salas/`; si hay varios canales, el más activo) y los no leídos; la actividad se actualiza en vivo con el canal de avisos. Los paneles sueltos "Mis tareas pendientes" y "Actividad reciente" se quitaron: ahora van dentro de cada banner, por proyecto. Crear o unirse a un proyecto refresca el resumen. |
+| `Components/ProjectCarousel.jsx` | **Carrusel tipo anuncio:** un proyecto grande a la vez (banner con el degradado de marca) en tres partes: **(1)** logo, nombre, estado, colaboradores, dueño, descripción, **barra por estado** (en progreso / completado / pendiente…, con leyenda), **fase actual** ("Sprint 1 · 1 fases"), **tareas vencidas** (rojo) y vencimiento del proyecto; **(2 y 3)** dos **widgets altos con scroll propio**, clickeables: **"Tus tareas"** (hasta 10 de ese proyecto con fase, estado y vencimiento; "y N más…"; → abre el proyecto) y **"Chat del proyecto"** (últimos 8 mensajes con hora y no leídos en rojo; → abre la sala; los mensajes nuevos se agregan en vivo). En escritorio son columnas del mismo alto que el banner; en tablet, arriba info y avance y abajo los dos widgets; en celular, apilado; **(4)** **anillo de avance** animado, "x/y completadas" y "Ver proyecto". **Cambia solo cada 7 s**; se pausa con el cursor o el foco; puntitos, flechas ‹ › y deslizar en táctil (`onTap`: arrastrar no abre el proyecto). Con "reducir movimiento" no rota solo. El botón "Ver proyecto" usa `--color-blanco` porque `bg-white` se remapea en modo oscuro y el banner es oscuro en ambos temas. |
+| `Components/Cards/Card.jsx` | Muestra `value` (número grande) si se lo pasan. En celular, las tres tarjetas van en una fila compacta (antes ocupaban toda la pantalla). |
 | `utils/vencimiento.js` (nuevo) | `textoVencimiento(fecha)`: "vence hoy / mañana / en N días", "venció ayer / hace N días" (por día de calendario). |
 | `services/usuariosService.js` | `getMiResumen()`. |
 | `index.css` | En oscuro, `text-teal-700` (chips de estado) usa un teal claro para que se lea. |
