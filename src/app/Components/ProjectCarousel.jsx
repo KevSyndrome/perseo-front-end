@@ -1,18 +1,24 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { FolderOpen, ChevronLeft, ChevronRight, Users, CalendarClock, ListTodo, CheckCircle2, ArrowRight } from "lucide-react";
+import {
+  FolderOpen, ChevronLeft, ChevronRight, Users, CalendarClock, ListTodo, ArrowRight,
+  AlertTriangle, Layers, MessageCircle,
+} from "lucide-react";
 import { generarSlugProyecto } from "../../utils/slug";
 import { textoVencimiento } from "../../utils/vencimiento";
 
-const INTERVALO_MS = 6000;
+const INTERVALO_MS = 7000;
+
+// Color de cada estado en la barra de distribución (los desconocidos usan el gris)
+const COLOR_ESTADO = { completado: "#8DBFC4", "en progreso": "#38bdf8", pendiente: "rgba(255,255,255,0.35)" };
 
 // Anillo de avance (SVG); porcentaje = null cuando el proyecto aún no tiene tareas
 function AnilloAvance({ porcentaje }) {
   const r = 52;
   const circ = 2 * Math.PI * r;
   return (
-    <div className="relative h-32 w-32 shrink-0 sm:h-36 sm:w-36">
+    <div className="relative h-28 w-28 shrink-0 sm:h-36 sm:w-36">
       <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
         <circle cx="60" cy="60" r={r} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="10" />
         <motion.circle
@@ -37,9 +43,43 @@ function AnilloAvance({ porcentaje }) {
   );
 }
 
-// Carrusel tipo anuncio: un proyecto grande a la vez que rota solo.
-// Se pausa con el cursor encima o al interactuar; en táctil se desliza.
-export default function ProjectCarousel({ projects = [] }) {
+// Barra apilada con la cantidad de tareas por estado
+function DistribucionEstados({ porEstado }) {
+  const entradas = Object.entries(porEstado || {}).filter(([, n]) => n > 0);
+  const total = entradas.reduce((a, [, n]) => a + n, 0);
+  if (!total) return null;
+  return (
+    <div>
+      <div className="flex h-2 overflow-hidden rounded-full bg-white/10">
+        {entradas.map(([estado, n]) => (
+          <div key={estado} style={{ width: `${(n / total) * 100}%`, background: COLOR_ESTADO[estado.toLowerCase()] ?? "rgba(255,255,255,0.5)" }} />
+        ))}
+      </div>
+      <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-white/75">
+        {entradas.map(([estado, n]) => (
+          <span key={estado} className="flex items-center gap-1 capitalize">
+            <span className="h-2 w-2 rounded-full" style={{ background: COLOR_ESTADO[estado.toLowerCase()] ?? "rgba(255,255,255,0.5)" }} />
+            {n} {estado}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const hora = (iso) => {
+  const d = new Date(iso);
+  return new Date().toDateString() === d.toDateString()
+    ? d.toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" })
+    : d.toLocaleDateString("es-MX", { day: "2-digit", month: "short" });
+};
+
+// Carrusel tipo anuncio: un proyecto grande a la vez que rota solo, con sus métricas,
+// mis tareas de ese proyecto y la actividad de su chat. Se pausa con el cursor encima
+// o al interactuar; en táctil se desliza.
+// misTareas: lista global del resumen (respaldo si el proyecto no trae las suyas).
+// salaDe(proyectoId) → sala del chat del proyecto; noLeidos: { [salaId]: n }.
+export default function ProjectCarousel({ projects = [], misTareas = [], salaDe = () => null, noLeidos = {} }) {
   const navigate = useNavigate();
   const reducirMovimiento = useReducedMotion();
   const [[indice, direccion], setActual] = useState([0, 1]);
@@ -70,7 +110,11 @@ export default function ProjectCarousel({ projects = [] }) {
 
   const p = projects[Math.min(indice, total - 1)];
   const vence = textoVencimiento(p.fecha_final);
-  const abrir = () => navigate(`/proyectos/${generarSlugProyecto(p)}`);
+  const rutaProyecto = `/proyectos/${generarSlugProyecto(p)}`;
+  const abrir = () => navigate(rutaProyecto);
+  const tareas = (p.mis_tareas ?? misTareas.filter((t) => t.proyecto?.id === p.id)).slice(0, 3);
+  const sala = salaDe(p.id);
+  const pendientesSala = sala ? noLeidos[sala.id] || 0 : 0;
 
   return (
     <div
@@ -93,7 +137,7 @@ export default function ProjectCarousel({ projects = [] }) {
         </div>
       )}
 
-      <div className="relative h-[340px] overflow-hidden rounded-2xl sm:h-[230px]">
+      <div className="relative h-[680px] overflow-hidden rounded-2xl sm:h-[440px] lg:h-[300px]">
         <AnimatePresence initial={false} custom={direccion}>
           <motion.div
             key={p.id}
@@ -118,17 +162,18 @@ export default function ProjectCarousel({ projects = [] }) {
             }}
             // onTap no se dispara si hubo arrastre (deslizar no debe abrir el proyecto)
             onTap={(e) => !e.target.closest("button") && abrir()}
-            className="absolute inset-0 flex cursor-pointer flex-col gap-4 p-5 text-white sm:flex-row sm:items-center sm:gap-8 sm:p-7"
+            className="absolute inset-0 grid cursor-pointer grid-cols-1 gap-4 p-5 text-white sm:grid-cols-2 sm:p-6 lg:grid-cols-[1.3fr_1fr_auto] lg:gap-6"
             style={{ background: "linear-gradient(120deg, var(--color-primary) 0%, #0f3a44 55%, var(--color-selection) 140%)" }}
           >
             {/* Brillo decorativo */}
             <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[var(--color-terciario)] opacity-10 blur-2xl" />
 
-            <div className="flex min-w-0 flex-1 flex-col gap-3">
+            {/* 1. Identidad y métricas */}
+            <div className="flex min-w-0 flex-col gap-3">
               <div className="flex items-center gap-3">
                 {p.logo
                   ? <img src={p.logo} alt={p.nombre} className="h-14 w-14 rounded-xl object-cover ring-2 ring-white/20" />
-                  : <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/10"><FolderOpen size={26} className="text-[var(--color-terciario)]" /></span>}
+                  : <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white/10"><FolderOpen size={26} className="text-[var(--color-terciario)]" /></span>}
                 <div className="min-w-0">
                   <h3 className="truncate text-xl font-bold sm:text-2xl">{p.nombre}</h3>
                   <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/70">
@@ -138,27 +183,90 @@ export default function ProjectCarousel({ projects = [] }) {
                   </p>
                 </div>
               </div>
-              {p.descripcion && <p className="line-clamp-2 text-sm text-white/80">{p.descripcion}</p>}
+              {p.descripcion && <p className="line-clamp-1 text-sm text-white/80">{p.descripcion}</p>}
+
+              <DistribucionEstados porEstado={p.tareas_por_estado} />
+
               <div className="flex flex-wrap gap-2 text-xs">
-                {p.total_tareas > 0 && (
-                  <span className="flex items-center gap-1 rounded-full bg-white/10 px-3 py-1"><CheckCircle2 size={13} /> {p.tareas_completadas}/{p.total_tareas} completadas</span>
+                {p.fase_actual && (
+                  <span className="flex items-center gap-1 rounded-full bg-white/10 px-3 py-1">
+                    <Layers size={13} /> {p.fase_actual.nombre}{p.total_fases ? ` · ${p.total_fases} fases` : ""}
+                  </span>
                 )}
-                <span className="flex items-center gap-1 rounded-full bg-white/10 px-3 py-1">
-                  <ListTodo size={13} /> {p.mis_tareas_pendientes ? `${p.mis_tareas_pendientes} tareas tuyas` : "Nada pendiente para ti"}
-                </span>
+                {p.tareas_vencidas > 0 && (
+                  <span className="flex items-center gap-1 rounded-full bg-red-500/80 px-3 py-1">
+                    <AlertTriangle size={13} /> {p.tareas_vencidas} vencidas
+                  </span>
+                )}
                 {vence && (
                   <span className={`flex items-center gap-1 rounded-full px-3 py-1 ${vence.startsWith("venció") ? "bg-red-500/80" : "bg-white/10"}`}>
-                    <CalendarClock size={13} /> {vence}
+                    <CalendarClock size={13} /> Proyecto {vence}
                   </span>
                 )}
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-4 sm:flex-col sm:justify-center">
+            {/* 2. Lo personal de este proyecto: mis tareas y su chat (clickeables) */}
+            <div className="flex min-w-0 flex-col gap-2">
+              <div className="rounded-xl bg-white/10 p-3">
+                <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-white/80">
+                  <ListTodo size={13} /> Tus tareas
+                  {p.mis_tareas_pendientes > 0 && <span className="rounded-full bg-white/20 px-1.5">{p.mis_tareas_pendientes}</span>}
+                </p>
+                {tareas.length ? (
+                  <ul className="flex flex-col gap-0.5">
+                    {tareas.map((t) => {
+                      const tv = textoVencimiento(t.fecha_finalizacion);
+                      return (
+                        <li key={t.id}>
+                          <button onClick={abrir} className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-md px-1.5 py-1 text-left text-xs hover:bg-white/10">
+                            <span className="truncate">{t.nombre}</span>
+                            {tv && <span className={`shrink-0 ${tv.startsWith("venció") ? "text-red-300" : "text-white/60"}`}>{tv}</span>}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : (
+                  <p className="px-1.5 text-xs text-white/60">Nada pendiente para ti</p>
+                )}
+              </div>
+
+              {sala && (
+                <button
+                  onClick={() => navigate(`/mensajes/${sala.id}`)}
+                  className="flex cursor-pointer items-center gap-2 rounded-xl bg-white/10 p-3 text-left hover:bg-white/15"
+                >
+                  <MessageCircle size={15} className="shrink-0 text-white/80" />
+                  <span className="min-w-0 flex-1 text-xs">
+                    <span className="block font-semibold text-white/80">Chat del proyecto</span>
+                    <span className="block truncate text-white/70">
+                      {sala.ultimo_mensaje
+                        ? <><span className="font-semibold">{sala.ultimo_mensaje.usuario?.nombre}:</span> {sala.ultimo_mensaje.mensaje || "📎 Archivo"}</>
+                        : "Sin mensajes todavía"}
+                    </span>
+                  </span>
+                  <span className="flex shrink-0 flex-col items-end gap-1 text-[11px] text-white/60">
+                    {sala.ultimo_mensaje && hora(sala.ultimo_mensaje.fechaC)}
+                    {pendientesSala > 0 && (
+                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 font-bold text-white">
+                        {pendientesSala > 99 ? "99+" : pendientesSala}
+                      </span>
+                    )}
+                  </span>
+                </button>
+              )}
+            </div>
+
+            {/* 3. Avance (el botón usa --color-blanco: bg-white se remapea en modo oscuro) */}
+            <div className="flex items-center justify-between gap-4 sm:col-span-2 lg:col-span-1 lg:flex-col lg:justify-center">
               <AnilloAvance porcentaje={p.porcentaje} />
-              <button onClick={abrir} className="flex cursor-pointer items-center gap-1 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#0f3a44] hover:bg-white/90">
-                Ver proyecto <ArrowRight size={15} />
-              </button>
+              <div className="flex flex-col items-end gap-2 lg:items-center">
+                {p.total_tareas > 0 && <span className="text-xs text-white/70">{p.tareas_completadas}/{p.total_tareas} completadas</span>}
+                <button onClick={abrir} className="flex cursor-pointer items-center gap-1 rounded-full bg-[var(--color-blanco)] px-4 py-2 text-sm font-semibold text-[#0f3a44] hover:opacity-90">
+                  Ver proyecto <ArrowRight size={15} />
+                </button>
+              </div>
             </div>
           </motion.div>
         </AnimatePresence>
