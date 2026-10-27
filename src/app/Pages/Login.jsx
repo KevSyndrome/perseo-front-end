@@ -5,6 +5,7 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { loginUsuario } from "../../services/authService";
+import CampoContrasena from "../Components/CampoContrasena";
 import { tomarRutaPendiente } from "../../services/api";
 
 const LoginModal = () => {
@@ -115,9 +116,8 @@ const LoginModal = () => {
               CONTRASEÑA
             </Typography>
 
-            <TextField
+            <CampoContrasena
               label="* * * * * * * * * * * *"
-              type="password"
               fullWidth
               value={contraseña}
               onChange={(e) => setContraseña(e.target.value)}
