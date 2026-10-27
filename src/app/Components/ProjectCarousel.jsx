@@ -67,6 +67,25 @@ function DistribucionEstados({ porEstado }) {
   );
 }
 
+// Widget del banner: título clickeable y lista con scroll propio
+function Widget({ icono, titulo, contador, contadorRojo, onTitulo, children }) {
+  return (
+    <div className="flex min-h-0 min-w-0 flex-col rounded-xl bg-white/10 p-2.5 sm:order-3 lg:order-none">
+      <button
+        onClick={onTitulo ?? undefined}
+        disabled={!onTitulo}
+        className="mb-1 flex cursor-pointer items-center gap-1.5 px-1 text-left text-xs font-semibold text-white/85 disabled:cursor-default"
+      >
+        {icono} {titulo}
+        {contador > 0 && (
+          <span className={`rounded-full px-1.5 ${contadorRojo ? "bg-red-500 text-white" : "bg-white/20"}`}>{contador > 99 ? "99+" : contador}</span>
+        )}
+      </button>
+      <ul className="min-h-0 flex-1 overflow-y-auto pr-1 [scrollbar-width:thin]">{children}</ul>
+    </div>
+  );
+}
+
 const hora = (iso) => {
   const d = new Date(iso);
   return new Date().toDateString() === d.toDateString()
@@ -112,9 +131,13 @@ export default function ProjectCarousel({ projects = [], misTareas = [], salaDe 
   const vence = textoVencimiento(p.fecha_final);
   const rutaProyecto = `/proyectos/${generarSlugProyecto(p)}`;
   const abrir = () => navigate(rutaProyecto);
-  const tareas = (p.mis_tareas ?? misTareas.filter((t) => t.proyecto?.id === p.id)).slice(0, 3);
+  const tareas = p.mis_tareas ?? misTareas.filter((t) => t.proyecto?.id === p.id);
+  // Chat: últimos mensajes del resumen (no marca la sala como leída); si aún no vienen,
+  // el último mensaje de la sala del proyecto
   const sala = salaDe(p.id);
-  const pendientesSala = sala ? noLeidos[sala.id] || 0 : 0;
+  const salaId = p.chat?.sala_id ?? sala?.id;
+  const mensajes = p.chat?.ultimos_mensajes ?? (sala?.ultimo_mensaje ? [sala.ultimo_mensaje] : []);
+  const pendientesSala = salaId ? noLeidos[salaId] ?? p.chat?.no_leidos ?? 0 : 0;
 
   return (
     <div
@@ -137,7 +160,7 @@ export default function ProjectCarousel({ projects = [], misTareas = [], salaDe 
         </div>
       )}
 
-      <div className="relative h-[680px] overflow-hidden rounded-2xl sm:h-[440px] lg:h-[300px]">
+      <div className="relative h-[820px] overflow-hidden rounded-2xl sm:h-[560px] lg:h-[330px]">
         <AnimatePresence initial={false} custom={direccion}>
           <motion.div
             key={p.id}
@@ -152,6 +175,7 @@ export default function ProjectCarousel({ projects = [], misTareas = [], salaDe 
             exit="sale"
             transition={{ duration: 0.55, ease: [0.32, 0.72, 0, 1] }}
             drag={total > 1 ? "x" : false}
+            dragDirectionLock
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.6}
             onDragStart={() => setPausado(true)}
@@ -162,14 +186,14 @@ export default function ProjectCarousel({ projects = [], misTareas = [], salaDe 
             }}
             // onTap no se dispara si hubo arrastre (deslizar no debe abrir el proyecto)
             onTap={(e) => !e.target.closest("button") && abrir()}
-            className="absolute inset-0 grid cursor-pointer grid-cols-1 gap-4 p-5 text-white sm:grid-cols-2 sm:p-6 lg:grid-cols-[1.3fr_1fr_auto] lg:gap-6"
+            className="absolute inset-0 grid cursor-pointer grid-cols-1 grid-rows-[auto_1fr_1fr_auto] gap-4 p-5 text-white sm:grid-cols-2 sm:grid-rows-[auto_1fr] sm:p-6 lg:grid-cols-[1.2fr_1fr_1fr_auto] lg:grid-rows-1 lg:gap-5"
             style={{ background: "linear-gradient(120deg, var(--color-primary) 0%, #0f3a44 55%, var(--color-selection) 140%)" }}
           >
             {/* Brillo decorativo */}
             <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[var(--color-terciario)] opacity-10 blur-2xl" />
 
-            {/* 1. Identidad y métricas */}
-            <div className="flex min-w-0 flex-col gap-3">
+            {/* 1. Identidad y métricas (tablet: arriba a la izquierda) */}
+            <div className="flex min-w-0 flex-col gap-3 sm:order-1 lg:order-none">
               <div className="flex items-center gap-3">
                 {p.logo
                   ? <img src={p.logo} alt={p.nombre} className="h-14 w-14 rounded-xl object-cover ring-2 ring-white/20" />
@@ -206,60 +230,66 @@ export default function ProjectCarousel({ projects = [], misTareas = [], salaDe 
               </div>
             </div>
 
-            {/* 2. Lo personal de este proyecto: mis tareas y su chat (clickeables) */}
-            <div className="flex min-w-0 flex-col gap-2">
-              <div className="rounded-xl bg-white/10 p-3">
-                <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-white/80">
-                  <ListTodo size={13} /> Tus tareas
-                  {p.mis_tareas_pendientes > 0 && <span className="rounded-full bg-white/20 px-1.5">{p.mis_tareas_pendientes}</span>}
-                </p>
-                {tareas.length ? (
-                  <ul className="flex flex-col gap-0.5">
-                    {tareas.map((t) => {
-                      const tv = textoVencimiento(t.fecha_finalizacion);
-                      return (
-                        <li key={t.id}>
-                          <button onClick={abrir} className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-md px-1.5 py-1 text-left text-xs hover:bg-white/10">
-                            <span className="truncate">{t.nombre}</span>
-                            {tv && <span className={`shrink-0 ${tv.startsWith("venció") ? "text-red-300" : "text-white/60"}`}>{tv}</span>}
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                ) : (
-                  <p className="px-1.5 text-xs text-white/60">Nada pendiente para ti</p>
-                )}
-              </div>
-
-              {sala && (
-                <button
-                  onClick={() => navigate(`/mensajes/${sala.id}`)}
-                  className="flex cursor-pointer items-center gap-2 rounded-xl bg-white/10 p-3 text-left hover:bg-white/15"
-                >
-                  <MessageCircle size={15} className="shrink-0 text-white/80" />
-                  <span className="min-w-0 flex-1 text-xs">
-                    <span className="block font-semibold text-white/80">Chat del proyecto</span>
-                    <span className="block truncate text-white/70">
-                      {sala.ultimo_mensaje
-                        ? <><span className="font-semibold">{sala.ultimo_mensaje.usuario?.nombre}:</span> {sala.ultimo_mensaje.mensaje || "📎 Archivo"}</>
-                        : "Sin mensajes todavía"}
-                    </span>
-                  </span>
-                  <span className="flex shrink-0 flex-col items-end gap-1 text-[11px] text-white/60">
-                    {sala.ultimo_mensaje && hora(sala.ultimo_mensaje.fechaC)}
-                    {pendientesSala > 0 && (
-                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 font-bold text-white">
-                        {pendientesSala > 99 ? "99+" : pendientesSala}
-                      </span>
-                    )}
-                  </span>
-                </button>
+            {/* 2 y 3. Widgets altos con scroll propio: mis tareas y chat del proyecto (clickeables) */}
+            <Widget icono={<ListTodo size={13} />} titulo="Tus tareas" contador={p.mis_tareas_pendientes} onTitulo={abrir}>
+              {tareas.length ? (
+                <>
+                  {tareas.map((t) => {
+                    const tv = textoVencimiento(t.fecha_finalizacion);
+                    return (
+                      <li key={t.id}>
+                        <button onClick={abrir} className="flex w-full cursor-pointer flex-col rounded-md px-2 py-1.5 text-left hover:bg-white/10">
+                          <span className="truncate text-xs font-medium">{t.nombre}</span>
+                          <span className="flex justify-between gap-2 text-[11px] text-white/60">
+                            <span className="truncate">{t.fase?.nombre}{t.status?.nombre && ` · ${t.status.nombre}`}</span>
+                            {tv && <span className={`shrink-0 ${tv.startsWith("venció") ? "text-red-300" : ""}`}>{tv}</span>}
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                  {p.mis_tareas_pendientes > tareas.length && (
+                    <li>
+                      <button onClick={abrir} className="w-full cursor-pointer px-2 py-1 text-left text-[11px] text-white/70 underline">
+                        y {p.mis_tareas_pendientes - tareas.length} más…
+                      </button>
+                    </li>
+                  )}
+                </>
+              ) : (
+                <li className="px-2 text-xs text-white/60">Nada pendiente para ti</li>
               )}
-            </div>
+            </Widget>
+
+            <Widget
+              icono={<MessageCircle size={13} />}
+              titulo="Chat del proyecto"
+              contador={pendientesSala}
+              contadorRojo
+              onTitulo={salaId ? () => navigate(`/mensajes/${salaId}`) : null}
+            >
+              {mensajes.length ? (
+                mensajes.map((m) => (
+                  <li key={m.id}>
+                    <button
+                      onClick={() => navigate(`/mensajes/${salaId}`)}
+                      className="flex w-full cursor-pointer items-start justify-between gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-white/10"
+                    >
+                      <span className="min-w-0">
+                        <span className="font-semibold">{m.usuario?.nombre}:</span>{" "}
+                        <span className="text-white/80">{m.mensaje || "📎 Archivo"}</span>
+                      </span>
+                      <span className="shrink-0 text-[11px] text-white/50">{hora(m.fechaC)}</span>
+                    </button>
+                  </li>
+                ))
+              ) : (
+                <li className="px-2 text-xs text-white/60">{salaId ? "Sin mensajes todavía" : "Este proyecto no tiene chat"}</li>
+              )}
+            </Widget>
 
             {/* 3. Avance (el botón usa --color-blanco: bg-white se remapea en modo oscuro) */}
-            <div className="flex items-center justify-between gap-4 sm:col-span-2 lg:col-span-1 lg:flex-col lg:justify-center">
+            <div className="flex items-center justify-between gap-4 sm:order-2 sm:flex-col sm:justify-center lg:order-none">
               <AnilloAvance porcentaje={p.porcentaje} />
               <div className="flex flex-col items-end gap-2 lg:items-center">
                 {p.total_tareas > 0 && <span className="text-xs text-white/70">{p.tareas_completadas}/{p.total_tareas} completadas</span>}
