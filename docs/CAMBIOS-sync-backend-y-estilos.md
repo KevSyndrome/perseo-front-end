@@ -419,3 +419,11 @@ Front local (`VITE_API_URL=http://127.0.0.1:8765 npx vite`) contra el backend lo
 
 - Conectar `Task.jsx`, `Sprint.jsx` y `Calendar.jsx` (hoy usan datos mock) con fases y tareas. Con permisos: si `tareas` no tiene `ver_todas` (por ejemplo, Tester), el usuario solo ve las tareas asignadas a él o creadas por él.
 - Mostrar los 403 en pantalla en los tabs de Configuración (hoy solo hacen `console.error`). Con los permisos aplicados en la UI ya casi no deberían ocurrir.
+
+## Campana de notificaciones (navbar)
+
+- `services/notificacionesService.js`: `GET /notificaciones/`, `POST /{id}/leida`, `POST /leer-todas`, `DELETE /{id}` (backend rama `feature/notificaciones`).
+- El canal WS `/mensajes/ws/notificaciones` ahora también trae `{type:"notificacion", data}`; `NotificacionesStore` las agrega en vivo (`notificaciones`, `notifNoLeidas`).
+- `NotificacionesPanel.jsx`: lista de notificaciones (icono por tipo, punto de no leída, eliminar) + "Chats sin leer"; "Marcar todo como leído" marca notificaciones y salas (`POST /salas/{id}/leido`).
+- Contador rojo de la campana = notificaciones no leídas + mensajes sin leer; punto verde si no hay pendientes y el WS está conectado.
+- Las notificaciones de tareas (`/task/{id}`) abren el proyecto mientras la pantalla de Tareas siga con datos de prueba.
