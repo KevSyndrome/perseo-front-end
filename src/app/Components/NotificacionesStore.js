@@ -2,18 +2,27 @@ import { create } from 'zustand';
 import { crearConexionAvisos } from '../../services/mensajesServices';
 import { getSalas } from '../../services/salaService';
 import { refrescarSesion, cerrarSesionYIrALogin } from '../../services/api';
+import {
+  getNotificaciones,
+  marcarNotificacionLeida,
+  leerTodasNotificaciones,
+  eliminarNotificacion,
+} from '../../services/notificacionesService';
 
 let ws = null;
 let reintento = null;
 
-// No leídos por sala + canal de avisos en tiempo real (una conexión por sesión).
-// "ultimoAviso" cambia con cada mensaje nuevo para que el panel de salas reaccione.
+// No leídos por sala + notificaciones generales + canal de avisos en tiempo real (una
+// conexión por sesión). "ultimoAviso" cambia con cada mensaje nuevo para que el panel de
+// salas reaccione.
 export const useNotificacionesStore = create((set, get) => ({
   noLeidos: {},
   salaAbierta: null,
   conectado: false,
   token: null,
   ultimoAviso: null,
+  notificaciones: [], // las más recientes (primera página)
+  notifNoLeidas: 0,
 
   // Idempotente: solo reconecta si cambió el token (otro login)
   conectar: () => {
@@ -21,7 +30,8 @@ export const useNotificacionesStore = create((set, get) => ({
     if (!token || get().token === token) return;
     clearTimeout(reintento);
     ws?.close();
-    set({ token, noLeidos: {}, conectado: false });
+    set({ token, noLeidos: {}, conectado: false, notificaciones: [], notifNoLeidas: 0 });
+    get().cargarNotificaciones();
 
     getSalas()
       .then((res) => get().setDesdeSalas(res.data || []))
@@ -65,6 +75,16 @@ export const useNotificacionesStore = create((set, get) => ({
             cerrarSesionYIrALogin();
           }
           // Otro motivo (ej. el cargo no tiene acceso a mensajes): no reintentar
+        },
+        (notif) => {
+          // Notificación general en vivo: arriba de la lista
+          set((st) => ({
+            notificaciones: [notif, ...st.notificaciones.filter((n) => n.id !== notif.id)].slice(0, 30),
+            notifNoLeidas: st.notifNoLeidas + (notif.leida ? 0 : 1),
+          }));
+          if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
+            new Notification(notif.titulo, { body: notif.mensaje || '', icon: '/IsotipoPrometeoColoresOscuros.png' });
+          }
         }
       );
       ws.onopen = () => set({ conectado: true });
@@ -79,6 +99,38 @@ export const useNotificacionesStore = create((set, get) => ({
   abrirSala: (salaId) =>
     set((st) => ({ salaAbierta: salaId, noLeidos: { ...st.noLeidos, [salaId]: 0 } })),
   cerrarSala: () => set({ salaAbierta: null }),
+  marcarLeida: (salaId) => set((st) => ({ noLeidos: { ...st.noLeidos, [salaId]: 0 } })),
+
+  // El backend genera las de "tarea por vencer/vencida" al consultar: se piden al conectar
+  cargarNotificaciones: async () => {
+    try {
+      const res = await getNotificaciones(1, 20);
+      set({ notificaciones: res.data || [], notifNoLeidas: res.no_leidas ?? 0 });
+    } catch {
+      // Sin notificaciones no se rompe nada: la campana sigue con los chats
+    }
+  },
+
+  leerNotificacion: async (id) => {
+    const res = await marcarNotificacionLeida(id);
+    set((st) => ({
+      notificaciones: st.notificaciones.map((n) => (n.id === id ? { ...n, leida: true } : n)),
+      notifNoLeidas: res.no_leidas ?? Math.max(0, st.notifNoLeidas - 1),
+    }));
+  },
+
+  leerTodas: async () => {
+    await leerTodasNotificaciones();
+    set((st) => ({ notificaciones: st.notificaciones.map((n) => ({ ...n, leida: true })), notifNoLeidas: 0 }));
+  },
+
+  borrarNotificacion: async (id) => {
+    const res = await eliminarNotificacion(id);
+    set((st) => ({
+      notificaciones: st.notificaciones.filter((n) => n.id !== id),
+      notifNoLeidas: res.no_leidas ?? st.notifNoLeidas,
+    }));
+  },
 }));
 
 export const totalNoLeidos = (noLeidos) => Object.values(noLeidos).reduce((a, b) => a + b, 0);
