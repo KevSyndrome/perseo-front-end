@@ -24,6 +24,7 @@ Ramas (ya mergeadas, en este orden):
 18. `feature/chat-responder-editar`: responder, editar y eliminar mensajes, y panel de fotos, archivos y enlaces (sección 16). **Requiere** la rama `feature/chat-whatsapp` del backend desplegada.
 19. `feature/ver-contrasena`: botón para mostrar u ocultar la contraseña (sección 12).
 20. `feature/dashboard-resumen`: Dashboard con carrusel de proyectos con avance y resumen personal (sección 17). **Requiere** la rama `feature/resumen-dashboard` del backend desplegada.
+21. `feature/carrusel-anuncio`: el carrusel del Dashboard pasa a banner tipo anuncio que rota solo (sección 17).
 
 Backend correspondiente: repo `backend-tasks`, desplegado desde la rama `supabase`. El contrato completo está en `docs/CAMBIOS-API.md` de ese repo.
 
@@ -365,8 +366,8 @@ Backend (`feature/chat-whatsapp`): `PUT`/`DELETE /mensajes/{id}` (solo el autor)
 | Archivo | Cambio |
 |---|---|
 | `Pages/Dashboard.jsx` | Tarjetas: **"Proyectos activos"** muestra el número y lleva a Proyectos. **Mis proyectos** (carrusel general). **Mis tareas pendientes** (las asignadas a mí, sin completar, de todos los proyectos; primero las que vencen antes; tocar → el proyecto). **Actividad reciente** (último mensaje de mis salas, con no leídos; se actualiza en vivo con el canal de avisos). Crear o unirse a un proyecto refresca el resumen. |
-| `Components/ProjectCarousel.jsx` | Tarjeta por proyecto: logo, estado, colaboradores, **barra de avance** ("40% · 2/5" o "Sin tareas aún"), "N tareas mías" y **"vence en X días"** (en rojo si ya venció). Tocar → abre el proyecto. Se desliza en táctil; flechas junto al título en pantallas grandes. |
-| `Components/Cards/Card.jsx` | Muestra `value` (número grande) si se lo pasan. |
+| `Components/ProjectCarousel.jsx` | **Carrusel tipo anuncio:** un proyecto grande a la vez (banner con el degradado de marca), con logo, nombre, estado, colaboradores, dueño, descripción, chips (completadas, "N tareas tuyas", "vence en X días", en rojo si venció) y un **anillo de avance** animado (o "Sin tareas aún"). **Cambia solo cada 6 s** con un deslizamiento; se **pausa** con el cursor encima o con el foco del teclado; puntitos para saltar y flechas ‹ › junto al título; en táctil **se desliza con el dedo** (`onTap`, así arrastrar no abre el proyecto). Con "reducir movimiento" del sistema no rota solo. Tocar el banner o "Ver proyecto" → abre el proyecto. |
+| `Components/Cards/Card.jsx` | Muestra `value` (número grande) si se lo pasan. En celular, las tres tarjetas van en una fila compacta (antes ocupaban toda la pantalla). |
 | `utils/vencimiento.js` (nuevo) | `textoVencimiento(fecha)`: "vence hoy / mañana / en N días", "venció ayer / hace N días" (por día de calendario). |
 | `services/usuariosService.js` | `getMiResumen()`. |
 | `index.css` | En oscuro, `text-teal-700` (chips de estado) usa un teal claro para que se lea. |
