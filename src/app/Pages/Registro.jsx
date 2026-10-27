@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { registrarUsuario, loginUsuario } from "../../services/authService";
 import { tomarRutaPendiente } from "../../services/api";
 import { errorContrasena } from "../../utils/password";
+import CampoContrasena from "../Components/CampoContrasena";
 
 const CAMPOS = [
   { key: "nombre", label: "NOMBRE", type: "text", min: 3, max: 45 },
@@ -118,11 +119,11 @@ const Registro = () => {
           )}
 
           <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 1.5 }}>
-            {CAMPOS.map((c) => (
+            {CAMPOS.map((c) => { const Campo = c.type === "password" ? CampoContrasena : TextField; return (
               <Box key={c.key} sx={{ gridColumn: c.key === "nombre" || c.key === "correo" ? "1 / -1" : "auto" }}>
                 <Typography variant="caption" color="var(--color-terciario)">{c.label}</Typography>
-                <TextField
-                  type={c.type}
+                <Campo
+                  {...(c.type !== "password" && { type: c.type })}
                   fullWidth
                   size="small"
                   value={form[c.key]}
@@ -132,7 +133,7 @@ const Registro = () => {
                   sx={estiloCampo}
                 />
               </Box>
-            ))}
+            ); })}
           </Box>
 
           <Button
