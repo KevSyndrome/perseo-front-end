@@ -35,6 +35,13 @@ const Dashboard = () => {
   useEffect(() => {
     if (!ultimoAviso) return;
     setSalas((prev) => prev.map((s) => (s.id === ultimoAviso.sala_id ? { ...s, ultimo_mensaje: ultimoAviso.data } : s)));
+    // Y en el widget de chat del proyecto: el nuevo arriba, se guardan los 8 más recientes
+    setResumen((prev) => prev && {
+      ...prev,
+      proyectos: prev.proyectos.map((p) => (p.chat?.sala_id === ultimoAviso.sala_id
+        ? { ...p, chat: { ...p.chat, ultimos_mensajes: [ultimoAviso.data, ...p.chat.ultimos_mensajes].slice(0, 8) } }
+        : p)),
+    });
   }, [ultimoAviso]);
 
   const proyectos = resumen?.proyectos || [];
