@@ -23,6 +23,7 @@ Ramas (ya mergeadas, en este orden):
 17. `fix/indicador-escribiendo`: "está escribiendo" sin parpadeo (sección 15).
 18. `feature/chat-responder-editar`: responder, editar y eliminar mensajes, y panel de fotos, archivos y enlaces (sección 16). **Requiere** la rama `feature/chat-whatsapp` del backend desplegada.
 19. `feature/ver-contrasena`: botón para mostrar u ocultar la contraseña (sección 12).
+20. `feature/dashboard-resumen`: Dashboard con carrusel de proyectos con avance y resumen personal (sección 17). **Requiere** la rama `feature/resumen-dashboard` del backend desplegada.
 
 Backend correspondiente: repo `backend-tasks`, desplegado desde la rama `supabase`. El contrato completo está en `docs/CAMBIOS-API.md` de ese repo.
 
@@ -356,6 +357,22 @@ Backend (`feature/chat-whatsapp`): `PUT`/`DELETE /mensajes/{id}` (solo el autor)
 
 - "Ver en el chat" y la cita solo pueden saltar a mensajes ya cargados; si el mensaje es más viejo, se avisa que hay que subir en el chat para cargarlo.
 
+## 17. Dashboard: proyectos con avance y resumen personal
+
+- **Antes:** la tarjeta "Proyectos activos" no hacía nada y no mostraba el número (`Card` ignoraba `value`), y el carrusel decía siempre "No hay proyectos para mostrar" porque recibía una lista vacía fija (`projects={[]}`).
+- Backend: `GET /usuarios/me/resumen` → `{proyectos, mis_tareas, total_mis_tareas}`. Cada proyecto trae `total_tareas`, `tareas_completadas`, `porcentaje` (`null` si no tiene tareas) y `mis_tareas_pendientes`. Respeta los permisos `tareas.ver` / `tareas.ver_todas`.
+
+| Archivo | Cambio |
+|---|---|
+| `Pages/Dashboard.jsx` | Tarjetas: **"Proyectos activos"** muestra el número y lleva a Proyectos. **Mis proyectos** (carrusel general). **Mis tareas pendientes** (las asignadas a mí, sin completar, de todos los proyectos; primero las que vencen antes; tocar → el proyecto). **Actividad reciente** (último mensaje de mis salas, con no leídos; se actualiza en vivo con el canal de avisos). Crear o unirse a un proyecto refresca el resumen. |
+| `Components/ProjectCarousel.jsx` | Tarjeta por proyecto: logo, estado, colaboradores, **barra de avance** ("40% · 2/5" o "Sin tareas aún"), "N tareas mías" y **"vence en X días"** (en rojo si ya venció). Tocar → abre el proyecto. Se desliza en táctil; flechas junto al título en pantallas grandes. |
+| `Components/Cards/Card.jsx` | Muestra `value` (número grande) si se lo pasan. |
+| `utils/vencimiento.js` (nuevo) | `textoVencimiento(fecha)`: "vence hoy / mañana / en N días", "venció ayer / hace N días" (por día de calendario). |
+| `services/usuariosService.js` | `getMiResumen()`. |
+| `index.css` | En oscuro, `text-teal-700` (chips de estado) usa un teal claro para que se lea. |
+
+- Hasta que se conecte el módulo de Tareas y Sprints, ninguna pantalla crea tareas: los proyectos van a mostrar "Sin tareas aún" y "Mis tareas" va a estar vacío.
+
 ---
 
 ## Cómo se probó
@@ -387,6 +404,7 @@ Front local (`VITE_API_URL=http://127.0.0.1:8765 npx vite`) contra el backend lo
 - ✅ Recuperar contraseña: "¿Olvidaste tu contraseña?" → correo → mensaje genérico. Con un link válido → nueva contraseña → manda a login; la contraseña vieja da 401 y la nueva entra. Reusar el link → "Este token de recuperación ya fue utilizado" + "Pedir otro". Token inventado → "Token de recuperación inválido". Contraseña débil → validación del front antes de enviar.
 - ✅ Adjuntos: el menú sin "Enlace"; Cámara en computadora muestra el aviso; imagen + texto con link → se ve en línea y el link es clickeable (sin el punto final); `.txt` solo → tarjeta con descarga; `.exe` → rechazado antes de enviar; después de recargar siguen ahí y el otro usuario los recibe. La webcam no se probó (requiere el permiso del navegador).
 - ✅ Chat estilo WhatsApp: menú por mensaje (clic derecho), editar → "editado", eliminar con confirmación, responder → cita en la burbuja, y al tocarla salta al original. Ediciones y borrados de otro usuario se ven en vivo. Panel: fotos, enlaces y "Ver en el chat". **Deslizar para responder no se probó** (requiere pantalla táctil).
+- ✅ Dashboard (con tareas creadas por API): "Proyectos activos: 2" → /proyectos; Proyecto Oscuro "40% · 2/5" y "2 tareas mías"; Portal Clientes "Sin tareas aún · vence en 40 días"; mis tareas "vence mañana / en 5 días"; actividad reciente; tarjeta → detalle del proyecto; modo oscuro.
 - ⚠️ Subir imagen (foto de perfil, logo, fondo de sala): el front envía bien el archivo, pero en local las credenciales de Cloudinary son de ejemplo. Ahora el backend responde **502** "No se pudo subir el archivo al servicio de almacenamiento" y el front muestra ese mensaje. Falta probarlo en Railway con las credenciales reales.
 - ⚠️ "¡Link copiado!" no se pudo ver: en el Chrome automatizado el portapapeles no responde; se probó el campo de respaldo con el link.
 - ⚠️ **No probado en el navegador:** subir o quitar el logo y la foto de perfil (requieren elegir un archivo local), quitar a un colaborador desde el propietario y cambiar la contraseña.

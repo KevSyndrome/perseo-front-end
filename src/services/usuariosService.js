@@ -81,3 +81,13 @@ export const getMisPermisos = async () => {
   if (!response.ok) throw new Error(data.detail || "Error al obtener permisos");
   return data.data;
 };
+
+// Dashboard: { proyectos (con avance), mis_tareas (pendientes, máx. 10), total_mis_tareas }
+export const getMiResumen = async () => {
+  const response = await apiFetch(`${BASE_URL}/usuarios/me/resumen`, {
+    headers: getHeaders(),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.detail || "No se pudo cargar el resumen");
+  return data.data;
+};
