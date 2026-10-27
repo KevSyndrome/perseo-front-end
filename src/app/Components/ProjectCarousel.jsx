@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
@@ -14,11 +14,11 @@ const INTERVALO_MS = 7000;
 const COLOR_ESTADO = { completado: "#8DBFC4", "en progreso": "#38bdf8", pendiente: "rgba(255,255,255,0.35)" };
 
 // Anillo de avance (SVG); porcentaje = null cuando el proyecto aún no tiene tareas
-function AnilloAvance({ porcentaje }) {
+function AnilloAvance({ porcentaje, compacto = false }) {
   const r = 52;
   const circ = 2 * Math.PI * r;
   return (
-    <div className="relative h-28 w-28 shrink-0 sm:h-36 sm:w-36">
+    <div className={`relative shrink-0 ${compacto ? "h-16 w-16" : "h-28 w-28 sm:h-36 sm:w-36"}`}>
       <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
         <circle cx="60" cy="60" r={r} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="10" />
         <motion.circle
@@ -31,11 +31,11 @@ function AnilloAvance({ porcentaje }) {
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white">
         {porcentaje === null ? (
-          <span className="px-4 text-xs leading-tight text-white/70">Sin tareas aún</span>
+          <span className={`leading-tight text-white/70 ${compacto ? "px-2 text-[9px]" : "px-4 text-xs"}`}>Sin tareas aún</span>
         ) : (
           <>
-            <span className="text-3xl font-bold">{porcentaje}%</span>
-            <span className="text-[11px] text-white/70">avance</span>
+            <span className={`font-bold ${compacto ? "text-base" : "text-3xl"}`}>{porcentaje}%</span>
+            {!compacto && <span className="text-[11px] text-white/70">avance</span>}
           </>
         )}
       </div>
@@ -68,13 +68,13 @@ function DistribucionEstados({ porEstado }) {
 }
 
 // Widget del banner: título clickeable y lista con scroll propio
-function Widget({ icono, titulo, contador, contadorRojo, onTitulo, children }) {
+function Widget({ icono, titulo, contador, contadorRojo, onTitulo, className = "", children }) {
   return (
-    <div className="flex min-h-0 min-w-0 flex-col rounded-xl bg-white/10 p-2.5 sm:order-3 lg:order-none">
+    <div className={`min-h-0 min-w-0 flex-col rounded-xl bg-white/10 p-2.5 sm:order-3 lg:order-none ${className}`}>
       <button
         onClick={onTitulo ?? undefined}
         disabled={!onTitulo}
-        className="mb-1 flex cursor-pointer items-center gap-1.5 px-1 text-left text-xs font-semibold text-white/85 disabled:cursor-default"
+        className="mb-1 hidden cursor-pointer items-center gap-1.5 px-1 text-left text-xs font-semibold text-white/85 disabled:cursor-default sm:flex"
       >
         {icono} {titulo}
         {contador > 0 && (
@@ -103,6 +103,10 @@ export default function ProjectCarousel({ projects = [], misTareas = [], salaDe 
   const reducirMovimiento = useReducedMotion();
   const [[indice, direccion], setActual] = useState([0, 1]);
   const [pausado, setPausado] = useState(false);
+  // Celular: una lista a la vez ('tareas' | 'chat') para que el banner quepa en una pantalla
+  const [tabMovil, setTabMovil] = useState("tareas");
+  // Mientras se desliza, ningún clic dentro del banner debe abrir nada
+  const arrastrandoRef = useRef(false);
   const total = projects.length;
 
   const ir = (nuevo, dir) => setActual([(nuevo + total) % total, dir]);
@@ -160,7 +164,7 @@ export default function ProjectCarousel({ projects = [], misTareas = [], salaDe 
         </div>
       )}
 
-      <div className="relative h-[820px] overflow-hidden rounded-2xl sm:h-[560px] lg:h-[330px]">
+      <div className="relative h-[400px] overflow-hidden rounded-2xl sm:h-[560px] lg:h-[330px]">
         <AnimatePresence initial={false} custom={direccion}>
           <motion.div
             key={p.id}
@@ -178,15 +182,20 @@ export default function ProjectCarousel({ projects = [], misTareas = [], salaDe 
             dragDirectionLock
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.6}
-            onDragStart={() => setPausado(true)}
+            onDragStart={() => { setPausado(true); arrastrandoRef.current = true; }}
             onDragEnd={(_, info) => {
               setPausado(false);
+              // El clic llega justo después de soltar: se ignora un instante
+              setTimeout(() => { arrastrandoRef.current = false; }, 150);
               if (info.offset.x < -80) siguiente();
               else if (info.offset.x > 80) anterior();
             }}
             // onTap no se dispara si hubo arrastre (deslizar no debe abrir el proyecto)
-            onTap={(e) => !e.target.closest("button") && abrir()}
-            className="absolute inset-0 grid cursor-pointer grid-cols-1 grid-rows-[auto_1fr_1fr_auto] gap-4 p-5 text-white sm:grid-cols-2 sm:grid-rows-[auto_1fr] sm:p-6 lg:grid-cols-[1.2fr_1fr_1fr_auto] lg:grid-rows-1 lg:gap-5"
+            onTap={(e) => !arrastrandoRef.current && !e.target.closest("button") && abrir()}
+            onClickCapture={(e) => {
+              if (arrastrandoRef.current) { e.stopPropagation(); e.preventDefault(); }
+            }}
+            className="absolute inset-0 grid cursor-pointer grid-cols-1 grid-rows-[auto_auto_1fr_auto] gap-3 p-4 text-white sm:grid-cols-2 sm:gap-4 sm:grid-rows-[auto_1fr] sm:p-6 lg:grid-cols-[1.2fr_1fr_1fr_auto] lg:grid-rows-1 lg:gap-5"
             style={{ background: "linear-gradient(120deg, var(--color-primary) 0%, #0f3a44 55%, var(--color-selection) 140%)" }}
           >
             {/* Brillo decorativo */}
@@ -198,16 +207,17 @@ export default function ProjectCarousel({ projects = [], misTareas = [], salaDe 
                 {p.logo
                   ? <img src={p.logo} alt={p.nombre} className="h-14 w-14 rounded-xl object-cover ring-2 ring-white/20" />
                   : <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white/10"><FolderOpen size={26} className="text-[var(--color-terciario)]" /></span>}
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <h3 className="truncate text-xl font-bold sm:text-2xl">{p.nombre}</h3>
                   <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/70">
                     {p.status?.nombre && <span className="rounded-full bg-white/15 px-2 py-0.5 font-medium capitalize text-white">{p.status.nombre}</span>}
                     <span className="flex items-center gap-1"><Users size={12} /> {p.total_colaboradores ?? 0} colaboradores</span>
-                    {p.propietario?.nombre && <span>Dueño: {p.propietario.nombre}</span>}
+                    {p.propietario?.nombre && <span className="hidden sm:inline">Dueño: {p.propietario.nombre}</span>}
                   </p>
                 </div>
+                <div className="sm:hidden"><AnilloAvance porcentaje={p.porcentaje} compacto /></div>
               </div>
-              {p.descripcion && <p className="line-clamp-1 text-sm text-white/80">{p.descripcion}</p>}
+              {p.descripcion && <p className="line-clamp-1 text-xs text-white/80 sm:text-sm">{p.descripcion}</p>}
 
               <DistribucionEstados porEstado={p.tareas_por_estado} />
 
@@ -230,8 +240,25 @@ export default function ProjectCarousel({ projects = [], misTareas = [], salaDe 
               </div>
             </div>
 
+            {/* Celular: pestañas para ver una lista a la vez */}
+            <div className="flex gap-1 rounded-lg bg-white/10 p-1 text-xs font-semibold sm:hidden">
+              {[
+                { id: "tareas", label: "Tus tareas", n: p.mis_tareas_pendientes },
+                { id: "chat", label: "Chat", n: pendientesSala, rojo: true },
+              ].map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => setTabMovil(t.id)}
+                  className={`flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md py-1.5 ${tabMovil === t.id ? "bg-white/20 text-white" : "text-white/70"}`}
+                >
+                  {t.label}
+                  {t.n > 0 && <span className={`rounded-full px-1.5 text-[10px] ${t.rojo ? "bg-red-500" : "bg-white/20"}`}>{t.n > 99 ? "99+" : t.n}</span>}
+                </button>
+              ))}
+            </div>
+
             {/* 2 y 3. Widgets altos con scroll propio: mis tareas y chat del proyecto (clickeables) */}
-            <Widget icono={<ListTodo size={13} />} titulo="Tus tareas" contador={p.mis_tareas_pendientes} onTitulo={abrir}>
+            <Widget icono={<ListTodo size={13} />} titulo="Tus tareas" contador={p.mis_tareas_pendientes} onTitulo={abrir} className={tabMovil === "tareas" ? "flex" : "hidden sm:flex"}>
               {tareas.length ? (
                 <>
                   {tareas.map((t) => {
@@ -267,6 +294,7 @@ export default function ProjectCarousel({ projects = [], misTareas = [], salaDe 
               contador={pendientesSala}
               contadorRojo
               onTitulo={salaId ? () => navigate(`/mensajes/${salaId}`) : null}
+              className={tabMovil === "chat" ? "flex" : "hidden sm:flex"}
             >
               {mensajes.length ? (
                 mensajes.map((m) => (
@@ -290,10 +318,10 @@ export default function ProjectCarousel({ projects = [], misTareas = [], salaDe 
 
             {/* 3. Avance (el botón usa --color-blanco: bg-white se remapea en modo oscuro) */}
             <div className="flex items-center justify-between gap-4 sm:order-2 sm:flex-col sm:justify-center lg:order-none">
-              <AnilloAvance porcentaje={p.porcentaje} />
-              <div className="flex flex-col items-end gap-2 lg:items-center">
+              <div className="hidden sm:block"><AnilloAvance porcentaje={p.porcentaje} /></div>
+              <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:flex-col sm:items-end lg:items-center">
                 {p.total_tareas > 0 && <span className="text-xs text-white/70">{p.tareas_completadas}/{p.total_tareas} completadas</span>}
-                <button onClick={abrir} className="flex cursor-pointer items-center gap-1 rounded-full bg-[var(--color-blanco)] px-4 py-2 text-sm font-semibold text-[#0f3a44] hover:opacity-90">
+                <button onClick={abrir} className="ml-auto flex cursor-pointer items-center gap-1 rounded-full bg-[var(--color-blanco)] px-4 py-2 sm:ml-0 text-sm font-semibold text-[#0f3a44] hover:opacity-90">
                   Ver proyecto <ArrowRight size={15} />
                 </button>
               </div>

@@ -27,6 +27,7 @@ Ramas (ya mergeadas, en este orden):
 21. `feature/carrusel-anuncio`: el carrusel del Dashboard pasa a banner tipo anuncio que rota solo (sección 17).
 22. `feature/carrusel-metricas`: el banner de cada proyecto incluye métricas, mis tareas y el chat del proyecto (sección 17). **Requiere** la rama `feature/resumen-metricas` del backend desplegada.
 23. `feature/banner-widgets`: "Tus tareas" y "Chat del proyecto" como columnas altas con scroll dentro del banner (sección 17).
+24. `fix/banner-movil`: el Dashboard cabe en una pantalla de celular y deslizar no abre el proyecto (sección 17).
 
 Backend correspondiente: repo `backend-tasks`, desplegado desde la rama `supabase`. El contrato completo está en `docs/CAMBIOS-API.md` de ese repo.
 
@@ -374,6 +375,8 @@ Backend (`feature/chat-whatsapp`): `PUT`/`DELETE /mensajes/{id}` (solo el autor)
 | `services/usuariosService.js` | `getMiResumen()`. |
 | `index.css` | En oscuro, `text-teal-700` (chips de estado) usa un teal claro para que se lea. |
 
+- **Celular (una sola pantalla):** el anillo de avance va chico junto al nombre; "Tus tareas" y "Chat" pasan a **pestañas** (una lista a la vez, con scroll, sin título repetido); "Ver proyecto" en una franja abajo. En el Dashboard se oculta el breadcrumb, el saludo va en una línea y se reducen los espacios. A 390×760 no hay scroll; a 680 de alto, solo quedan fuera los puntitos.
+- **Deslizar cambia el proyecto que se ve; tocar lo abre.** Mientras se desliza, se ignoran los clics dentro del banner (`onClickCapture` + `arrastrandoRef`). Antes, si el gesto empezaba sobre una tarea o un mensaje del widget, al soltar el dedo el navegador le mandaba el clic y abría el proyecto o el chat.
 - Hasta que se conecte el módulo de Tareas y Sprints, ninguna pantalla crea tareas: los proyectos van a mostrar "Sin tareas aún" y "Mis tareas" va a estar vacío.
 
 ---
