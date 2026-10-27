@@ -3,12 +3,17 @@ import { Bell, CircleUserRound, Moon, Sun } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getUsuarioPorId } from "../../services/usuariosService";
 import { getTokenPayload } from "../../services/authService";
-import { useNotificacionesStore } from "./NotificacionesStore";
+import { useNotificacionesStore, totalNoLeidos } from "./NotificacionesStore";
+import NotificacionesPanel from "./NotificacionesPanel";
 import { temaActual, aplicarTema } from "../../utils/tema";
 
 const Navbar = () => {
   // Punto verde: canal de avisos del chat conectado
   const chatConnected = useNotificacionesStore((s) => s.conectado);
+  const noLeidos = useNotificacionesStore((s) => s.noLeidos);
+  const notifNoLeidas = useNotificacionesStore((s) => s.notifNoLeidas);
+  const [panelAbierto, setPanelAbierto] = useState(false);
+  const pendientes = notifNoLeidas + totalNoLeidos(noLeidos);
   const [imagen, setImagen] = useState(null);
   const [tema, setTema] = useState(temaActual);
 
@@ -43,12 +48,25 @@ const Navbar = () => {
       >
         {tema === 'dark' ? <Sun size={24} /> : <Moon size={24} />}
       </button>
-      <button className="relative flex cursor-pointer items-center justify-center rounded-[var(--radius-md)] bg-transparent p-2 text-[var(--text-primary)] transition-colors duration-150 hover:bg-blue-500/10">
-        <Bell size={30} />
-        {chatConnected && (
-          <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-white" title="Chat conectado" />
-        )}
-      </button>
+      <div className="relative">
+        <button
+          onClick={() => setPanelAbierto((v) => !v)}
+          title={chatConnected ? 'Notificaciones (en vivo)' : 'Notificaciones (sin conexión en vivo)'}
+          aria-label={`Notificaciones${pendientes ? `: ${pendientes} pendientes` : ''}`}
+          aria-expanded={panelAbierto}
+          className="relative flex cursor-pointer items-center justify-center rounded-[var(--radius-md)] bg-transparent p-2 text-[var(--text-primary)] transition-colors duration-150 hover:bg-blue-500/10"
+        >
+          <Bell size={28} />
+          {pendientes > 0 ? (
+            <span className="absolute right-0.5 top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+              {pendientes > 99 ? '99+' : pendientes}
+            </span>
+          ) : chatConnected && (
+            <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full border-2 border-[var(--bg-navbar)] bg-green-500" />
+          )}
+        </button>
+        <NotificacionesPanel isOpen={panelAbierto} onClose={() => setPanelAbierto(false)} />
+      </div>
       <button
         onClick={() => navigate("/profile")}
         title="Mi perfil"

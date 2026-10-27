@@ -41,6 +41,7 @@
   --color-green-700: #86EFAC;
   --color-blue-50: #14283A;
   --color-teal-50: #12312F;
+  --color-amber-50: #3A2E12;
 }
 
 /* bg-white no se puede remapear por variable: text-white usa la misma */
