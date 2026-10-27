@@ -124,3 +124,12 @@ export const getCompartidoSala = async (id, tipo, page = 1, limit = 30) => {
   });
   return jsonOrThrow(response);
 };
+
+// Pone en cero los no leídos de la sala para el usuario (devuelve la tarjeta)
+export const marcarSalaLeida = async (id) => {
+  const response = await apiFetch(`${BASE_URL}/salas/${id}/leido`, {
+    method: "POST",
+    headers: getHeaders(),
+  });
+  return jsonOrThrow(response);
+};
