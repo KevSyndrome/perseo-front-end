@@ -63,7 +63,7 @@ export default function NotificacionesPanel({ isOpen, onClose }) {
             </button>
           )}
         </div>
-        <div className="overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {notificaciones.map((n) => {
             const Icono = ICONO[n.tipo] ?? ListTodo;
             return (

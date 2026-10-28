@@ -57,12 +57,10 @@ const Navbar = () => {
           className="relative flex cursor-pointer items-center justify-center rounded-[var(--radius-md)] bg-transparent p-2 text-[var(--text-primary)] transition-colors duration-150 hover:bg-blue-500/10"
         >
           <Bell size={28} />
-          {pendientes > 0 ? (
+          {pendientes > 0 && (
             <span className="absolute right-0.5 top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
               {pendientes > 99 ? '99+' : pendientes}
             </span>
-          ) : chatConnected && (
-            <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full border-2 border-[var(--bg-navbar)] bg-green-500" />
           )}
         </button>
         <NotificacionesPanel isOpen={panelAbierto} onClose={() => setPanelAbierto(false)} />
