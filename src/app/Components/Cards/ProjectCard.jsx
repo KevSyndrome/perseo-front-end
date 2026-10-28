@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { User, FolderOpen } from 'lucide-react';
 
+// Nombres o descripciones sin espacios no deben salirse del card (se cortan con "...")
 export default function ProjectCard({ project, view = 'grid', onClick }) {
   if (view === 'list') {
     return (
@@ -37,8 +38,8 @@ export default function ProjectCard({ project, view = 'grid', onClick }) {
         </div>
 
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h3 style={{ color: "var(--color-blanco)", fontWeight: 700, fontSize: "0.95rem", margin: 0 }}>{project.name}</h3>
-          <p style={{ color: "var(--color-dark-grey)", fontSize: "0.8rem", margin: 0 }}>{project.description}</p>
+          <h3 style={{ color: "var(--color-blanco)", fontWeight: 700, fontSize: "0.95rem", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{project.name}</h3>
+          <p style={{ color: "var(--color-dark-grey)", fontSize: "0.8rem", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{project.description}</p>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", color: "var(--color-blanco)", fontSize: "0.8rem", flexShrink: 0 }}>
@@ -71,7 +72,7 @@ export default function ProjectCard({ project, view = 'grid', onClick }) {
       onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
       onMouseLeave={e => e.currentTarget.style.opacity = "1"}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "1rem", minWidth: 0 }}>
         <div style={{
           width: "56px", height: "56px", borderRadius: "var(--radius-md)",
           overflow: "hidden", flexShrink: 0,
@@ -91,6 +92,12 @@ export default function ProjectCard({ project, view = 'grid', onClick }) {
           margin: 0,
           textTransform: "uppercase",
           letterSpacing: "0.01em",
+          minWidth: 0,
+          overflowWrap: "anywhere",
+          display: "-webkit-box",
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical",
+          overflow: "hidden",
         }}>
           {project.name}
         </h3>
@@ -103,6 +110,7 @@ export default function ProjectCard({ project, view = 'grid', onClick }) {
         margin: 0,
         display: "-webkit-box",
         WebkitLineClamp: 3,
+        overflowWrap: "anywhere",
         WebkitBoxOrient: "vertical",
         overflow: "hidden",
       }}>

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { MessageCircle, ListTodo, CheckCheck, UserPlus, UserMinus, Reply, Clock, AlertTriangle, MessageSquare, X } from 'lucide-react';
 import { getSalas, marcarSalaLeida } from '../../services/salaService';
@@ -29,6 +30,8 @@ export default function NotificacionesPanel({ isOpen, onClose }) {
   const navigate = useNavigate();
   const { noLeidos, marcarLeida, ultimoAviso, notificaciones, notifNoLeidas, leerNotificacion, leerTodas, borrarNotificacion, cargarNotificaciones } = useNotificacionesStore();
   const [salas, setSalas] = useState([]);
+  // Evita que soltar un deslizamiento cuente como clic y abra la notificación
+  const arrastrandoRef = useRef(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -64,10 +67,26 @@ export default function NotificacionesPanel({ isOpen, onClose }) {
           )}
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <AnimatePresence initial={false}>
           {notificaciones.map((n) => {
             const Icono = ICONO[n.tipo] ?? ListTodo;
             return (
-              <div key={n.id} className={`group flex items-start gap-3 px-4 py-2.5 hover:bg-slate-50 ${n.leida ? '' : 'bg-teal-50/40'}`}>
+              // Deslizar a cualquier lado la elimina (en celular); en compu, la X al pasar el mouse
+              <motion.div
+                key={n.id}
+                drag="x"
+                dragDirectionLock
+                dragSnapToOrigin
+                style={{ touchAction: 'pan-y' }}
+                onDragStart={() => { arrastrandoRef.current = true; }}
+                onDragEnd={(_, info) => {
+                  setTimeout(() => { arrastrandoRef.current = false; }, 0);
+                  if (Math.abs(info.offset.x) > 90) borrarNotificacion(n.id).catch(() => {});
+                }}
+                onClickCapture={(e) => { if (arrastrandoRef.current) { e.preventDefault(); e.stopPropagation(); } }}
+                exit={{ opacity: 0, height: 0 }}
+                className={`group flex items-start gap-3 px-4 py-2.5 hover:bg-slate-50 ${n.leida ? '' : 'bg-teal-50/40'}`}
+              >
                 <button onClick={() => abrirNotif(n)} className="flex min-w-0 flex-1 cursor-pointer items-start gap-3 text-left">
                   <span className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${n.tipo === 'tarea_vencida' ? 'bg-red-50 text-red-500' : n.tipo === 'tarea_por_vencer' ? 'bg-amber-50 text-amber-500' : 'bg-teal-50 text-teal-600'}`}>
                     <Icono size={16} />
@@ -79,12 +98,13 @@ export default function NotificacionesPanel({ isOpen, onClose }) {
                   </span>
                 </button>
                 {!n.leida && <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-teal-500" />}
-                <button onClick={() => borrarNotificacion(n.id).catch(() => {})} title="Eliminar" className="cursor-pointer rounded p-1 text-slate-300 opacity-0 hover:text-slate-500 group-hover:opacity-100">
-                  <X size={14} />
+                <button onClick={() => borrarNotificacion(n.id).catch(() => {})} title="Eliminar" aria-label="Eliminar notificación" className="cursor-pointer rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100">
+                  <X size={16} />
                 </button>
-              </div>
+              </motion.div>
             );
           })}
+          </AnimatePresence>
 
           {chats.length > 0 && (
             <section>

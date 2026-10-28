@@ -427,3 +427,14 @@ Front local (`VITE_API_URL=http://127.0.0.1:8765 npx vite`) contra el backend lo
 - `NotificacionesPanel.jsx`: lista de notificaciones (icono por tipo, punto de no leída, eliminar) + "Chats sin leer"; "Marcar todo como leído" marca notificaciones y salas (`POST /salas/{id}/leido`).
 - Contador rojo de la campana = notificaciones no leídas + mensajes sin leer; punto verde si no hay pendientes y el WS está conectado.
 - Las notificaciones de tareas (`/task/{id}`) abren el proyecto mientras la pantalla de Tareas siga con datos de prueba.
+
+## Notificaciones: borrar y punto verde
+
+- Cada notificación se borra con la X (en compu aparece al pasar el mouse; en celular siempre se ve) o deslizándola hacia un lado en celular.
+- Se quitó el punto verde de la campana: solo aparece el número rojo cuando hay pendientes.
+- Se arregló el scroll del panel cuando hay muchas notificaciones (`min-h-0` en el contenedor flex).
+
+## Card de proyecto con nombres largos
+
+- `ProjectCard`: el título parte palabras largas (`overflow-wrap: anywhere`) y se corta a 2 líneas con "..."; en vista de lista, título y descripción quedan en una línea con "...".
+- `ProyectoForm`: nombre con `maxLength={50}` (el backend ya valida de 2 a 50 caracteres y responde 422).
