@@ -110,8 +110,9 @@ export default function ProyectoForm({ isOpen, onClose, onProyectoCreado }) {
           <InputText
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
-            placeholder="Eje. Easy Way"
+            placeholder="Eje. Easy Way (máx. 50 caracteres)"
             required
+            maxLength={50}
           />
         </FormField>
 
