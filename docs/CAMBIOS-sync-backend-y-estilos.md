@@ -438,3 +438,9 @@ Front local (`VITE_API_URL=http://127.0.0.1:8765 npx vite`) contra el backend lo
 
 - `ProjectCard`: el título parte palabras largas (`overflow-wrap: anywhere`) y se corta a 2 líneas con "..."; en vista de lista, título y descripción quedan en una línea con "...".
 - `ProyectoForm`: nombre con `maxLength={50}` (el backend ya valida de 2 a 50 caracteres y responde 422).
+
+## Modal de cerrar sesión
+
+- `LogoutForm` se renderiza con portal en el body (z-[200]): el blur cubre sidebar y navbar.
+- Tamaño adaptable (`max-w-md`, padding y textos responsivos); en celular los botones se apilan a lo ancho.
+- Clic fuera = cancelar; textos con acentos y botón "Cerrar sesión".

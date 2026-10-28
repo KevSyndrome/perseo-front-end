@@ -1,43 +1,52 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 
+// Portal al body: así el blur cubre también el sidebar y el navbar
 const LogoutForm = ({ onConfirm, onCancel }) => {
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4"
       style={{
         backgroundColor: "var(--color-trans)",
         backdropFilter: 'blur(4px)',
       }}
+      onClick={onCancel}
     >
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl h-[450px] flex flex-col items-center justify-center">
-        <h2 className="text-4xl font-bold text-slate-800 text-center mb-10 max-w-4xl">
-          ¿Estas seguro que quieres cerrar sesion?
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="logout-titulo"
+        onClick={(e) => e.stopPropagation()}
+        className="flex w-full max-w-md flex-col items-center rounded-2xl bg-white p-6 text-center shadow-xl sm:p-8"
+      >
+        <h2 id="logout-titulo" className="text-xl font-bold text-slate-800 sm:text-2xl">
+          ¿Estás seguro de que quieres cerrar sesión?
         </h2>
-        <br />
 
-        <p className="text-2xl text-slate-500 mb-24 text-center">
-          Esta acción no se puede deshacer.
+        <p className="mt-2 text-sm text-slate-500 sm:text-base">
+          Tendrás que volver a iniciar sesión para entrar.
         </p>
-        <br />
 
-        <div className="flex gap-16">
+        <div className="mt-6 flex w-full flex-col-reverse gap-3 sm:flex-row">
           <button
             onClick={onCancel}
-            className="w-64 h-24 rounded-xl border border-slate-300 text-slate-700 text-2xl font-semibold hover:bg-slate-50 transition"
+            autoFocus
+            className="flex-1 cursor-pointer rounded-xl border border-slate-300 py-2.5 font-semibold text-slate-700 transition hover:bg-slate-50"
           >
             Cancelar
           </button>
 
           <button
             onClick={onConfirm}
-            className="w-64 h-24 rounded-xl text-white text-2xl font-semibold transition"
+            className="flex-1 cursor-pointer rounded-xl py-2.5 font-semibold text-white transition hover:opacity-90"
             style={{ backgroundColor: "var(--error)" }}
           >
-            Cerrar
+            Cerrar sesión
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
